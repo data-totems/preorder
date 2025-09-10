@@ -1,6 +1,6 @@
 "use client"
 
-import { House, Package, Store } from "lucide-react"
+import { Grid, House, Package, Store } from "lucide-react"
 import UserProfile from "./UserProfile"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -11,6 +11,7 @@ const Sidebar = () => {
         {id: 1, title: "Dashboard", href: "/", icon: House},
         {id: 2, title: "Marketplace", href: "/marketplace", icon: Store},
          {id: 3, title: "Orders", href: "/orders", notify: true, icon: Package},
+         {id: 4, title: "Manage", href: "/manage", notify: true, icon: Grid},
     ]
   return (
     <div

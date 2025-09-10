@@ -3,12 +3,13 @@ import { ArrowLeft, BellIcon, MenuIcon, Plus } from "lucide-react"
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 
-const Navbar = ({ title,  primarybtn, showIcon, width, height, leftType}: {
+const Navbar = ({ title,  primarybtn, showIcon, width, height, leftType, onPress}: {
     title?: string,
     primarybtn: string;
     showIcon?:boolean;
     width?: string;
     height?: string;
+    onPress?: () => void,
     leftType?: 'arrow' | 'head'
 }) => {
 
@@ -34,7 +35,7 @@ const Navbar = ({ title,  primarybtn, showIcon, width, height, leftType}: {
                     <BellIcon color="#ED2525" size={20} fill="#ED2525" />
                 </div>
 
-                <div className={`bg-[#27BA5F] w-[${width}] h-[${height}] p-6 rounded-[15px] flex items-center cursor-pointer justify-center gap-2  ` }>
+                <div onClick={onPress} className={`bg-[#27BA5F] w-[${width}] h-[${height}] p-6 rounded-[15px] flex items-center cursor-pointer justify-center gap-2  ` }>
                     {showIcon && <Plus color="white" />}
                     <span className="text-white text-[16px] ">{primarybtn}</span>
                 </div>
