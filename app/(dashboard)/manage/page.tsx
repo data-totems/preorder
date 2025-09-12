@@ -1,6 +1,8 @@
 const Manage = () => {
   return (
-    <div>Manage</div>
+    <div>
+      Manage
+    </div>
   )
 }
 
