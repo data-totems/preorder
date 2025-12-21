@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch"
 import { ArchiveRestore, ImagePlus, LinkIcon, PenIcon, PlusIcon, Trash } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,15 +28,67 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { deleteProduct, getProductbyId, togglearchiveProduct } from "@/actions/products.actions"
+import { toast } from "sonner"
+import LoadingModal from "@/components/shared/LoadingModal"
 
 const ProductDetails = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [activeCategory, setActiveCategory] = useState(0)
+  const [activeCategory, setActiveCategory] = useState(0);
+  const [product, setProduct] = useState<ProductProps | null>(null)
+  const pathname = usePathname()
+  const productId = pathname.split('/')[3]
   const categories = [
     "Phones", "Tablets", "Laptops"
   ]
   const router = useRouter();
+
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const response = await getProductbyId(Number(productId));
+
+        setProduct(response.data)
+      } catch (error) {
+        toast.error(`${error}`)
+      }
+    }
+
+
+    getProducts();
+  }, []);
+
+  const handleDelete = async  () => {
+    try {
+      const response = await deleteProduct(Number(productId));
+
+      if(response.status === 200) {
+        toast.success("Product deleted!")
+        setProduct(null)
+        router.back();
+      }
+    } catch (error) {
+      toast.error(`${error}`)
+    }
+  }
+
+
+   const toggleArchive = async  () => {
+    try {
+      const response = await togglearchiveProduct(Number(productId));
+
+      if(response.status === 200) {
+        toast.success("Product Archived!")
+        setProduct(null)
+        router.back();
+      }
+    } catch (error) {
+      alert(JSON.stringify(error))
+    }
+  }
+
+  if(!product) return <LoadingModal />
   return (
     <div>
         <Navbar leftType='arrow' showIcon  primarybtn="Create Product"  width="168px" height="40px"  />
@@ -80,7 +132,7 @@ const ProductDetails = () => {
       <div className="flex flex-col gap-3">
         <Label className="font-[700] text-[#03140A80] ">PRODUCT NAME</Label>
 
-        <Input  className="bg-[#F0F0F0] rounded-[12px] " placeholder="Enter product name" defaultValue={'XIAOMI Redmi 14C'} />
+        <Input  className="bg-[#F0F0F0] rounded-[12px] " placeholder="Enter product name" defaultValue={product?.name} />
       </div>
 
         <div className="flex flex-col gap-3">
@@ -92,7 +144,7 @@ const ProductDetails = () => {
           </div>
           </div>
          
-          <Input   placeholder="Enter product name" defaultValue={'157,000.00'} />
+          <Input   placeholder="Enter product name" defaultValue={product?.price} />
         </div>
         
       </div>
@@ -100,7 +152,7 @@ const ProductDetails = () => {
       <div className="flex flex-col gap-3">
         <Label className="font-[700] text-[#03140A80] ">PRODUCT DESCRIPTION</Label>
 
-        <Textarea  className="bg-[#F0F0F0] rounded-[12px] text-[#03140A80] " placeholder="Enter product name" defaultValue={`XIAOMI Redmi 14c combines performance and style with a large 6.88" HD display and smooth 120Hz refresh rate for an immersive viewing experience. Built with Corning Gorilla Glass 3 and a splash-resistant body, it's durable enough for everyday life.`} />
+        <Textarea  className="bg-[#F0F0F0] rounded-[12px] text-[#03140A80] " placeholder="Enter product name" defaultValue={`${product?.description}`} />
       </div>
 
         <div className="flex flex-col gap-3">
@@ -173,11 +225,26 @@ const ProductDetails = () => {
 </Dialog>
               <hr />
               
-              
-               <div className="cursor-pointer flex items-center gap-7 ">
+                 <AlertDialog>
+  <AlertDialogTrigger>
+      <div className="cursor-pointer flex items-center gap-7 ">
                 <ArchiveRestore color="#03140A66" fill="#03140A66" />
                 <span className="text-[16px] ">Archive product</span>
               </div>
+  </AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle className="font-[700] text-center ">Are you sure you want to archive this product?</AlertDialogTitle>
+      <AlertDialogDescription className="text-[#A9AEAB] text-center">
+        Buyers won’t be able to see it, you can always unarchive it in marketplace
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter className="flex justify-center items-center ">
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction onClick={toggleArchive} className="bg-[#27BA5F] hover:bg-green-400">Archive product</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
               <hr />
               <AlertDialog>
   <AlertDialogTrigger>
@@ -195,7 +262,7 @@ const ProductDetails = () => {
     </AlertDialogHeader>
     <AlertDialogFooter className="flex justify-center items-center ">
       <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction onClick={() => {router.push('/marketplace')}} className="bg-[#ED2525] hover:bg-red-400">Delete product</AlertDialogAction>
+      <AlertDialogAction onClick={handleDelete} className="bg-[#ED2525] hover:bg-red-400">Delete product</AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
 </AlertDialog>
@@ -204,7 +271,8 @@ const ProductDetails = () => {
             </div>
           </div>
           <div className="w-full bg-[#F0F0F0] h-fit rounded-[12px] p-5  ">
-            <h2 className="text-[20px] font-[500] ">XIAOMI Redmi 14C</h2>
+            <h2 className="text-[20px] font-[500] ">{product?.name}</h2>
+            
 
             <div className="flex items- justify-between">
                 <div className="text-[#F48614] flex gap-0.5 ">
@@ -221,20 +289,7 @@ const ProductDetails = () => {
             <h3 className="font-extrabold mt-9 ">PRODUCT DESCRIPTION</h3>
 
             <p className="pt-4 text-[#03140A80] ">
-              XIAOMI Redmi 14c combines performance and style with a large 6.88" HD display and smooth 120Hz refresh rate for an immersive viewing experience. Built with Corning Gorilla Glass 3 and a splash-resistant body, it's durable enough for everyday life.
-
-              <br />
-              <br />
-Powered by a MediaTek Helio G81 Ultra processor and up to 8GB of RAM, it handles multitasking and apps effortlessly. Store everything you need with up to 256GB of storage, expandable via microSD card.
-
-<br />
-
-<br />
-Capture life in sharp detail with a 50MP dual rear camera and a 13MP front camera, both supporting 1080p HD video. Enjoy your favorite tunes with a 3.5mm headphone jack, loudspeaker, and FM radio.
-
-<br/>
-<br />
-Stay connected with dual SIM, Wi-Fi 5, Bluetooth 5.4, GPS, and USB-C with OTG. The 5160mAh battery gives you all-day power, and when it runs low, 18W fast charging gets you back up quickly.
+             {product?.description}
             </p>
           </div>
         </div>

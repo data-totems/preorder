@@ -1,14 +1,16 @@
 'use client'
-import BussinessDetails from "@/components/manage/BussinessDetails"
+import BussinessDetails from "@/components/setup/BussinessDetails"
 import BankDetails from "@/components/setup/BankDetails"
 import PersonalDetails from "@/components/setup/PersonalDetails"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, House, Store, User } from "lucide-react"
 import { useState } from "react"
+import LoadingModal from "@/components/shared/LoadingModal"
 
 
 const Setup = () => {
     const [currentStep, setCurrentStep] = useState(1);
+     const [isLoading, setIsLoading] = useState(false);
 
     const steps = [
         {
@@ -28,6 +30,8 @@ const Setup = () => {
         },
        
     ]
+
+      if(isLoading) return <LoadingModal message="Setting up for you..." />
   return (
     <div className='flex flex-col items-center justify-center max-w-lg '>
         <div className="">
@@ -60,15 +64,15 @@ const Setup = () => {
 
         <div>
             {currentStep === 1 && (
-                <PersonalDetails />
+                <PersonalDetails setCurrentStep={setCurrentStep} />
             )}
 
               {currentStep === 2 && (
-                <BussinessDetails />
+                <BussinessDetails setCurrentStep={setCurrentStep} />
             )}
 
               {currentStep === 3 && (
-                <BankDetails />
+                <BankDetails isLoading={isLoading} setIsLoading={setIsLoading} />
             )}
         </div>
         </div>

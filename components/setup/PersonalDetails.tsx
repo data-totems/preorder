@@ -18,37 +18,46 @@ import { Loader2 } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import ImageUploader from "./ImageUploader"
+import { Textarea } from "../ui/textarea"
+import { useSetupStore } from "@/zustand"
 
 
 const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/\d/, "Password must contain at least one number"),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+ fullName: z.string(),
+ imageUrl: z.string(),
+ username: z.string(),
+ phoneNumber: z.string(),
+ address: z.string()
 })
 
-const PersonalDetails = () => {
-
+const PersonalDetails = ({ setCurrentStep }: { setCurrentStep: (value: number) => void}) => {
+const { setStore } = useSetupStore((state) => state)
 
  const [isLoading, setIsLoading] = useState(false);
     const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: ""
+      fullName: "",
+      imageUrl: "",
+      username: "",
+      phoneNumber: "",
+      address: ""
     },
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true)
+    setStore({
+      fullName: values.fullName,
+      address: values.address,
+      username: values.username,
+      phoneNumber: values.phoneNumber,
+      imageUrl: values.imageUrl
+    });
+
+
+    setCurrentStep(2)
+
   }
   return (
     <div className='mt-4 '>
@@ -75,12 +84,12 @@ const PersonalDetails = () => {
                     <div>
                       <FormField
                         control={form.control}
-                        name="image"
+                        name="imageUrl"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[#03140A80] uppercase font-bold">Create password</FormLabel>
+                            <FormLabel className="text-[#03140A80] uppercase font-bold">Display picture</FormLabel>
                             <FormControl>
-                             <ImageUploader />
+                             <ImageUploader value={field.value} onChange={field.onChange} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -90,15 +99,14 @@ const PersonalDetails = () => {
         
                     <FormField
                       control={form.control}
-                      name="confirmPassword"
+                      name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[#03140A80] uppercase font-bold">Confirm password</FormLabel>
+                          <FormLabel className="text-[#03140A80] uppercase font-bold">Create Username</FormLabel>
                           <FormControl>
                             <Input 
-                              type="password"
                               className="bg-[#F0F0F0] rounded-[12px] max-w-lg" 
-                              placeholder="Confirm your password" 
+                              placeholder="Create your username" 
                               {...field} 
                             />
                           </FormControl>
@@ -106,6 +114,45 @@ const PersonalDetails = () => {
                         </FormItem>
                       )}
                     />
+
+                      <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[#03140A80] uppercase font-bold">phone number</FormLabel>
+                          <FormControl>
+                            <Input 
+                              className="bg-[#F0F0F0] rounded-[12px] max-w-lg" 
+                              placeholder="Create your phone number" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+
+
+                      <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[#03140A80] uppercase font-bold">address</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              className="bg-[#F0F0F0] rounded-[12px] max-w-lg" 
+                              placeholder="Address" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+        
         
                     <Button 
                       type="submit" 

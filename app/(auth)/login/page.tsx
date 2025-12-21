@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { loginUser } from "@/actions/auth.actions"
 import { toast } from "sonner"
-import { Loader2, Router } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 
@@ -42,11 +42,10 @@ const router = useRouter();
           const response = await loginUser({
               email: values.email,
               password: values.password,
-          });
-  
-          if(response.status === 201) {
+          });  
+          if(response.status === 200) {
               toast.success("Logged In")
-              localStorage.setItem('buzzToken', response.data.token);
+              localStorage.setItem('buzzToken', response.data.tokens.access);
 
               router.push('/')
           }
@@ -63,7 +62,7 @@ const router = useRouter();
         <div className=" flex flex-col gap-1 ">
             <h2 className="font-bold text-2xl ">Login to your account</h2>
             <h1 className="font-semibold text-[#03140A80] text-sm ">
-                Don’t have an account?  <Link href={'/register'} className="text-[#27BA5F]">Create account</Link>
+                Don&apos;t have an account?  <Link href={'/register'} className="text-[#27BA5F]">Create account</Link>
             </h1>
         </div>
 
@@ -91,7 +90,7 @@ const router = useRouter();
             <FormItem>
               <FormLabel className="text-[#03140A80] uppercase font-bold ">Password</FormLabel>
               <FormControl>
-                <Input className="bg-[#F0F0F0] rounded-[12px] max-w-lg  " placeholder="Enter your password" {...field} />
+                <Input className="bg-[#F0F0F0] rounded-[12px] max-w-lg" placeholder="Enter your password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -1,21 +1,37 @@
+'use client'
+
 import Boxfive from "@/components/dashboard/Boxfive"
 import Boxfour from "@/components/dashboard/Boxfour"
 import BoxOne from "@/components/dashboard/BoxOne"
 import Boxthree from "@/components/dashboard/Boxthree"
 import Boxtwo from "@/components/dashboard/Boxtwo"
 import Navbar from "@/components/shared/Navbar"
+import { useUserStore } from "@/zustand"
+import { useState } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import CreateProduct from "@/components/shared/CreateProduct"
 
 const Home = () => {
+  const { user } = useUserStore((state) => state);
+  const [openDialog, setOpenDialog] = useState(false)
   return (
     <div className="flex flex-col gap-8">
 
       <Navbar
         leftType="head"
-        title="Hello, Akinsanmi !"
+        title={`Hello, ${user?.fullName} !`}
         showIcon
         primarybtn="Create Product"
         width="168px"
         height="40px"
+        onPress={() => setOpenDialog(true)}
       />
 
       {/* Main Layout */}
@@ -44,6 +60,10 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {openDialog && (
+        <CreateProduct open={openDialog} setOpen={setOpenDialog} />
+      )}
     </div>
   )
 }

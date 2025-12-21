@@ -9,7 +9,7 @@ const Navbar = ({ title,  primarybtn, showIcon, width, height, leftType, onPress
     showIcon?:boolean;
     width?: string;
     height?: string;
-    onPress?: () => void,
+    onPress?: (value: any) => void,
     leftType?: 'arrow' | 'head'
 }) => {
 

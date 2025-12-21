@@ -22,7 +22,6 @@ const Manage = () => {
   const [currentTab, setCurrentTab] = useState(0);
   return (
     <div>
-<<<<<<< HEAD
       <Navbar leftType="head" title="MANAGE" primarybtn="Create product" showIcon width="168px" height="40px" />
       
 
@@ -60,10 +59,6 @@ const Manage = () => {
       </div>
       
       </div>
-=======
-      Manage
-    </div>
->>>>>>> e78c94d088eb7c8bc25786d9ca2482c4bb5f45cc
   )
 }
 
