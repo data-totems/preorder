@@ -7,10 +7,6 @@ const client = new Client()
 
 export const storage = new Storage(client);
 
-
-
-
-
 export const getAllbanks = async () => {
     try {
         const response = await axios.get(`https://api.flutterwave.com/banks?country=NG`, {
