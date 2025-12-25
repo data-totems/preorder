@@ -33,6 +33,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       try {
         const user = await getAccountProfile();
+        console.log("This is user", user.data)
 
         if(user.data) {
                 setUser({

@@ -2,6 +2,7 @@
 import { ArrowLeft, BellIcon, MenuIcon, Plus } from "lucide-react"
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const Navbar = ({ title,  primarybtn, showIcon, width, height, leftType, onPress}: {
     title?: string,
@@ -14,6 +15,7 @@ const Navbar = ({ title,  primarybtn, showIcon, width, height, leftType, onPress
 }) => {
 
     const router = useRouter();
+    const [openNotification, setOpenNotification] = useState(false)
   return (
     <div className="w-full">
 

@@ -87,3 +87,18 @@ export const togglearchiveProduct = async (id: number) => {
         throw error.response.data;
      }
 }
+
+export const listDispatch = async () => {
+    const token = localStorage.getItem('buzzToken')
+    try {
+        const response = await axios.get(`${baseUrl}/dispatch/list_update/`, {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        });
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

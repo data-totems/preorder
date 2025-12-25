@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
       eslint: {
     ignoreDuringBuilds: true
   }, 
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'fra.cloud.appwrite'
+      }
+    ]
+  }
 };
 
 export default nextConfig;

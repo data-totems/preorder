@@ -22,7 +22,7 @@ const Home = () => {
   const { user } = useUserStore((state) => state);
   const [openDialog, setOpenDialog] = useState(false)
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 pb-8">
 
       <Navbar
         leftType="head"

@@ -2,9 +2,9 @@ interface ProductProps {
     name: string;
     price?: string;
     image: string;
-    type: "market" | 'display';
-    description: string,
-    is_archived: boolean
+    type?: "market" | 'display';
+    description?: string,
+    is_archived?: boolean
     onPress?: () => void,
     id: number
 }
