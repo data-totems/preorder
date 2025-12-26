@@ -3,6 +3,7 @@ import { ArrowLeft, BellIcon, MenuIcon, Plus } from "lucide-react"
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import NotificationModal from "./NotificationModal";
 
 const Navbar = ({ title,  primarybtn, showIcon, width, height, leftType, onPress}: {
     title?: string,
@@ -32,10 +33,16 @@ const Navbar = ({ title,  primarybtn, showIcon, width, height, leftType, onPress
          
 
             <div className="lg:flex hidden items-center gap-4 ">
-                <div className="bg-[#ED25251F] w-[82px] cursor-pointer h-[40px] rounded-[24px] flex items-center justify-center gap-2  ">
+                <div className="bg-[#ED25251F] w-[82px] cursor-pointer h-[40px] rounded-[24px] flex items-center justify-center gap-2  "
+                onClick={() => setOpenNotification(!openNotification)}
+                >
                     <span className="text-[#ED2525] font-[600] text-[12px] ">1 new</span>
                     <BellIcon color="#ED2525" size={20} fill="#ED2525" />
                 </div>
+
+                {openNotification && (
+                    <NotificationModal open={openNotification} setOpen={setOpenNotification} />
+                )}
 
                 <div onClick={onPress} className={`bg-[#27BA5F] w-[${width}] h-[${height}] p-6 rounded-[15px] flex items-center cursor-pointer justify-center gap-2  ` }>
                     {showIcon && <Plus color="white" />}

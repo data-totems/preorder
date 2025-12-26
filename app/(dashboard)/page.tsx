@@ -39,13 +39,13 @@ const Home = () => {
 
         {/* Left Column */}
         <div className="flex flex-col gap-5 flex-1">
-          <div className="bg-[#F0F0F0] w-full h-[220px] rounded-[12px] p-3">
+          <div className="bg-[#F0F0F0] w-full h-fit rounded-[12px] p-3">
             <BoxOne />
           </div>
           <div className="bg-[#F0F0F0] w-full h-[168px] rounded-[12px] p-3">
             <Boxtwo />
           </div>
-          <div className="bg-[#F0F0F0] w-full h-[284px] rounded-[12px] p-3">
+          <div className="bg-[#F0F0F0] w-full h-fit rounded-[12px] p-3">
             <Boxthree />
           </div>
         </div>

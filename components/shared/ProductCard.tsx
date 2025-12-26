@@ -1,12 +1,12 @@
 import Image from "next/image"
 
-const ProductCard = ({name, image, price, type, onPress}: ProductProps) => {
+const ProductCard = ({name, price, type, onPress, image_url}: ProductProps) => {
   return (
     <div className="flex flex-col gap-4 cursor-pointer" 
     onClick={onPress}
     >
         <div className={` bg-white flex flex-col items-center justify-center ${type === 'market' ? 'lg:w-[227px] lg:h-[264px] ' : ' lg:w-[110px] lg:h-[128px]'}  w-full `}>
-            <Image src={image} alt="Product image" width={200} height={200} />
+            <Image src={image_url ? image_url : ''} alt="Product image" width={200} height={200} />
         </div>
 
         <div className="flex flex-col gap-2.5">

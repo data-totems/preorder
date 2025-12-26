@@ -15,6 +15,8 @@ const Boxthree = () => {
         try {
             const response = await getuserProducts();
 
+            console.log("Product", response.data)
+
             setProducts(response.data)
         } catch (error) {
             toast.error(`${error}`)
@@ -41,13 +43,14 @@ const Boxthree = () => {
 
 
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 h-fit">
                     {products.length > 0 ? products.map((product) => (
                         <ProductCard
                         key={product.id}
                         name={product.name}
                         price={product.price}
-                        image={product.image}
+                        // image={product.images}
+                        image_url={product.images ? product?.images[0]?.image_url : ''}
                         id={product.id}
                          />
                     )): (

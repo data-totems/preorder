@@ -1,7 +1,7 @@
 'use client'
 import Navbar from "@/components/shared/Navbar"
 import { Switch } from "@/components/ui/switch"
-import { ArchiveRestore, ImagePlus, LinkIcon, PenIcon, PlusIcon, Trash } from "lucide-react"
+import { ArchiveRestore, ImagePlus, LinkIcon, PenIcon, PlusIcon, Trash, Upload } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -29,15 +29,29 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { usePathname, useRouter } from "next/navigation"
-import { deleteProduct, getProductbyId, togglearchiveProduct } from "@/actions/products.actions"
+import { deleteProduct, getProductbyId, togglearchiveProduct, updateProductImage } from "@/actions/products.actions"
 import { toast } from "sonner"
-import LoadingModal from "@/components/shared/LoadingModal"
+import LoadingModal from "@/components/shared/LoadingModal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+
+interface ProductImageState {
+  front_image: File | string | null;
+  back_image: File | string | null;
+  left_image: File | string | null;
+  right_image: File | string | null;
+}
 
 const ProductDetails = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState(0);
-  const [product, setProduct] = useState<ProductProps | null>(null)
-  const pathname = usePathname()
+  const [product, setProduct] = useState<ProductProps | null>(null);
+  const [selectedImageType, setSelectedImageType] = useState<'front' | 'back' | 'left' | 'right'>('front');
+  const pathname = usePathname();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [currentImag, setCurrentImag] = useState('')
   const productId = pathname.split('/')[3]
   const categories = [
     "Phones", "Tablets", "Laptops"
@@ -74,6 +88,8 @@ const ProductDetails = () => {
   }
 
 
+
+
    const toggleArchive = async  () => {
     try {
       const response = await togglearchiveProduct(Number(productId));
@@ -84,9 +100,75 @@ const ProductDetails = () => {
         router.back();
       }
     } catch (error) {
-      alert(JSON.stringify(error))
+      alert(JSON.stringify(error));
     }
   }
+
+   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewImage(previewUrl);
+    }
+  };
+
+  const handleUpdateImage = async () => {
+    if (!selectedFile || !productId) {
+      toast.error("Please select an image first");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('productId', productId);
+      
+      // Only append the selected image type to avoid null values for others
+      // The API should handle preserving existing values for other image fields
+      switch (selectedImageType) {
+        case 'front':
+          formData.append('front_image', selectedFile);
+          break;
+        case 'back':
+          formData.append('back_image', selectedFile);
+          break;
+        case 'left':
+          formData.append('left_image', selectedFile);
+          break;
+        case 'right':
+          formData.append('right_image', selectedFile);
+          break;
+      }
+
+      const response = await updateProductImage({
+        productId,
+        // Send FormData instead of individual fields
+        formData
+      });
+
+      if(response.status === 200) {
+        toast.success(`${selectedImageType.replace('_', ' ')} image updated successfully!`);
+        
+        // Update local state with the new image
+        if (product && previewImage) {
+          const updatedProduct = { ...product };
+        
+          setProduct(updatedProduct);
+        }
+        
+        // Reset states
+        setSelectedFile(null);
+        setPreviewImage(null);
+      }
+    } catch (error) {
+      toast.error(`${error}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   if(!product) return <LoadingModal />
   return (
@@ -96,13 +178,15 @@ const ProductDetails = () => {
         <div className="mt-10 flex lg:flex-row flex-col  justify-between gap-5  ">
           <div className="w-full">
 
-            <Image src={'/product1.jpg'} alt="product1" width={350} height={350} />
+            <Image src={currentImag ? currentImag : product?.images[0]?.image_url} alt="product1" width={350} height={350} />
 
             <div className="flex items-center justify-between" >
               <div className="flex items-center gap-4 justify-center pt-4 cursor-pointer">
-                   {[1,2,3].map((_, index) => (
-                <div key={index} onClick={() => setCurrentIndex(index)} className={`${currentIndex === index && 'border-2 rounded-[6px] border-green-400'}`}>
-                  <Image src={'/product1.jpg'} alt="product1" width={56} height={56} />
+                   {product?.images?.map((image, index) => (
+                <div key={index} onClick={() => {setCurrentIndex(index)
+                  setCurrentImag(image.image_url)
+                }} className={`${currentIndex === index && 'border-2 rounded-[6px] border-green-400'}`}>
+                  <Image src={image.image_url} alt="product1" width={56} height={56} />
                 </div>
               ))}
               </div>
@@ -187,42 +271,105 @@ const ProductDetails = () => {
              
               <hr />
 
-                 <Dialog>
-  <DialogTrigger>
-      <div className="cursor-pointer flex items-center gap-7 ">
-                <ImagePlus color="#03140A66" fill="#03140A66" />
-                <span className="text-[16px] ">Edit product Image</span>
-              </div>
-  </DialogTrigger>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Product Image</DialogTitle>
-      <DialogDescription>
-      </DialogDescription>
-    </DialogHeader>
+        <Dialog>
+              <DialogTrigger>
+                <div className="cursor-pointer flex items-center gap-7">
+                  <ImagePlus color="#03140A66" fill="#03140A66" />
+                  <span className="text-[16px]">Edit product Image</span>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Update Product Image</DialogTitle>
+                  <DialogDescription>
+                    Select which view you want to update and upload a new image
+                  </DialogDescription>
+                </DialogHeader>
 
-    <div className="flex flex-col gap-4 ">
-      <Label className="font-[700] text-[#03140A80] " >PRODUCT IMAGE</Label>
+                <div className="flex flex-col gap-6">
+                  {/* Image type selector */}
+                  <div className="flex flex-col gap-3">
+                    <Label className="font-[700] text-[#03140A80]">SELECT IMAGE TYPE</Label>
+                    <Select 
+                      value={selectedImageType} 
+                      onValueChange={(value: 'front' | 'back' | 'left' | 'right') => setSelectedImageType(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select image type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="front">Front View</SelectItem>
+                        <SelectItem value="back">Back View</SelectItem>
+                        <SelectItem value="left">Left Side</SelectItem>
+                        <SelectItem value="right">Right Side</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* File upload section */}
+                  <div className="flex flex-col gap-3">
+                    <Label className="font-[700] text-[#03140A80]">UPLOAD NEW IMAGE</Label>
+                    <div className="border-2 border-dashed border-[#D9D9D9] rounded-[15px] p-6 text-center">
+                      <input
+                        type="file"
+                        id="image-upload"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileSelect}
+                      />
+                      <Label 
+                        htmlFor="image-upload" 
+                        className="cursor-pointer flex flex-col items-center gap-3"
+                      >
+                        <Upload className="w-8 h-8 text-[#03140A80]" />
+                        <span className="text-[#03140A80]">
+                          {selectedFile ? selectedFile.name : 'Click to upload image'}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          JPG, PNG up to 5MB
+                        </span>
+                      </Label>
+                    </div>
 
-      <div className="bg-[#F0F0F0] w-full h-[88px] flex items-center justify-between rounded-[15px] p-4  ">
-        <div className="flex items-center gap-4 ">
-           <Image src={'/product1.jpg'} alt="product" width={50} height={50} />
-        <span className="text-[#03140A80] ">Whatsappimage99435.jpg</span>
-        </div>
+                    {/* Preview of selected file */}
+                    {previewImage && (
+                      <div className="mt-4">
+                        <Label className="font-[700] text-[#03140A80] mb-2 block">PREVIEW</Label>
+                        <div className="bg-[#F0F0F0] w-full h-[120px] flex items-center justify-center rounded-[15px] overflow-hidden">
+                          <Image 
+                            src={previewImage} 
+                            alt="Preview" 
+                            width={100} 
+                            height={100} 
+                            className="object-contain"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-        <Button variant={'ghost'}>
-          <Trash fill="#ED2525" color="#ED2525" />
-        </Button>
-       
-      </div>
-
-      <div className="text-green-500 flex gap-5 items-center justify-center cursor-pointer  ">
-        <PlusIcon />
-        Add Image
-      </div>
-    </div>
-  </DialogContent>
-</Dialog>
+                  {/* Action buttons */}
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        setPreviewImage(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-green-500 hover:bg-green-400"
+                      onClick={handleUpdateImage}
+                      disabled={!selectedFile || isUploading}
+                    >
+                      {isUploading ? 'Uploading...' : 'Update Image'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
               <hr />
               
                  <AlertDialog>

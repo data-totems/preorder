@@ -1,12 +1,16 @@
 interface ProductProps {
     name: string;
     price?: string;
-    image: string;
+    images: {
+        image_url: string,
+        image: string,
+    }[];
     type?: "market" | 'display';
     description?: string,
     is_archived?: boolean
     onPress?: () => void,
-    id: number
+    id: number,
+    image_url?: string
 }
 
 
@@ -18,7 +22,10 @@ interface UserProps {
     address?: string,
     userId?: string,
     fullName: string,
-    storeLink: string
+    storeLink: string,
+
+    bank_name: string,
+    bank_account_number: string
 }
 
 interface UserStoreProps {

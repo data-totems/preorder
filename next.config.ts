@@ -13,7 +13,11 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'fra.cloud.appwrite'
-      }
+      },
+       {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com'
+      },
     ]
   }
 };

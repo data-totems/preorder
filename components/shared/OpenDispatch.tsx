@@ -28,6 +28,7 @@ import { ImagePlus, Loader2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { Label } from "../ui/label"
+import { createDispatch } from "@/actions/products.actions"
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50),
@@ -96,13 +97,32 @@ const OpenDispatch = ({ open, setOpen }: { open: boolean, setOpen: (value: boole
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsLoading(true)
+
+      const response = await createDispatch({
+        name: values.name,
+       phone_number: values.phone,
+       address: values.address, next_of_kin: values.nextKin, 
+       utility_bill: values.utility,
+       bank_name: values.bankName, 
+      account_number: values.accountNumber, 
+      account_name: "Rabiat Dikko", 
+    vehicle_type: values.vehicle,
+     plate_number: values.plateNumber, 
+    location_area: values.location, 
+    peferred_transport_area: values.transportArea, 
+    is_available: true
+      });
+
+      console.log(response)
       console.log("Form submitted:", values)
       // TODO: Add your submission logic here
       toast.success("Dispatch created successfully!")
-      setOpen(false)
-      form.reset()
+      // setOpen(false)
+      // form.reset()
       setCurrentStep(1)
     } catch (error) {
+      toast.error(`${error}`)
+      console.log(error)
       toast.error("Failed to create dispatch")
     } finally {
       setIsLoading(false)
@@ -557,7 +577,7 @@ const OpenDispatch = ({ open, setOpen }: { open: boolean, setOpen: (value: boole
                     <Button
                       type={currentStep === 3 ? "submit" : "button"}
                       onClick={currentStep === 3 ? undefined : handleNextStep}
-                      className={`flex-1 ${currentStep === 3 ? 'bg-[#27BA5F] hover:bg-[#1EA14B]' : ''}`}
+                      className={`flex-1 ${currentStep === 3 ? 'bg-[#27BA5F] hover:bg-[#1EA14B]' : 'bg-[#27BA5F] hover:bg-[#1EA14B]'}`}
                       disabled={isLoading}
                     >
                       {isLoading && currentStep === 3 ? (

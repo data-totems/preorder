@@ -40,7 +40,10 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
           fullName: user.data.full_name,
           phoneNumber: user.data.phone_number,
           imageUrl: user?.data.display_picture,
-          storeLink: user?.data.store_link ?? ""
+          storeLink: user?.data.store_link ?? "",
+
+          bank_name: user?.data.bank_name,
+          bank_account_number: user?.data.bank_account_number
         })
         console.log('User data:', user.data)
 
