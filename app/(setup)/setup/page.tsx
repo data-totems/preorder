@@ -4,13 +4,15 @@ import BankDetails from "@/components/setup/BankDetails"
 import PersonalDetails from "@/components/setup/PersonalDetails"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, House, Store, User } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import LoadingModal from "@/components/shared/LoadingModal"
+import { getAllbanks } from "@/actions/storage.actions"
 
 
 const Setup = () => {
     const [currentStep, setCurrentStep] = useState(1);
      const [isLoading, setIsLoading] = useState(false);
+     const [banks, setBanks] = useState<any[]>([]);
 
     const steps = [
         {
@@ -30,6 +32,22 @@ const Setup = () => {
         },
        
     ]
+
+
+    
+      useEffect(() => {
+        const getData = async () => {
+          const response = await getAllbanks();
+    
+          if(response.status === 'success') {
+            setBanks(response.data)
+          }
+        }
+    
+        getData();
+    
+       
+      }, [])
 
       if(isLoading) return <LoadingModal message="Setting up for you..." />
   return (
@@ -72,7 +90,7 @@ const Setup = () => {
             )}
 
               {currentStep === 3 && (
-                <BankDetails isLoading={isLoading} setIsLoading={setIsLoading} />
+                <BankDetails banks={banks} isLoading={isLoading} setIsLoading={setIsLoading} />
             )}
         </div>
         </div>

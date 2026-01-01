@@ -16,7 +16,6 @@ const Store = () => {
     const response = await getAllProducts();
 
     if(response.status === 200) {
-       console.log("Product Response", response.data)
        setProducts(response.data)
     }
    
@@ -90,12 +89,12 @@ const ProductGrid = ({ items }: { items: any[] }) => {
   return (
     <div className="grid grid-cols-2 gap-4">
       {items.map((item, i) => (
-        <div
+        <Link href={`/store/product/${item.id}`}
           key={i}
           className="bg-white rounded-xl p-3 shadow-sm"
         >
           <img
-            src={item.images ? item?.images[0]?.image_url : ''}// replace with your image
+            src={item.images ? item?.images[0]?.image_url : '' }
             alt="product"
             className="w-full h-32 object-contain"
           />
@@ -105,7 +104,7 @@ const ProductGrid = ({ items }: { items: any[] }) => {
           <p className="text-orange-500 text-xs font-semibold">
             NGN{item.price}
           </p>
-        </div>
+        </Link>
       ))}
     </div>
   );

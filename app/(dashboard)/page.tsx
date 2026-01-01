@@ -20,7 +20,7 @@ import CreateProduct from "@/components/shared/CreateProduct"
 
 const Home = () => {
   const { user } = useUserStore((state) => state);
-  const [openDialog, setOpenDialog] = useState(false)
+  const [openDialog, setOpenDialog] = useState(false);
   return (
     <div className="flex flex-col gap-8 pb-8">
 
@@ -42,7 +42,7 @@ const Home = () => {
           <div className="bg-[#F0F0F0] w-full h-fit rounded-[12px] p-3">
             <BoxOne />
           </div>
-          <div className="bg-[#F0F0F0] w-full h-[168px] rounded-[12px] p-3">
+          <div className="bg-[#F0F0F0] w-full h-fit rounded-[12px] p-3">
             <Boxtwo />
           </div>
           <div className="bg-[#F0F0F0] w-full h-fit rounded-[12px] p-3">

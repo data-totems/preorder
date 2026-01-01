@@ -184,3 +184,34 @@ export const updateProductImage = async ({
     throw error;
   }
 }
+
+
+export const getSingleProduct = async (id: number) => {
+    const token = localStorage.getItem('buzzToken');
+    try {
+        const response = await axios.get(`${baseUrl}/products/${id}/`, {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        });
+
+        return response
+    } catch (error: any) {
+        throw error.response.data
+    }
+}
+
+export const getStoreDetails = async (slug: string) => {
+    const token = localStorage.getItem('buzzToken');
+    try {
+        const response = await axios.get(`https://buzzmart-backend-5l1f.onrender.com/store/${slug}/`, {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        });
+
+        return response
+    } catch (error: any) {
+        throw error.response.data
+    }
+}

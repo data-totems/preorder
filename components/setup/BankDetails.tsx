@@ -27,10 +27,10 @@ const formSchema = z.object({
  bankName: z.string(),
  accountNumber: z.string(),
 })
-const BankDetails = ({ isLoading, setIsLoading}: {isLoading: boolean, setIsLoading: (value: boolean) => void}) => {
+const BankDetails = ({ isLoading, setIsLoading, banks}: {isLoading: boolean, setIsLoading: (value: boolean) => void, banks: any[]}) => {
 const { setStore, store } = useSetupStore((state) => state);
 const [verified, setVerified] = useState(false);
-const [banks, setBanks] = useState<any[]>([]);
+
 const [verifying, setVerfying] = useState(false);
 const [accountName, setAccountName] = useState("")
 
@@ -68,7 +68,12 @@ const [accountName, setAccountName] = useState("")
 
       });
 
-      // if(response.s)
+      if(response.status === 200) { 
+        router.refresh();
+
+        
+        router.replace('/')
+      }
     } catch (error: any) {
       console.log(error)
       toast.error(`${error?.response.data}`)
@@ -101,19 +106,11 @@ const [accountName, setAccountName] = useState("")
   }
 
   useEffect(() => {
-    const getData = async () => {
-      const response = await getAllbanks();
-
-      if(response.status === 'success') {
-        setBanks(response.data)
-      }
-    }
-
-    getData();
-
-    form.watch("accountNumber");
-    form.watch("bankName")
+     form.watch("accountNumber");
+        form.watch("bankName")
   }, [])
+  
+
 
 
   return (

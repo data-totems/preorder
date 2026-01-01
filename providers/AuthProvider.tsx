@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password']
+const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password', '/store']
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname()
@@ -35,6 +35,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         const user = await getAccountProfile();
         console.log("This is user", user.data)
 
+      
+
         if(user.data) {
                 setUser({
           fullName: user.data.full_name,
@@ -51,7 +53,11 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (error: any) {
         toast.error(`${error}`);
-        console.log(error)
+          if(error.response.status === 401) {
+          router.replace('/login');
+
+          return;
+        }
         if(error.response.data.detail === "No Profile matches the given query.") {
           toast.warning("Setup your profile to continue")
           router.push('/setup');
