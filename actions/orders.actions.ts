@@ -4,7 +4,7 @@ import { baseUrl } from "./auth.actions";
 export const getIncomingOrders = async () => {
       const token = localStorage.getItem("buzzToken")
     try {
-        const response = await axios.get(`${baseUrl}/orders/accepted/`, {
+        const response = await axios.get(`${baseUrl}/orders/incoming/`, {
             headers: {
                 "Authorization": `token ${token}`
             }
@@ -75,5 +75,35 @@ export const createOrders = async ({
     } catch (error: any) {
         console.log(error.response)
         throw error.response.data;
+    }
+}
+
+export const acceptOrder = async (orderId: number) => {
+    const token = localStorage.getItem("buzzToken")
+    try {
+        const response = await axios.patch(`${baseUrl}/orders/${orderId}/accept/`, {}, {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        });
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const declineOrder = async (orderId: number) => {
+    const token = localStorage.getItem("buzzToken")
+    try {
+        const response = await axios.patch(`${baseUrl}/orders/${orderId}/decline/`, {}, {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        });
+
+        return response;
+    } catch (error) {
+        throw error;
     }
 }

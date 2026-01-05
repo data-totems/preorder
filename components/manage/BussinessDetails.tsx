@@ -6,6 +6,7 @@ import { Check, ChevronLeft, ChevronRight, Pen, X } from "lucide-react"
 import { Chevron } from "react-day-picker"
 import { useState } from "react"
 import { Input } from "../ui/input"
+import { useUserStore } from "@/zustand"
 
 
 const chartData = [
@@ -29,7 +30,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 const BussinessDetails = () => {
-  const [editId, setEditId] = useState(0)
+  const [editId, setEditId] = useState(0);
+
+  const { user } = useUserStore((state) => state)
   return (
     <div>
           <div className=" flex flex-col gap-4 ">
@@ -53,7 +56,7 @@ const BussinessDetails = () => {
                               </div>
                               
                           ) : (
-                              <span className="text-[16px]">Ak Tech</span>
+                              <span className="text-[16px]">{user?.username}</span>
                           )}
                           
                           <div className="cursor-pointer" onClick={()=> {
@@ -89,7 +92,7 @@ const BussinessDetails = () => {
                               </div>
                               
                           ) : (
-                              <span className="text-[16px] w-[300px] ">30 Ogunsiji Cl, Off Adebayo Solake street, Allen Avenue, Ikeja, Lagos</span>
+                              <span className="text-[16px] w-[300px] ">{user?.address}</span>
                           )}
                           
                           <div className="cursor-pointer" onClick={()=> {
@@ -133,7 +136,7 @@ const BussinessDetails = () => {
                               </div>
                               
                           ) : (
-                              <span className="text-[16px]">090235623....</span>
+                              <span className="text-[16px]">{user?.phoneNumber}</span>
                           )}
                           
                           <div className="cursor-pointer" onClick={()=> {

@@ -21,6 +21,8 @@ import ImageUploader from "./ImageUploader"
 import { Textarea } from "../ui/textarea"
 import { useSetupStore } from "@/zustand"
 
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+
 
 const formSchema = z.object({
  fullName: z.string(),
@@ -47,6 +49,7 @@ const { setStore } = useSetupStore((state) => state)
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log(values)
     setStore({
       fullName: values.fullName,
       address: values.address,
@@ -135,17 +138,74 @@ const { setStore } = useSetupStore((state) => state)
 
 
 
-                      <FormField
+                     <FormField
                       control={form.control}
                       name="address"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[#03140A80] uppercase font-bold">address</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              className="bg-[#F0F0F0] rounded-[12px] max-w-lg" 
-                              placeholder="Address" 
-                              {...field} 
+                            <GooglePlacesAutocomplete
+                              apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+                              selectProps={{
+                                // value: field.value ?? "",
+                                onChange: (value: any) => {
+                                  // Update react-hook-form field
+                                  field.onChange(value?.label || "");
+                                  
+                                  // You can also get additional place details
+                                  if (value) {
+                                    // console.log('Selected place:', value);
+                                  }
+                                },
+                                onBlur: field.onBlur,
+                                placeholder: "Enter your address",
+                                styles: {
+                                  // Custom styling for the autocomplete component
+                                  control: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: '#F0F0F0',
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    boxShadow: 'none',
+                                    minHeight: '40px',
+                                    '&:hover': {
+                                      borderColor: '#ccc'
+                                    }
+                                  }),
+                                  input: (provided) => ({
+                                    ...provided,
+                                    color: '#03140A',
+                                    padding: '8px',
+                                  }),
+                                  placeholder: (provided) => ({
+                                    ...provided,
+                                    color: '#666',
+                                  }),
+                                  menu: (provided) => ({
+                                    ...provided,
+                                    borderRadius: '12px',
+                                    overflow: 'hidden',
+                                    zIndex: 9999,
+                                  }),
+                                  option: (provided, state) => ({
+                                    ...provided,
+                                    backgroundColor: state.isSelected ? '#27BA5F' : state.isFocused ? '#E8F5E9' : 'white',
+                                    color: state.isSelected ? 'white' : '#03140A',
+                                    '&:hover': {
+                                      backgroundColor: '#E8F5E9',
+                                    }
+                                  })
+                                },
+                                className: "max-w-lg", // Apply max width
+                              }}
+                              autocompletionRequest={{
+                                // Optional: Add restrictions
+                                componentRestrictions: {
+                                  country: ['ng'], // restrict to US and Canada
+                                },
+                                types: ['address'], // restrict to addresses only
+                              }}
                             />
                           </FormControl>
                           <FormMessage />

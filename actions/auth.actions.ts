@@ -85,3 +85,41 @@ export const getAccountProfile = async () => {
         throw error;
     }
 }
+
+export const updateProfileDetails = async ({
+    full_name,
+    display_picture,
+    username,
+    phone_number,
+    address
+}: {
+    full_name?: string,
+    display_picture?: string,
+    username?: string,
+    phone_number?: string,
+    address?: string
+}) => {
+    const token = localStorage.getItem("buzzToken")
+
+      try {
+        const response = await axios.patch(`${baseUrl}/accounts/profile/update/`, {
+             full_name,
+    display_picture,
+    username,
+    phone_number,
+    address
+        },
+             {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        });
+
+        console.log(response)
+
+        return response;
+    } catch (error: any) {
+        console.log(error.response)
+        throw error;
+    }
+}

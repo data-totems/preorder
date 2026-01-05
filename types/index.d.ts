@@ -23,9 +23,9 @@ interface UserProps {
     userId?: string,
     fullName: string,
     storeLink: string,
-
     bank_name: string,
-    bank_account_number: string
+    bank_account_number: string;
+    business_name: string
 }
 
 interface UserStoreProps {

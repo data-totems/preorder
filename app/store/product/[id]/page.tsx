@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { createOrders } from "@/actions/orders.actions"
+import GooglePlacesAutocomplete from "react-google-places-autocomplete"
 
 
 const formSchema = z.object({
@@ -112,11 +113,14 @@ const ProductDetails = () => {
 
    if(response.status === 200) {
     setOpenDialog(false)
+
+    toast.success("order requested successfully")
    }
    } catch (error: any) {
     toast.error(`${error.response.data}`)
    } finally {
     setOrdering(false)
+     setOpenDialog(false)
    }
   }
     
@@ -173,11 +177,72 @@ const ProductDetails = () => {
             <FormItem>
               <FormLabel>Adress</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your delivery address" {...field} />
+                <GooglePlacesAutocomplete
+                              apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+                              selectProps={{
+                                // value: field.value ?? "",
+                                onChange: (value: any) => {
+                                  // Update react-hook-form field
+                                  field.onChange(value?.label || "");
+                                  
+                                  // You can also get additional place details
+                                  if (value) {
+                                    // console.log('Selected place:', value);
+                                  }
+                                },
+                                onBlur: field.onBlur,
+                                placeholder: "Enter your address",
+                                styles: {
+                                  // Custom styling for the autocomplete component
+                                  control: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: '#F0F0F0',
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    boxShadow: 'none',
+                                    minHeight: '40px',
+                                    '&:hover': {
+                                      borderColor: '#ccc'
+                                    }
+                                  }),
+                                  input: (provided) => ({
+                                    ...provided,
+                                    color: '#03140A',
+                                    padding: '8px',
+                                  }),
+                                  placeholder: (provided) => ({
+                                    ...provided,
+                                    color: '#666',
+                                  }),
+                                  menu: (provided) => ({
+                                    ...provided,
+                                    borderRadius: '12px',
+                                    overflow: 'hidden',
+                                    zIndex: 9999,
+                                  }),
+                                  option: (provided, state) => ({
+                                    ...provided,
+                                    backgroundColor: state.isSelected ? '#27BA5F' : state.isFocused ? '#E8F5E9' : 'white',
+                                    color: state.isSelected ? 'white' : '#03140A',
+                                    '&:hover': {
+                                      backgroundColor: '#E8F5E9',
+                                    }
+                                  })
+                                },
+                                className: "max-w-lg", // Apply max width
+                              }}
+                              autocompletionRequest={{
+                                // Optional: Add restrictions
+                                componentRestrictions: {
+                                  country: ['ng'], // restrict to US and Canada
+                                },
+                                types: ['address'], // restrict to addresses only
+                              }}
+                            />
               </FormControl>
               <FormMessage />
             </FormItem>
-          )}
+          )} 
         />
 
          <FormField
@@ -228,7 +293,7 @@ const ProductDetails = () => {
             </FormItem>
           )}
         />
-        <Button className="w-full" type="submit" disabled={ordering}>
+        <Button className="w-full bg-grren-500 hover:bg-green-400" type="submit" disabled={ordering}>
             {ordering ? <Loader2 className="animate-spin" /> : "Create Order"}
         </Button>
       </form>
