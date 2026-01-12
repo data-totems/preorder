@@ -204,7 +204,7 @@ export const getSingleProduct = async (id: number) => {
 export const getStoreDetails = async (slug: string) => {
     const token = localStorage.getItem('buzzToken');
     try {
-        const response = await axios.get(`https://buzzmart-backend-5l1f.onrender.com/store/${slug}/`, {
+        const response = await axios.get(`${baseUrl}/store/${slug}/`, {
             headers: {
                 "Authorization": `token ${token}`
             }

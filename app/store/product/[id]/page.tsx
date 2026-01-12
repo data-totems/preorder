@@ -74,8 +74,9 @@ const ProductDetails = () => {
                       setSeller(seller.data)
                  }
             
-            } catch (error) {
-                toast.error(`${error}`)
+            } catch (error: any) {
+                toast.error(`${error.detail}`)
+                console.log(JSON.stringify(error))
             } finally {
                 setIsLoading(false)
             }

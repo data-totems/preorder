@@ -26,6 +26,7 @@ const StoreDetails = () => {
               
             } catch (error) {
                 toast.error(`${error}`)
+                console.log(error)
             }
         }
         getStore();

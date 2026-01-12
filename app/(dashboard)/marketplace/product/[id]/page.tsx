@@ -424,7 +424,7 @@ const ProductDetails = () => {
             <div className="flex items- justify-between">
                 <div className="text-[#F48614] flex gap-0.5 ">
                 <span className="text-[15px] ">NGN</span>
-            <h2 className="text-[16px] font-[600] ">134,320</h2>
+            <h2 className="text-[16px] font-[600] ">{product?.price}</h2>
             </div>
 
             <Link className="bg-[#27BA5F1F] flex p-2 items-center gap-3  h-[31px] rounded-[15px] " href='/'>
