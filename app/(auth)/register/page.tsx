@@ -64,8 +64,9 @@ const Register = () => {
 
               router.push('/setup')
         }
-    } catch (error) {
-        toast.error(`${error}`)
+    } catch (error: any) {
+       console.log(error)
+        toast.error(`${error.email[0]}`)
     }finally{
         setIsLoading(false)
     }

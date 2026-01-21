@@ -49,7 +49,8 @@ const router = useRouter();
 
               router.push('/')
           }
-      } catch (error) {
+      } catch (error: any) {
+        console.log(error.response.data)
           toast.error(`${error}`)
       }finally{
           setIsLoading(false)

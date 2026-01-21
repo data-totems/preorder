@@ -1,7 +1,7 @@
 'use client'
 import Navbar from "@/components/shared/Navbar"
 import { Switch } from "@/components/ui/switch"
-import { ArchiveRestore, ImagePlus, LinkIcon, PenIcon, PlusIcon, Trash, Upload } from "lucide-react"
+import { ArchiveRestore, ImagePlus, LinkIcon, Loader, PenIcon, PlusIcon, Trash, Upload } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -29,7 +29,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { usePathname, useRouter } from "next/navigation"
-import { deleteProduct, getProductbyId, togglearchiveProduct, updateProductImage } from "@/actions/products.actions"
+import { deleteProduct, getProductbyId, togglearchiveProduct, updateProductDetails, updateProductImage } from "@/actions/products.actions"
 import { toast } from "sonner"
 import LoadingModal from "@/components/shared/LoadingModal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -48,6 +48,12 @@ const ProductDetails = () => {
   const [product, setProduct] = useState<ProductProps | null>(null);
   const [selectedImageType, setSelectedImageType] = useState<'front' | 'back' | 'left' | 'right'>('front');
   const pathname = usePathname();
+  const [updateDetails, setUpdateDetails] = useState({
+    name: product ? product.name : '',
+    description: product ? product.description : '',
+    price: product ? product.price :  ''
+  });
+  const [updating, setUpdating] = useState(false)
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -63,7 +69,13 @@ const ProductDetails = () => {
       try {
         const response = await getProductbyId(Number(productId));
 
-        setProduct(response.data)
+        setProduct(response.data);
+
+        setUpdateDetails({
+          name: response.data.name,
+          description: response.data.description,
+          price: response.data.price
+        })
       } catch (error) {
         toast.error(`${error}`)
       }
@@ -170,6 +182,32 @@ const ProductDetails = () => {
     }
   };
 
+  const handleUpdateDetails = async () => {
+    setUpdating(true);
+    try {
+      const response = await updateProductDetails({
+        name: updateDetails.name,
+        description: updateDetails.description ?? "",
+        price: updateDetails.price ?? '',
+        id: Number(productId)
+      });
+
+      if(response.status === 200) {
+        toast.success("Product Updated")
+      }
+    } catch (error) {
+      toast.error(`${error}`)
+
+      setUpdateDetails({
+        name: product?.name ?? '',
+        description: product?.description,
+        price: product?.price
+      })
+    } finally {
+      setUpdating(false)
+    }
+  }
+
   if(!product) return <LoadingModal />
   return (
     <div>
@@ -216,7 +254,7 @@ const ProductDetails = () => {
       <div className="flex flex-col gap-3">
         <Label className="font-[700] text-[#03140A80] ">PRODUCT NAME</Label>
 
-        <Input  className="bg-[#F0F0F0] rounded-[12px] " placeholder="Enter product name" defaultValue={product?.name} />
+        <Input  className="bg-[#F0F0F0] rounded-[12px] " placeholder="Enter product name" defaultValue={updateDetails?.name} onChange={(e) => setUpdateDetails({...updateDetails, name: e.target.value})} />
       </div>
 
         <div className="flex flex-col gap-3">
@@ -228,7 +266,7 @@ const ProductDetails = () => {
           </div>
           </div>
          
-          <Input   placeholder="Enter product name" defaultValue={product?.price} />
+          <Input onChange={(e) => setUpdateDetails({...updateDetails, price: e.target.value})}   placeholder="Enter product name" defaultValue={updateDetails?.price} />
         </div>
         
       </div>
@@ -236,10 +274,12 @@ const ProductDetails = () => {
       <div className="flex flex-col gap-3">
         <Label className="font-[700] text-[#03140A80] ">PRODUCT DESCRIPTION</Label>
 
-        <Textarea  className="bg-[#F0F0F0] rounded-[12px] text-[#03140A80] " placeholder="Enter product name" defaultValue={`${product?.description}`} />
+        <Textarea  className="bg-[#F0F0F0] rounded-[12px] text-[#03140A80] " placeholder="Enter product name" defaultValue={`${updateDetails?.description}`}
+        onChange={(e) => setUpdateDetails({...updateDetails, description: e.target.value})}
+         />
       </div>
 
-        <div className="flex flex-col gap-3">
+        {/* <div className="flex flex-col gap-3">
         <Label className="font-[700] text-[#03140A80] ">CATEGORY</Label>
 
         <div className="flex items-center gap-6 ">
@@ -259,11 +299,11 @@ const ProductDetails = () => {
           <PlusIcon />
           Add Category
         </div>
-      </div>
+      </div> */}
 
 
-      <Button className="bg-green-500 hover:bg-green-400">
-        Save
+      <Button disabled={updating} onClick={handleUpdateDetails} className="bg-green-500 hover:bg-green-400">
+        {updating ? <Loader className="animate-spin" /> : 'Save'}
       </Button>
     </div>
   </DialogContent>
@@ -391,7 +431,7 @@ const ProductDetails = () => {
       <AlertDialogAction onClick={toggleArchive} className="bg-[#27BA5F] hover:bg-green-400">Archive product</AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
-</AlertDialog>
+               </AlertDialog>
               <hr />
               <AlertDialog>
   <AlertDialogTrigger>
@@ -412,19 +452,19 @@ const ProductDetails = () => {
       <AlertDialogAction onClick={handleDelete} className="bg-[#ED2525] hover:bg-red-400">Delete product</AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
-</AlertDialog>
+        </AlertDialog>
               
               <hr />
             </div>
           </div>
           <div className="w-full bg-[#F0F0F0] h-fit rounded-[12px] p-5  ">
-            <h2 className="text-[20px] font-[500] ">{product?.name}</h2>
+            <h2 className="text-[20px] font-[500] ">{updateDetails?.name}</h2>
             
 
             <div className="flex items- justify-between">
                 <div className="text-[#F48614] flex gap-0.5 ">
                 <span className="text-[15px] ">NGN</span>
-            <h2 className="text-[16px] font-[600] ">{product?.price}</h2>
+            <h2 className="text-[16px] font-[600] ">{updateDetails?.price}</h2>
             </div>
 
             <Link className="bg-[#27BA5F1F] flex p-2 items-center gap-3  h-[31px] rounded-[15px] " href='/'>
@@ -436,7 +476,7 @@ const ProductDetails = () => {
             <h3 className="font-extrabold mt-9 ">PRODUCT DESCRIPTION</h3>
 
             <p className="pt-4 text-[#03140A80] ">
-             {product?.description}
+             {updateDetails?.description}
             </p>
           </div>
         </div>
