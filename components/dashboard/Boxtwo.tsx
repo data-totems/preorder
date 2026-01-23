@@ -62,16 +62,6 @@ const Boxtwo = () => {
         return phone;
     }
 
-    // Alternative: Simple truncate function
-    const truncatePhoneSimple = (phone: string) => {
-        if (!phone) return 'No phone...';
-        
-        const strPhone = phone.toString();
-        if (strPhone.length <= 9) return strPhone;
-        
-        return `${strPhone.substring(0, 9)}...`;
-    }
-
     return (
         <div className='flex flex-col gap-3'>
             <div className="flex items-center justify-between">

@@ -226,10 +226,11 @@ export const updateProductDetails = async ({ id,description, price, name }: {
     const token = localStorage.getItem('buzzToken')
     try {
         const response = await axios.patch(`${baseUrl}/products/${id}/update/`, {
-            name, price, description, 
+            name, price, description,
         }, {
-            headers: {
-                "Authorization": `token ${token}`
+              headers: {
+                "Authorization": `token ${token}`,
+                "Content-Type": "multipart/form-data",
             }
         });
 

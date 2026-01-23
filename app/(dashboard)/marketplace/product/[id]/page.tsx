@@ -44,7 +44,6 @@ interface ProductImageState {
 
 const ProductDetails = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [activeCategory, setActiveCategory] = useState(0);
   const [product, setProduct] = useState<ProductProps | null>(null);
   const [selectedImageType, setSelectedImageType] = useState<'front' | 'back' | 'left' | 'right'>('front');
   const pathname = usePathname();
@@ -55,10 +54,12 @@ const ProductDetails = () => {
   });
   const [updating, setUpdating] = useState(false)
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [openDialog, setOpenDialog] = useState(false)
   const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [currentImag, setCurrentImag] = useState('')
-  const productId = pathname.split('/')[3]
+  const productId = pathname.split('/')[3];
+
   const categories = [
     "Phones", "Tablets", "Laptops"
   ]
@@ -98,10 +99,6 @@ const ProductDetails = () => {
       toast.error(`${error}`)
     }
   }
-
-
-
-
    const toggleArchive = async  () => {
     try {
       const response = await togglearchiveProduct(Number(productId));
@@ -193,11 +190,11 @@ const ProductDetails = () => {
       });
 
       if(response.status === 200) {
+        setOpenDialog(false)
         toast.success("Product Updated")
       }
     } catch (error) {
       toast.error(`${error}`)
-
       setUpdateDetails({
         name: product?.name ?? '',
         description: product?.description,
@@ -236,7 +233,7 @@ const ProductDetails = () => {
             </div>
 
             <div className="bg-[#F0F0F0] w-full h-[200px] p-5 mt-4 rounded-[13px] gap-3 flex flex-col ">
-              <Dialog>
+              <Dialog onOpenChange={setOpenDialog} open={openDialog}>
   <DialogTrigger>
      <div className="cursor-pointer flex items-center gap-7 ">
                 <PenIcon color="#03140A66" fill="#03140A66" />

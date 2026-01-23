@@ -8,14 +8,6 @@ import Boxtwo from "@/components/dashboard/Boxtwo"
 import Navbar from "@/components/shared/Navbar"
 import { useUserStore } from "@/zustand"
 import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import CreateProduct from "@/components/shared/CreateProduct"
 
 const Home = () => {

@@ -15,8 +15,6 @@ const Boxthree = () => {
         try {
             const response = await getuserProducts();
 
-            console.log("Product", response.data)
-
             setProducts(response.data)
         } catch (error) {
             toast.error(`${error}`)

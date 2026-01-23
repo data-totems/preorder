@@ -50,7 +50,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           business_name: user?.data.business_name
         })
-        console.log('User data:', user.data)
 
         setIsLoading(false)
         }
