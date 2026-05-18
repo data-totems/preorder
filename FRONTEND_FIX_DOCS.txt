@@ -1,0 +1,167 @@
+BuzzMart Frontend - Bug Fix Summary
+=====================================
+Date: 18 May 2026
+Files changed:
+  - app/(auth)/login/page.tsx
+  - app/(auth)/register/page.tsx
+  - actions/auth.actions.ts
+
+
+----------------------------------------------------------------------
+Fix 1 - Login never redirected to setup
+----------------------------------------------------------------------
+File: app/(auth)/login/page.tsx
+
+Problem:
+After a successful login, the app always navigated to "/" regardless
+of whether the user had completed account setup. New users who
+registered and then logged in again would land on the dashboard with
+no profile, causing API errors everywhere.
+
+Root cause:
+The onSubmit handler was not reading the setup_complete flag from the
+login response.
+
+Before:
+  if (response.status === 200) {
+      localStorage.setItem('buzzToken', response.data.tokens.access);
+      router.push('/');   // always went to dashboard
+  }
+
+After:
+  if (response.status === 200) {
+      localStorage.setItem('buzzToken', response.data.tokens.access);
+      const setupComplete = response.data.user_details?.setup_complete;
+      router.push(setupComplete ? '/' : '/setup');
+  }
+
+What the API returns on login:
+  {
+    "tokens": { "access": "<token>" },
+    "user_details": {
+      "id": 1,
+      "email": "user@example.com",
+      "username": "johndoe",
+      "full_name": "John Doe",
+      "setup_complete": false
+    }
+  }
+
+Rule going forward:
+Always check user_details.setup_complete after login.
+  - If false  -> send user to /setup
+  - If true   -> send user to / (dashboard)
+
+
+----------------------------------------------------------------------
+Fix 2 - Account setup was silently failing for every user
+----------------------------------------------------------------------
+File: actions/auth.actions.ts - setupAccount()
+
+Problem:
+The setupAccount action was sending a NESTED request body, but the
+backend's PATCH /accounts/setup/ endpoint expects a FLAT body.
+Because of this mismatch, every setup submission was rejected with a
+400 error listing all fields as required, even when the form was
+filled in correctly.
+
+Before (wrong - nested format the backend does not accept):
+  await axios.patch(`${baseUrl}/accounts/setup/`, {
+      "PersonalDetails": {
+          "full_name": fullName,
+          "username": username,
+          ...
+      },
+      "BusinessDetails": {
+          "business_name": business_name,
+          ...
+      },
+      "BankDetail": { ... },
+      "WhatsApp": { "whatsapp_number": phone_number }
+  }, { headers: { "Authorization": `token ${token}` } });
+
+After (correct - flat format the backend expects):
+  await axios.patch(`${baseUrl}/accounts/setup/`, {
+      full_name: fullName,
+      username,
+      phone_number,
+      address,
+      display_picture,
+      business_name,
+      business_description,
+      business_email,
+      bank_name,
+      account_number,
+      whatsapp_number: phone_number,
+  }, { headers: { "Authorization": `token ${token}` } });
+
+Required fields (all must be present or the API returns 400):
+  full_name           - Merchant's full name
+  username            - Unique username
+  phone_number        - Phone number
+  address             - Physical address
+  business_name       - Unique business name
+  business_description - Short description
+  business_email      - Unique business email
+  bank_name           - Bank name
+  account_number      - Bank account number
+  whatsapp_number     - WhatsApp contact number
+
+Note: display_picture is optional (image file upload).
+
+
+----------------------------------------------------------------------
+Fix 3 - Password validator blocked all valid passwords
+----------------------------------------------------------------------
+File: app/(auth)/register/page.tsx
+
+Problem:
+The validatePassword function had a stray check:
+  const hasUseClient = /use client/i.test(password)
+
+This required the literal string "use client" to be present in the
+password for it to pass validation. Every password was being marked
+invalid no matter what the user typed.
+
+Before:
+  const hasUseClient = /use client/i.test(password)
+  // ...
+  isValid: hasLowerCase && hasUpperCase && hasNumber && hasUseClient && isLongEnough
+
+After:
+  isValid: hasLowerCase && hasUpperCase && hasNumber && isLongEnough
+
+This was a copy-paste accident - the check was left over from a
+Next.js component file header ("use client").
+
+
+----------------------------------------------------------------------
+Fix 4 - Register error handler crashed on unexpected error shapes
+----------------------------------------------------------------------
+File: app/(auth)/register/page.tsx
+
+Problem:
+The catch block did toast.error(error.email[0]) directly. If the API
+returned any error that wasn't shaped as { email: ["..."] } (e.g. a
+network error or a { detail: "..." } response), the app threw a
+runtime exception instead of showing a useful message.
+
+Before:
+  catch (error: any) {
+      toast.error(`${error.email[0]}`)   // crashes if error.email is undefined
+  }
+
+After:
+  catch (error: any) {
+      const msg = error?.email?.[0] || error?.detail || 'Registration failed. Please try again.'
+      toast.error(msg)
+  }
+
+
+----------------------------------------------------------------------
+Auth flow summary
+----------------------------------------------------------------------
+
+  Register  ->  API returns setup_required: true  ->  redirect to /setup
+  Login     ->  setup_complete: false             ->  redirect to /setup
+  Login     ->  setup_complete: true              ->  redirect to / (dashboard)

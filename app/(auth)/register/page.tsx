@@ -65,8 +65,9 @@ const Register = () => {
               router.push('/setup')
         }
     } catch (error: any) {
-       console.log(error)
-        toast.error(`${error.email[0]}`)
+        console.log(error)
+        const msg = error?.email?.[0] || error?.detail || 'Registration failed. Please try again.'
+        toast.error(msg)
     }finally{
         setIsLoading(false)
     }
@@ -79,16 +80,14 @@ const Register = () => {
     const hasLowerCase = /[a-z]/.test(password)
     const hasUpperCase = /[A-Z]/.test(password)
     const hasNumber = /\d/.test(password)
-    const hasUseClient = /use client/i.test(password)
     const isLongEnough = password.length >= 8
 
     return {
       hasLowerCase,
       hasUpperCase,
       hasNumber,
-      hasUseClient,
       isLongEnough,
-      isValid: hasLowerCase && hasUpperCase && hasNumber && hasUseClient && isLongEnough
+      isValid: hasLowerCase && hasUpperCase && hasNumber && isLongEnough
     }
   }
 

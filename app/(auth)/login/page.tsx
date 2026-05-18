@@ -47,7 +47,8 @@ const router = useRouter();
               toast.success("Logged In")
               localStorage.setItem('buzzToken', response.data.tokens.access);
 
-              router.push('/')
+              const setupComplete = response.data.user_details?.setup_complete;
+              router.push(setupComplete ? '/' : '/setup');
           }
       } catch (error: any) {
         console.log(error.response.data)
