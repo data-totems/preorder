@@ -34,6 +34,9 @@ import { deleteProduct, getProductbyId, togglearchiveProduct, updateProductDetai
 import { toast } from "sonner"
 import LoadingModal from "@/components/shared/LoadingModal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import SharePanel from "@/components/share/SharePanel";
+import { getProductShareStats } from "@/actions/share-links.actions";
+import type { ShareStats } from "@/types/api";
 
 
 interface ProductImageState {
@@ -59,6 +62,7 @@ const ProductDetails = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [currentImag, setCurrentImag] = useState('')
+  const [shareStats, setShareStats] = useState<ShareStats | null>(null);
   const productId = pathname.split('/')[3];
 
   const categories = [
@@ -86,6 +90,21 @@ const ProductDetails = () => {
 
     getProducts();
   }, []);
+
+  useEffect(() => {
+    if (!productId) return;
+    const id = Number(productId);
+    if (!Number.isFinite(id)) return;
+    let alive = true;
+    getProductShareStats(id)
+      .then((s) => {
+        if (alive) setShareStats(s);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [productId]);
 
   const handleDelete = async  () => {
     try {
@@ -210,7 +229,17 @@ const ProductDetails = () => {
   return (
     <div>
         <Navbar leftType='arrow' showIcon  primarybtn="Create Product"  width="168px" height="40px"  />
-        
+
+        {product && (
+          <div className="mt-6">
+            <SharePanel
+              stats={shareStats}
+              shareTitle={product.name}
+              messageTemplate={`📱 *${product.name}* — ₦${product.price}\nTap to view:`}
+            />
+          </div>
+        )}
+
         <div className="mt-10 flex lg:flex-row flex-col  justify-between gap-5  ">
           <div className="w-full">
 
