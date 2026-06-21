@@ -65,7 +65,8 @@ const [accountName, setAccountName] = useState("")
         business_email: store?.email ?? "",
         business_name: store?.businessName ?? "",
         bank_name: values.bankName ?? "",
-        account_number: values.accountNumber ?? ""
+        account_number: values.accountNumber ?? "",
+        store_slug: store?.storeSlug
 
       });
 

@@ -44,6 +44,7 @@ interface StoreProps {
     email?: string,
     businessName?: string,
     description?: string,
+    storeSlug?: string,
 
     bankName?: string,
     accountNumber?: string,

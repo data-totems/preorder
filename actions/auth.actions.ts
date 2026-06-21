@@ -30,8 +30,8 @@ export const loginUser = async ({email,  password}: {email: string, password: st
 };
 
 
-export const setupAccount = async ({fullName, username, phone_number, address, display_picture, business_description, business_email, business_name, bank_name, account_number}: {
-    fullName: string, username: string, phone_number: string, address: string, display_picture: string, business_description: string, business_email: string, business_name: string, bank_name: string, account_number: string
+export const setupAccount = async ({fullName, username, phone_number, address, display_picture, business_description, business_email, business_name, bank_name, account_number, store_slug}: {
+    fullName: string, username: string, phone_number: string, address: string, display_picture: string, business_description: string, business_email: string, business_name: string, bank_name: string, account_number: string, store_slug?: string
 }) => {
     const token = localStorage.getItem("buzzToken")
     // Backend's /setup/ view uses MultiPartParser/FormParser — application/json
@@ -50,6 +50,7 @@ export const setupAccount = async ({fullName, username, phone_number, address, d
     formData.append("bank_name", bank_name);
     formData.append("account_number", account_number);
     formData.append("whatsapp_number", phone_number);
+    if (store_slug) formData.append("store_slug", store_slug);
 
     try {
         const response = await axios.patch(`${baseUrl}/accounts/setup/`, formData, {
