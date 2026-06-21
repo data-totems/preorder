@@ -7,7 +7,12 @@ import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password', '/store']
+// Routes matched as prefixes — anything under /store, /p, /s is public.
+const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password', '/store', '/p', '/s']
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))
+}
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname()
@@ -18,7 +23,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const getAuth = async () => {
       // ✅ allow public routes
-      if (PUBLIC_ROUTES.includes(pathname)) {
+      if (isPublicPath(pathname)) {
         setIsLoading(false)
         return
       }

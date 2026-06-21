@@ -1,0 +1,103 @@
+{
+  "planPath": "docs/superpowers/plans/2026-06-22-visual-redesign-design-system.md",
+  "tasks": [
+    {
+      "id": 45,
+      "subject": "Task 0: Foundation — tokens + Inter",
+      "status": "pending",
+      "description": "**Goal:** Drop new color/radius/shadow/motion tokens into Tailwind v4 @theme inline, remap shadcn CSS variables, wire Inter via next/font/google.\n\n```json:metadata\n{\"files\":[\"preorder/app/globals.css\",\"preorder/app/layout.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"@theme exposes forest-* + ink-* + paper + semantic colors\",\"shadcn CSS variables remapped\",\"Inter loaded with weights 400-800\",\"build clean\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 46,
+      "subject": "Task 1: Restyle shadcn primitives in place",
+      "status": "pending",
+      "blockedBy": [45],
+      "description": "**Goal:** Rewrite class strings in 15 shadcn primitives. API surfaces unchanged.\n\n```json:metadata\n{\"files\":[\"preorder/components/ui/button.tsx\",\"preorder/components/ui/input.tsx\",\"preorder/components/ui/textarea.tsx\",\"preorder/components/ui/label.tsx\",\"preorder/components/ui/card.tsx\",\"preorder/components/ui/dialog.tsx\",\"preorder/components/ui/sheet.tsx\",\"preorder/components/ui/select.tsx\",\"preorder/components/ui/dropdown-menu.tsx\",\"preorder/components/ui/tabs.tsx\",\"preorder/components/ui/switch.tsx\",\"preorder/components/ui/checkbox.tsx\",\"preorder/components/ui/sonner.tsx\",\"preorder/components/ui/badge.tsx\",\"preorder/components/ui/skeleton.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"all 15 primitives restyled\",\"API surfaces unchanged\",\"focus rings + active scale on interactives\",\"build clean\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 47,
+      "subject": "Task 2: Eyebrow + PageHeader + EmptyState",
+      "status": "pending",
+      "blockedBy": [45],
+      "description": "**Goal:** Three small reusable chrome components.\n\n```json:metadata\n{\"files\":[\"preorder/components/ui/eyebrow.tsx\",\"preorder/components/shared/PageHeader.tsx\",\"preorder/components/shared/EmptyState.tsx\"],\"verifyCommand\":\"npx tsc --noEmit\",\"acceptanceCriteria\":[\"Eyebrow component with muted+accent tones\",\"PageHeader with eyebrow+title+description+actions+tabs slot\",\"EmptyState with icon+title+description+action\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 48,
+      "subject": "Task 3: Sidebar + UserProfile + LeadsBadge",
+      "status": "pending",
+      "blockedBy": [46, 47],
+      "description": "**Goal:** Sidebar redesign — forest-900, brand block, user pill, active indicator pill, anchored logout.\n\n```json:metadata\n{\"files\":[\"preorder/components/shared/Sidebar.tsx\",\"preorder/components/shared/UserProfile.tsx\",\"preorder/components/shared/LeadsNavBadge.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"sidebar bg forest-900\",\"active item has left-edge forest-400 pill\",\"user pill with monogram avatar\",\"logout anchored bottom\",\"leads badge uses accent variant\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 49,
+      "subject": "Task 4: MobileNav + dashboard layout",
+      "status": "pending",
+      "blockedBy": [48],
+      "description": "**Goal:** 5-item fixed bottom nav; dashboard shell; delete old BottomNav.\n\n```json:metadata\n{\"files\":[\"preorder/components/shared/MobileNav.tsx\",\"preorder/app/(dashboard)/layout.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"MobileNav fixed bottom md:hidden\",\"Sidebar hidden md:flex\",\"leads dot indicator\",\"old BottomNav.tsx deleted\",\"dashboard bg paper\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 50,
+      "subject": "Task 5: TopNav + auth pages split-screen",
+      "status": "pending",
+      "blockedBy": [46, 47],
+      "description": "**Goal:** TopNav 3 variants; split-screen auth pages.\n\n```json:metadata\n{\"files\":[\"preorder/components/shared/TopNav.tsx\",\"preorder/app/(auth)/layout.tsx\",\"preorder/app/(auth)/login/page.tsx\",\"preorder/app/(auth)/register/page.tsx\",\"preorder/app/(auth)/forgot-password/page.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"TopNav variants: minimal/storefront/silent\",\"auth pages split-screen lg+\",\"form submit behavior preserved\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 51,
+      "subject": "Task 6: Setup wizard chrome",
+      "status": "pending",
+      "blockedBy": [50],
+      "description": "**Goal:** ProgressBar + Card sections + sticky action bar.\n\n```json:metadata\n{\"files\":[\"preorder/components/setup/ProgressBar.tsx\",\"preorder/app/(setup)/setup/page.tsx\",\"preorder/components/setup/PersonalDetails.tsx\",\"preorder/components/setup/BussinessDetails.tsx\",\"preorder/components/setup/BankDetails.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"3-dot progress bar\",\"Card variant=flat sections\",\"sticky bottom action bar\",\"slug auto-fill preserved\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 52,
+      "subject": "Task 7: Dashboard home rebuild",
+      "status": "pending",
+      "blockedBy": [49, 47],
+      "description": "**Goal:** StatCard + RecentActivity + TopProductsList; new home composition.\n\n```json:metadata\n{\"files\":[\"preorder/components/dashboard/StatCard.tsx\",\"preorder/components/dashboard/RecentActivity.tsx\",\"preorder/components/dashboard/TopProductsList.tsx\",\"preorder/app/(dashboard)/page.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"StatCard + RecentActivity + TopProductsList\",\"dashboard home composes them\",\"skeleton loading + silent errors\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 53,
+      "subject": "Task 8: Marketplace + ProductCard",
+      "status": "pending",
+      "blockedBy": [47],
+      "description": "**Goal:** ProductCard redesign; PageHeader on marketplace + product detail.\n\n```json:metadata\n{\"files\":[\"preorder/components/shared/ProductCard.tsx\",\"preorder/app/(dashboard)/marketplace/page.tsx\",\"preorder/app/(dashboard)/marketplace/product/[id]/page.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"ProductCard with hover scale\",\"marketplace uses PageHeader + EmptyState\",\"product detail keeps SharePanel\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 54,
+      "subject": "Task 9: Orders + Leads + Manage polish",
+      "status": "pending",
+      "blockedBy": [46, 47],
+      "description": "**Goal:** Orders underline tabs + Card rows; Leads EmptyState + Card LeadRows; Manage token sweep.\n\n```json:metadata\n{\"files\":[\"preorder/app/(dashboard)/orders/page.tsx\",\"preorder/app/(dashboard)/leads/page.tsx\",\"preorder/components/leads/LeadRow.tsx\",\"preorder/app/(dashboard)/manage/page.tsx\",\"preorder/components/manage/Account.tsx\",\"preorder/components/manage/Bussiness.tsx\",\"preorder/components/manage/Payment.tsx\",\"preorder/components/manage/Dispatch.tsx\",\"preorder/components/manage/StoreLink.tsx\",\"preorder/components/manage/Category.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"orders uses underline Tabs + Eyebrow + Card rows\",\"leads uses PageHeader + EmptyState + Card LeadRows\",\"manage tabs preserved with token sweep\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 55,
+      "subject": "Task 10: Customer storefront + merchant page",
+      "status": "pending",
+      "blockedBy": [50, 53],
+      "description": "**Goal:** Editorial hero on /store; MerchantHero on /store/[storeId]; CategoryGrid; TopNav storefront variant.\n\n```json:metadata\n{\"files\":[\"preorder/app/store/page.tsx\",\"preorder/app/store/[storeId]/page.tsx\",\"preorder/app/store/layout.tsx\",\"preorder/components/store/MerchantHero.tsx\",\"preorder/components/store/CategoryGrid.tsx\",\"preorder/components/shared/TopNav.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"/store has hero + sections\",\"/store/[storeId] uses MerchantHero + sticky filter\",\"data fetching preserved\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 56,
+      "subject": "Task 11: Customer product detail + OrderFormSheet",
+      "status": "pending",
+      "blockedBy": [55],
+      "description": "**Goal:** Split-screen desktop; sticky bottom CTA + Sheet on mobile.\n\n```json:metadata\n{\"files\":[\"preorder/components/store/OrderFormSheet.tsx\",\"preorder/app/store/product/[id]/page.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"OrderFormSheet inline + sheet\",\"split-screen on lg+\",\"sticky CTA + Sheet on mobile\",\"createOrders flow end-to-end\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 57,
+      "subject": "Task 12: Share-link interstitial polish",
+      "status": "pending",
+      "blockedBy": [46, 47],
+      "description": "**Goal:** Refined hero card on Interstitial; EmptyState on ShareLinkNotFound.\n\n```json:metadata\n{\"files\":[\"preorder/components/share/Interstitial.tsx\",\"preorder/components/share/ShareLinkNotFound.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"Interstitial uses Card + Eyebrow + display-lg price\",\"ShareLinkNotFound uses EmptyState\",\"submit handler + OG meta preserved\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 58,
+      "subject": "Task 13: User verification — design walkthrough",
+      "status": "pending",
+      "blockedBy": [49, 51, 52, 53, 54, 55, 56, 57],
+      "description": "**Goal:** Merchant signs off on the redesign across all 12 page categories. AskUserQuestion required before completion.\n\n```json:metadata\n{\"files\":[],\"verifyCommand\":\"\",\"acceptanceCriteria\":[\"user confirms all 12 page categories feel right\"],\"requiresUserVerification\":true,\"userVerificationPrompt\":\"All pages feel right?\"}\n```"
+    }
+  ],
+  "lastUpdated": "2026-06-22T15:00:00Z"
+}

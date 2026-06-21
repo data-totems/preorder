@@ -201,16 +201,15 @@ export const getSingleProduct = async (id: number) => {
 }
 
 export const getStoreDetails = async (slug: string) => {
-    const token = localStorage.getItem('buzzToken');
     // Public store endpoint is mounted at the backend root, not under /api/.
+    // No auth header — the endpoint is anonymous-friendly and a bogus
+    // `Authorization: token null` (when the visitor isn't logged in) would
+    // make DRF 401 instead of falling through to AllowAny.
     const rootUrl = baseUrl?.replace(/\/api\/?$/, '');
+    const token = typeof window !== "undefined" ? localStorage.getItem('buzzToken') : null;
+    const headers: Record<string, string> = token ? { Authorization: `token ${token}` } : {};
     try {
-        const response = await axios.get(`${rootUrl}/store/${slug}/`, {
-            headers: {
-                "Authorization": `token ${token}`
-            }
-        });
-
+        const response = await axios.get(`${rootUrl}/store/${slug}/`, { headers });
         return response
     } catch (error: any) {
         throw error?.response?.data ?? { message: error?.message ?? "Request failed" }
