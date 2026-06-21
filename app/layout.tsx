@@ -22,7 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="antialiased font-sans">
         <AuthProvider>
           {children}
-          <Toaster />
+          <Toaster theme="light" />
         </AuthProvider>
       </body>
     </html>
