@@ -5,9 +5,11 @@ import { Plus } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import OpenDispatch from "../shared/OpenDispatch"
+import type { Dispatcher } from "@/types/api"
+import { errorMessage } from "@/lib/errors"
 
 const Boxtwo = () => {
-    const [dispatcher, setDispatcher] = useState<any[] | null>(null);
+    const [dispatcher, setDispatcher] = useState<Dispatcher[] | null>(null);
     const [openDispatch, setOpenDispatch] = useState(false)
 
     useEffect(() => {
@@ -16,7 +18,7 @@ const Boxtwo = () => {
                 const response = await listDispatch();
                 setDispatcher(response.data)
             } catch (error) {
-                toast.error(`${error}`)
+                toast.error(errorMessage(error, "Could not load dispatchers."))
             }
         }
 
@@ -98,7 +100,7 @@ const Boxtwo = () => {
                                 {item.name || 'Unnamed Dispatcher'}
                             </h2>
                             <h3 className="text-[#03140A80] text-xs">
-                                {formatPhoneNumber(item.phone || item.phone_number || item.contact || '')}
+                                {formatPhoneNumber(item.phone_number || '')}
                             </h3>
                         </div>
                     </div>

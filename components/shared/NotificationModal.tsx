@@ -6,9 +6,11 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { getNotifications } from "@/actions/notifications.actions"
 import { ScrollArea } from "../ui/scroll-area" // If you have a ScrollArea component
+import type { Notification } from "@/types/api"
+import { errorMessage } from "@/lib/errors"
 
 const NotificationModal = ({open, setOpen}: {open: boolean, setOpen: (value: boolean) => void}) => {
-    const [notifications, setNotifications] = useState<any[]| null>(null);
+    const [notifications, setNotifications] = useState<Notification[] | null>(null);
 
     useEffect(() => {
         const getData = async () => {
@@ -16,7 +18,7 @@ const NotificationModal = ({open, setOpen}: {open: boolean, setOpen: (value: boo
                 const response = await getNotifications();
                 setNotifications(response.data.notifications)
             } catch (error) {
-                toast.error(`${error}`)
+                toast.error(errorMessage(error, "Could not load notifications."))
             }
         }
 
@@ -55,7 +57,7 @@ const NotificationModal = ({open, setOpen}: {open: boolean, setOpen: (value: boo
                                         {noti.message}
                                     </h2>
                                     <span className="text-xs text-[#03140A80] whitespace-nowrap mt-1">
-                                        {noti.timestamp || '12:34 AM'}
+                                        {noti.time_ago || noti.time || ''}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 font-semibold text-[#27BA5F]">

@@ -33,9 +33,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       try {
         const user = await getAccountProfile();
-        // console.log("This is user", user.data)
-
-      
 
         if(user.data) {
                 setUser({
@@ -54,22 +51,28 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false)
         }
       } catch (error: any) {
-        toast.error(`${error}`);
-          if(error.response.status === 401) {
+        const status = error?.response?.status;
+        const data = error?.response?.data;
+        if (status === 401) {
+          toast.error("Your session has expired. Please log in again.");
           router.replace('/login');
-
           return;
         }
-        if(error.response.data.detail === "No Profile matches the given query.") {
+        // Backend returns 404 + { error: "Profile not found for this user" }
+        // when the merchant hasn't completed /setup. Legacy backends returned
+        // { detail: "No Profile matches the given query." } — handle both.
+        const isProfileMissing =
+          status === 404 ||
+          data?.error === "Profile not found for this user" ||
+          data?.detail === "No Profile matches the given query.";
+        if (isProfileMissing) {
           toast.warning("Setup your profile to continue")
           router.push('/setup');
-
           setIsLoading(false)
         } else {
+          toast.error(data?.detail ?? data?.error ?? data?.message ?? error?.message ?? "Could not load your profile.");
           setIsLoading(false)
         }
-        // localStorage.removeItem('buzzToken')
-        // router.replace('/login')
       }
     }
 

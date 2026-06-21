@@ -5,6 +5,7 @@ import { ArchiveRestore, ImagePlus, LinkIcon, Loader, PenIcon, PlusIcon, Trash, 
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { errorMessage } from "@/lib/errors"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -78,7 +79,7 @@ const ProductDetails = () => {
           price: response.data.price
         })
       } catch (error) {
-        toast.error(`${error}`)
+        toast.error(errorMessage(error, "Could not load product."))
       }
     }
 
@@ -96,7 +97,7 @@ const ProductDetails = () => {
         router.back();
       }
     } catch (error) {
-      toast.error(`${error}`)
+      toast.error(errorMessage(error, "Could not delete product."))
     }
   }
    const toggleArchive = async  () => {
@@ -109,7 +110,7 @@ const ProductDetails = () => {
         router.back();
       }
     } catch (error) {
-      alert(JSON.stringify(error));
+      toast.error(errorMessage(error, "Could not archive product."))
     }
   }
 
@@ -173,7 +174,7 @@ const ProductDetails = () => {
         setPreviewImage(null);
       }
     } catch (error) {
-      toast.error(`${error}`);
+      toast.error(errorMessage(error, "Could not upload image."));
     } finally {
       setIsUploading(false);
     }
@@ -194,7 +195,7 @@ const ProductDetails = () => {
         toast.success("Product Updated")
       }
     } catch (error) {
-      toast.error(`${error}`)
+      toast.error(errorMessage(error, "Could not update product."))
       setUpdateDetails({
         name: product?.name ?? '',
         description: product?.description,
@@ -213,7 +214,7 @@ const ProductDetails = () => {
         <div className="mt-10 flex lg:flex-row flex-col  justify-between gap-5  ">
           <div className="w-full">
 
-            <Image src={currentImag ? currentImag : product?.images[0]?.image_url} alt="product1" width={350} height={350} />
+            <Image src={currentImag ? currentImag : (product?.images?.[0]?.image_url ?? product?.image_url ?? "")} alt="product1" width={350} height={350} />
 
             <div className="flex items-center justify-between" >
               <div className="flex items-center gap-4 justify-center pt-4 cursor-pointer">

@@ -1,7 +1,7 @@
 import { ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "../ui/button"
 import { useRef, useState } from "react"
-import { storage } from "@/actions/storage.actions"
+import { getStorage } from "@/actions/storage.actions"
 import {  Permission, Role  } from 'appwrite'
 import { toast } from "sonner"
 
@@ -19,13 +19,13 @@ const ImageUploader = ({ value, onChange }: ImageUploaderProps) => {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file")
+      toast.error("Please upload an image file")
       return
     }
     setIsLoading(true)
 
     try {
-        const uploadImage = await storage.createFile({
+        const uploadImage = await getStorage().createFile({
     bucketId: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
     fileId: Date.now().toString(),
     file: file,

@@ -1,7 +1,7 @@
 interface ProductProps {
     name: string;
     price?: string;
-    images: {
+    images?: {
         image_url: string,
         image: string,
     }[];
@@ -38,11 +38,10 @@ interface StoreProps {
     fullName?: string,
     username?: string,
     imageUrl?: string,
-    username?: string,
     phoneNumber?: string,
     address?: string,
 
-    email?: string, 
+    email?: string,
     businessName?: string,
     description?: string,
 

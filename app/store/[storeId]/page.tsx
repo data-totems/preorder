@@ -2,20 +2,21 @@
 
 import { getStoreDetails } from "@/actions/products.actions"
 import { Button } from "@/components/ui/button"
-import axios from "axios"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import type { Product, PublicStoreResponse } from "@/types/api"
+import { errorMessage } from "@/lib/errors"
 
 const StoreDetails = () => {
     const router = useRouter();
     const slug = usePathname().split('/')[2];
     const [currentFiltter, setCurrentFiltter] = useState('All')
 
-    const [store, setStore] = useState<any>()
+    const [store, setStore] = useState<PublicStoreResponse>()
 
     useEffect(() => {
         const getStore = async () => {
@@ -25,7 +26,7 @@ const StoreDetails = () => {
 
               
             } catch (error) {
-                toast.error(`${error}`)
+                toast.error(errorMessage(error, "Could not load store."))
             }
         }
         getStore();
@@ -46,7 +47,7 @@ const StoreDetails = () => {
                                             <Image src={'/avatar.png'} alt="seller img" width={40} height={40}  />
                                         </div>
                                         <div className="">
-                                            <h2 className="text-[#03140A80] text-[16px] ">{store.merchant.business_name}</h2>
+                                            <h2 className="text-[#03140A80] text-[16px] ">{store.merchant?.business_name}</h2>
                                             <span className="text-[12px] text-[#03140A80]">Joined 2 weeks ago</span>
                                         </div>
                                         
@@ -68,13 +69,13 @@ const StoreDetails = () => {
                                     <h2 className="font-bold uppercase text-md ">contact</h2>
                                     <div className="">
                                         <div className="flex items-center justify-between text-[#03140A80] text-sm ">
-                                            {store.merchant.phone_number}
+                                            {store.merchant?.phone_number}
 
                                             <Link className="text-sm text-[#27BA5F] font-bold" href={'/store'}>Chat on Whatsapp</Link>
                                         </div>
 
                                           <div className="flex items-center justify-between text-[#03140A80] text-sm ">
-                                            {store.merchant.business_email}
+                                            {store.merchant?.business_email}
                                         </div>
                                     </div>
                                 </div>
@@ -85,14 +86,14 @@ const StoreDetails = () => {
 
             <div className="flex items-center gap-7 mt-4">
                 {["All", "Phone", "Tablets", "Laptop"].map((item) => (
-                    <div onClick={() => setCurrentFiltter(item)} className={`${currentFiltter === item ? 'bg-[#27BA5F1F] text-[#27BA5F] p-4 rounded-[12px] font-bold ' : 'text-[#03140A4D] '}`}>
+                    <div key={item} onClick={() => setCurrentFiltter(item)} className={`${currentFiltter === item ? 'bg-[#27BA5F1F] text-[#27BA5F] p-4 rounded-[12px] font-bold ' : 'text-[#03140A4D] '}`}>
                         <h1>{item}</h1>
                     </div>
                 ))}
             </div>
 
           <div className="mt-10">
-            <ProductGrid items={store.products} />
+            <ProductGrid items={store.products ?? []} />
           </div>
         </div>
     </div>
@@ -103,16 +104,16 @@ export default StoreDetails;
 
 
 
-const ProductGrid = ({ items }: { items: any[] }) => {
+const ProductGrid = ({ items }: { items: Product[] }) => {
   return (
     <div className="grid grid-cols-2 gap-4">
-      {items.map((item, i) => (
+      {items.map((item) => (
         <Link href={`/store/product/${item.id}`}
-          key={i}
+          key={item.id}
           className="bg-white rounded-xl p-3 shadow-sm"
         >
           <img
-            src={item.images ? item?.images[0]?.image_url : '' }
+            src={item.images?.[0]?.image_url ?? ''}
             alt="product"
             className="w-full h-32 object-contain"
           />

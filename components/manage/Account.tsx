@@ -6,6 +6,7 @@ import { Input } from "../ui/input"
 import { useUserStore } from "@/zustand"
 import { toast } from "sonner"
 import { updateProfileDetails } from "@/actions/auth.actions"
+import { errorMessage } from "@/lib/errors"
 
 const Account = () => {
     const [editId, setEditId] = useState(0);
@@ -32,7 +33,7 @@ const Account = () => {
     }) => {
         try {
             // Only send the field that's being edited
-            const updateData: any = {};
+            const updateData: { full_name?: string; phone_number?: string; address?: string; display_picture?: string } = {};
             
             if (editId === 1 && full_name !== undefined) {
                 updateData.full_name = full_name;
@@ -50,8 +51,6 @@ const Account = () => {
 
             const response = await updateProfileDetails(updateData);
 
-            console.log(response)
-
             if(response.status === 200) {
                 toast.success("Profile Updated")
                 
@@ -62,7 +61,7 @@ const Account = () => {
                 }
             }
         } catch (error) {
-            toast.error(`${error}`)
+            toast.error(errorMessage(error, "Could not update profile."))
         }
     }
 

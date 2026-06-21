@@ -3,6 +3,7 @@
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import type { FlutterwaveBank } from "@/types/api"
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { getAllbanks, storage } from "@/actions/storage.actions"
+import { getAllbanks, getStorage } from "@/actions/storage.actions"
 import { Permission, Role } from "appwrite"
 import { toast } from "sonner"
 import { ImagePlus, Loader2 } from "lucide-react"
@@ -51,7 +52,7 @@ const OpenDispatch = ({ open, setOpen }: { open: boolean, setOpen: (value: boole
   const [currentStep, setCurrentStep] = useState(1)
   const [preview, setPreview] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [banks, setBanks] = useState<any[]>([])
+  const [banks, setBanks] = useState<FlutterwaveBank[]>([])
   const [fileId, setFileId] = useState<string | null>(null)
 
   const locations = [
@@ -113,16 +114,9 @@ const OpenDispatch = ({ open, setOpen }: { open: boolean, setOpen: (value: boole
     is_available: true
       });
 
-      console.log(response)
-      console.log("Form submitted:", values)
-      // TODO: Add your submission logic here
       toast.success("Dispatch created successfully!")
-      // setOpen(false)
-      // form.reset()
       setCurrentStep(1)
-    } catch (error) {
-      toast.error(`${error}`)
-      console.log(error)
+    } catch {
       toast.error("Failed to create dispatch")
     } finally {
       setIsLoading(false)
@@ -164,7 +158,7 @@ const OpenDispatch = ({ open, setOpen }: { open: boolean, setOpen: (value: boole
   const handleFileUpload = async (file: File) => {
     try {
       setIsLoading(true)
-      const uploadImage = await storage.createFile({
+      const uploadImage = await getStorage().createFile({
         bucketId: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
         fileId: Date.now().toString(),
         file: file,
@@ -176,9 +170,8 @@ const OpenDispatch = ({ open, setOpen }: { open: boolean, setOpen: (value: boole
       form.setValue("utility", imageUrl)
       setFileId(uploadImage.$id)
       toast.success('Image uploaded successfully')
-    } catch (error) {
+    } catch {
       toast.error('Error uploading image')
-      console.error(error)
     } finally {
       setIsLoading(false)
     }

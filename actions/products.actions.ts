@@ -48,7 +48,7 @@ export const getuserProducts = async () => {
 
         return response
      } catch (error: any) {
-        throw error.response.data;
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
      }
 }
 
@@ -65,7 +65,7 @@ export const getProductbyId = async (id: number) => {
 
         return response
      } catch (error: any) {
-        throw error.response.data;
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
      }
 }
 
@@ -82,7 +82,7 @@ export const deleteProduct = async (id: number) => {
 
         return response
      } catch (error: any) {
-        throw error.response.data;
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
      }
 }
 
@@ -99,8 +99,7 @@ export const togglearchiveProduct = async (id: number) => {
 
         return response
      } catch (error: any) {
-        console.log(error)
-        throw error.response.data;
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
      }
 }
 
@@ -138,7 +137,7 @@ export const createDispatch = async ({
 
         return response;
     } catch (error: any) {
-        throw error.response.data;
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
     }
 }
 
@@ -197,14 +196,16 @@ export const getSingleProduct = async (id: number) => {
 
         return response
     } catch (error: any) {
-        throw error.response.data
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" }
     }
 }
 
 export const getStoreDetails = async (slug: string) => {
     const token = localStorage.getItem('buzzToken');
+    // Public store endpoint is mounted at the backend root, not under /api/.
+    const rootUrl = baseUrl?.replace(/\/api\/?$/, '');
     try {
-        const response = await axios.get(`https://buzzmart-backend-5l1f.onrender.com/store/${slug}/`, {
+        const response = await axios.get(`${rootUrl}/store/${slug}/`, {
             headers: {
                 "Authorization": `token ${token}`
             }
@@ -212,7 +213,7 @@ export const getStoreDetails = async (slug: string) => {
 
         return response
     } catch (error: any) {
-        throw error.response.data
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" }
     }
 }
 
@@ -236,6 +237,6 @@ export const updateProductDetails = async ({ id,description, price, name }: {
 
         return response;
     } catch (error: any) {
-        throw error.response.data
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" }
     }
 }

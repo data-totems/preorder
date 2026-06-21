@@ -49,7 +49,6 @@ const { setStore } = useSetupStore((state) => state)
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values)
     setStore({
       fullName: values.fullName,
       address: values.address,
@@ -145,18 +144,13 @@ const { setStore } = useSetupStore((state) => state)
                         <FormItem>
                           <FormLabel className="text-[#03140A80] uppercase font-bold">address</FormLabel>
                           <FormControl>
+                            {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
                             <GooglePlacesAutocomplete
                               apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
                               selectProps={{
                                 // value: field.value ?? "",
                                 onChange: (value: any) => {
-                                  // Update react-hook-form field
                                   field.onChange(value?.label || "");
-                                  
-                                  // You can also get additional place details
-                                  if (value) {
-                                    // console.log('Selected place:', value);
-                                  }
                                 },
                                 onBlur: field.onBlur,
                                 placeholder: "Enter your address",
@@ -207,13 +201,20 @@ const { setStore } = useSetupStore((state) => state)
                                 types: ['address'], // restrict to addresses only
                               }}
                             />
+                            ) : (
+                              <Input
+                                className="bg-[#F0F0F0] rounded-[12px] max-w-lg"
+                                placeholder="Enter your address"
+                                {...field}
+                              />
+                            )}
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-        
-        
+
+
                     <Button 
                       type="submit" 
                       className="w-full bg-[#27BA5F] hover:bg-green-400"

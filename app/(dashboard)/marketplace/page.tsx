@@ -9,10 +9,12 @@ import { LinkIcon, PlusIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import type { Product } from "@/types/api"
+import { errorMessage } from "@/lib/errors"
 
 const Marketplace = () => {
   const router = useRouter();
-  const [products, setProducts] = useState<ProductProps[]>([])
+  const [products, setProducts] = useState<Product[]>([])
  const [openDialog, setOpenDialog] = useState(false)
 
   useEffect(() => {
@@ -20,11 +22,11 @@ const Marketplace = () => {
       try {
         const response = await getuserProducts();
 
-        if(response.status === 200) {
+        if(response.status === 200 && Array.isArray(response.data)) {
           setProducts(response.data)
         }
       } catch (error) {
-        alert(`${error}`)
+        toast.error(errorMessage(error, "Could not load products."))
       }
     }
 

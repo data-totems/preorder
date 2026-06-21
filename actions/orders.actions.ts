@@ -1,10 +1,11 @@
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 import { baseUrl } from "./auth.actions";
+import type { Order, OrdersGroupResponse } from "@/types/api";
 
-export const getIncomingOrders = async () => {
+export const getIncomingOrders = async (): Promise<AxiosResponse<OrdersGroupResponse>> => {
       const token = localStorage.getItem("buzzToken")
     try {
-        const response = await axios.get(`${baseUrl}/orders/incoming/`, {
+        const response = await axios.get<OrdersGroupResponse>(`${baseUrl}/orders/incoming/`, {
             headers: {
                 "Authorization": `token ${token}`
             }
@@ -16,10 +17,10 @@ export const getIncomingOrders = async () => {
     }
 }
 
-export const getAcceptedOrders = async () => {
+export const getAcceptedOrders = async (): Promise<AxiosResponse<OrdersGroupResponse>> => {
     const token = localStorage.getItem("buzzToken")
     try {
-        const response = await axios.get(`${baseUrl}/orders/accepted/`, {
+        const response = await axios.get<OrdersGroupResponse>(`${baseUrl}/orders/accepted/`, {
             headers: {
                 "Authorization": `token ${token}`
             }
@@ -31,10 +32,10 @@ export const getAcceptedOrders = async () => {
     }
 }
 
-export const getShippedOrder = async () => {
+export const getShippedOrder = async (): Promise<AxiosResponse<OrdersGroupResponse>> => {
      const token = localStorage.getItem("buzzToken")
     try {
-        const response = await axios.get(`${baseUrl}/orders/shipped/`, {
+        const response = await axios.get<OrdersGroupResponse>(`${baseUrl}/orders/shipped/`, {
             headers: {
                 "Authorization": `token ${token}`
             }
@@ -73,15 +74,14 @@ export const createOrders = async ({
 
         return response;
     } catch (error: any) {
-        console.log(error.response)
-        throw error.response.data;
+        throw error?.response?.data ?? { message: error?.message ?? "Failed to create order" };
     }
 }
 
-export const acceptOrder = async (orderId: number) => {
+export const acceptOrder = async (orderId: number): Promise<AxiosResponse<Order>> => {
     const token = localStorage.getItem("buzzToken")
     try {
-        const response = await axios.patch(`${baseUrl}/orders/${orderId}/accept/`, {}, {
+        const response = await axios.patch<Order>(`${baseUrl}/orders/${orderId}/accept/`, {}, {
             headers: {
                 "Authorization": `token ${token}`
             }
@@ -93,10 +93,10 @@ export const acceptOrder = async (orderId: number) => {
     }
 }
 
-export const declineOrder = async (orderId: number) => {
+export const declineOrder = async (orderId: number): Promise<AxiosResponse<Order>> => {
     const token = localStorage.getItem("buzzToken")
     try {
-        const response = await axios.patch(`${baseUrl}/orders/${orderId}/decline/`, {}, {
+        const response = await axios.patch<Order>(`${baseUrl}/orders/${orderId}/decline/`, {}, {
             headers: {
                 "Authorization": `token ${token}`
             }

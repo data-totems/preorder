@@ -3,6 +3,7 @@
 import { z } from "zod"
 
 import { getSingleProduct, getStoreDetails } from "@/actions/products.actions"
+import type { Product, PublicStoreResponse } from "@/types/api"
 import LoadingModal from "@/components/shared/LoadingModal"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight, Loader2, ShoppingBag, ShoppingCart } from "lucide-react"
@@ -54,10 +55,10 @@ const ProductDetails = () => {
     const router = useRouter();
     const pathname = usePathname();
     const [isLoading, setIsLoading] = useState(false);
-    const [product, setProduct] = useState<any>()
+    const [product, setProduct] = useState<Product>()
     const id = pathname.split('/')[3];
-    const [currentImage, setCurrentImage] = useState()
-    const [seller, setSeller] = useState<any>();
+    const [currentImage, setCurrentImage] = useState<string | undefined>()
+    const [seller, setSeller] = useState<PublicStoreResponse>();
     const [openDialog, setOpenDialog] = useState(false)
 
     const [ordering, setOrdering] = useState(false)
@@ -75,8 +76,7 @@ const ProductDetails = () => {
                  }
             
             } catch (error: any) {
-                toast.error(`${error.detail}`)
-                console.log(JSON.stringify(error))
+                toast.error(error?.detail ?? error?.message ?? "Could not load product.")
             } finally {
                 setIsLoading(false)
             }
@@ -118,7 +118,9 @@ const ProductDetails = () => {
     toast.success("order requested successfully")
    }
    } catch (error: any) {
-    toast.error(`${error.response.data}`)
+    const data = error?.response?.data;
+    const msg = data?.detail ?? data?.message ?? (typeof data === "string" ? data : null) ?? error?.message ?? "Could not place order. Please try again.";
+    toast.error(msg);
    } finally {
     setOrdering(false)
      setOpenDialog(false)
@@ -178,6 +180,7 @@ const ProductDetails = () => {
             <FormItem>
               <FormLabel>Adress</FormLabel>
               <FormControl>
+                {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
                 <GooglePlacesAutocomplete
                               apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
                               selectProps={{
@@ -185,11 +188,6 @@ const ProductDetails = () => {
                                 onChange: (value: any) => {
                                   // Update react-hook-form field
                                   field.onChange(value?.label || "");
-                                  
-                                  // You can also get additional place details
-                                  if (value) {
-                                    // console.log('Selected place:', value);
-                                  }
                                 },
                                 onBlur: field.onBlur,
                                 placeholder: "Enter your address",
@@ -240,10 +238,17 @@ const ProductDetails = () => {
                                 types: ['address'], // restrict to addresses only
                               }}
                             />
+                ) : (
+                  <Input
+                    className="bg-[#F0F0F0] rounded-[12px] max-w-lg"
+                    placeholder="Enter your address"
+                    {...field}
+                  />
+                )}
               </FormControl>
               <FormMessage />
             </FormItem>
-          )} 
+          )}
         />
 
          <FormField
@@ -309,10 +314,11 @@ const ProductDetails = () => {
                 <div className="flex items-center justify-center gap-3 ">
                     {product.images.map((image: any, index: any) => (
                         <div
+                         key={index}
                          onClick={() => {setCurrentImage(image.image_url)}} className={
                             `${currentImage === image.url && 'border border-[#27BA5F] '}`
                          }>
-                              <Image key={index} className="w-[56px] h-[56px]" src={image.image_url} alt={product.name} width={100} height={100} />
+                              <Image className="w-[56px] h-[56px]" src={image.image_url} alt={product.name} width={100} height={100} />
                         </div>
                        
                     ))}

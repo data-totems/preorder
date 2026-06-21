@@ -23,7 +23,6 @@ import {
 import { ChevronRight, ImagePlus, Loader2, Plus, SearchIcon, X } from "lucide-react"
 import { Textarea } from "../ui/textarea"
 import { useState } from "react"
-import { storage } from "@/actions/storage.actions"
 import { toast } from "sonner"
 import { createProduct } from "@/actions/products.actions"
 
@@ -104,9 +103,8 @@ const CreateProduct = ({ open, setOpen }: { open: boolean, setOpen: (value: bool
       form.setValue("productImage", file, { shouldValidate: true });
       
       toast.success('Image selected successfully');
-    } catch (error) {
+    } catch {
       toast.error('Error selecting image');
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -150,8 +148,7 @@ const onSubmit = async (values: z.infer<typeof formSchema>) => {
       setPreview(null);
     }
   } catch (error: any) {
-    toast.error(error.response?.data?.message || error.response?.data || "Error creating product");
-    console.error("Error:", error);
+    toast.error(error?.response?.data?.message || error?.response?.data?.detail || error?.message || "Error creating product");
   } finally {
     setIsSubmitting(false);
   }
@@ -334,7 +331,7 @@ const onSubmit = async (values: z.infer<typeof formSchema>) => {
                           ))}
                         </div>
                         <div>
-                          <h2>Didn't find the right tag? <span className="font-bold text-green-500 cursor-pointer">Add tag</span></h2>
+                          <h2>Didn&apos;t find the right tag? <span className="font-bold text-green-500 cursor-pointer">Add tag</span></h2>
                         </div>
                       </div>
                     )}

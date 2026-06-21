@@ -5,20 +5,20 @@ import { Button } from "@/components/ui/button";
 import { ArrowUpRight, BellIcon } from "lucide-react";
 import Link  from 'next/link'
 import { useEffect, useState } from "react";
-const products = Array.from({ length: 6 });
+import type { Product } from "@/types/api";
 
 const Store = () => {
 
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<Product[]>([])
 
   useEffect(() => {
   const getProduct = async () => {
     const response = await getAllProducts();
 
-    if(response.status === 200) {
+    if(response.status === 200 && Array.isArray(response.data)) {
        setProducts(response.data)
     }
-   
+
   }
 
   getProduct();
@@ -85,16 +85,16 @@ const SectionHeader = ({
 );
 
 
-const ProductGrid = ({ items }: { items: any[] }) => {
+const ProductGrid = ({ items }: { items: Product[] }) => {
   return (
     <div className="grid grid-cols-2 gap-4">
-      {items.map((item, i) => (
+      {items.map((item) => (
         <Link href={`/store/product/${item.id}`}
-          key={i}
+          key={item.id}
           className="bg-white rounded-xl p-3 shadow-sm"
         >
           <img
-            src={item.images ? item?.images[0]?.image_url : '' }
+            src={item.images?.[0]?.image_url ?? ''}
             alt="product"
             className="w-full h-32 object-contain"
           />

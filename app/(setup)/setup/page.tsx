@@ -4,15 +4,16 @@ import BankDetails from "@/components/setup/BankDetails"
 import PersonalDetails from "@/components/setup/PersonalDetails"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, House, Store, User } from "lucide-react"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import LoadingModal from "@/components/shared/LoadingModal"
 import { getAllbanks } from "@/actions/storage.actions"
+import type { FlutterwaveBank } from "@/types/api"
 
 
 const Setup = () => {
     const [currentStep, setCurrentStep] = useState(1);
      const [isLoading, setIsLoading] = useState(false);
-     const [banks, setBanks] = useState<any[]>([]);
+     const [banks, setBanks] = useState<FlutterwaveBank[]>([]);
 
     const steps = [
         {
@@ -63,20 +64,18 @@ const Setup = () => {
 
         <div className="flex items-center justify-center gap-7 mt-4">
             {steps.map((step) => (
-                <>
-                 <div  key={step.id} className="flex flex-col items-center gap-1 cursor-pointer ">
-                <step.Icon className={`${currentStep === step.id ? "text-[#27BA5F]" : "text-[#757575]"}`}
-                //  fill={`${currentStep === step.id ? "#27BA5F" : "#757575"}`} 
-                 />
+                <React.Fragment key={step.id}>
+                 <div className="flex flex-col items-center gap-1 cursor-pointer ">
+                <step.Icon className={`${currentStep === step.id ? "text-[#27BA5F]" : "text-[#757575]"}`} />
                 <h2 className={`${currentStep === step.id ? 'text-[#27BA5F]' : 'text-[#B3B9B6]'} text-[10px] `}>{step.title}</h2>
             </div>
 
             {step.id !== 3  && (
                 <div className="w-10 h-0 border border-dashed" />
             )}
-            </>
+            </React.Fragment>
             ))}
-           
+
         </div>
 
 

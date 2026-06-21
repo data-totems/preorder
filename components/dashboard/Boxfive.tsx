@@ -4,6 +4,8 @@ import { acceptOrder, declineOrder, getIncomingOrders } from "@/actions/orders.a
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import { toast } from "sonner";
+import type { Order } from "@/types/api";
+import { errorMessage } from "@/lib/errors";
 
 import {
   AlertDialog,
@@ -22,7 +24,7 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 
 const Boxfive = () => {
-    const [orders, setOrders] = useState<any[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
       const [accepting, setAccepting] = useState('')
        const [declining, setDeclining] = useState(false)
      const [declineMessage, setDeclineMessage] = useState('');
@@ -35,7 +37,7 @@ const Boxfive = () => {
           const response = await getIncomingOrders();
           setOrders(response.data.orders);
         } catch (error) {
-          toast.error(`${error}`)
+          toast.error(errorMessage(error, "Could not load orders."))
         }
        }
        getData();
@@ -50,7 +52,7 @@ const Boxfive = () => {
                toast.success("Order Accepted")
              }
            } catch (error) {
-             toast.error(`${error}`)
+             toast.error(errorMessage(error, "Could not accept order."))
            } finally {
              setAccepting('')
            }
@@ -69,7 +71,7 @@ const Boxfive = () => {
                 setDeclinePay(true)
              }
            } catch (error) {
-             toast.error(`${error}`)
+             toast.error(errorMessage(error, "Could not decline order."))
            } finally {
              setDeclining(false)
            }

@@ -3,6 +3,7 @@ import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
+import type { FlutterwaveBank } from "@/types/api"
 import {
   Form,
   FormControl,
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Loader2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import {Select,SelectContent,SelectItem, SelectTrigger,SelectValue,} from "@/components/ui/select"
 import { useSetupStore } from "@/zustand"
@@ -27,7 +28,7 @@ const formSchema = z.object({
  bankName: z.string(),
  accountNumber: z.string(),
 })
-const BankDetails = ({ isLoading, setIsLoading, banks}: {isLoading: boolean, setIsLoading: (value: boolean) => void, banks: any[]}) => {
+const BankDetails = ({ isLoading, setIsLoading, banks}: {isLoading: boolean, setIsLoading: (value: boolean) => void, banks: FlutterwaveBank[]}) => {
 const { setStore, store } = useSetupStore((state) => state);
 const [verified, setVerified] = useState(false);
 
@@ -75,8 +76,11 @@ const [accountName, setAccountName] = useState("")
         router.replace('/')
       }
     } catch (error: any) {
-      console.log(error)
-      toast.error(`${error?.response.data}`)
+      const data = error?.response?.data;
+      const msg = data?.detail ?? data?.message ?? (typeof data === "string" ? data : null) ?? error?.message ?? "Account setup failed.";
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
     }
 
   }
@@ -87,9 +91,11 @@ const [accountName, setAccountName] = useState("")
       const selectedBank = form.getValues("bankName")
       const accountNumber = form.getValues("accountNumber");
 
-      const bankCode = banks?.find(bank => {
-  return bank.name === selectedBank
-})?.code;
+      const bankCode = banks?.find(bank => bank.name === selectedBank)?.code;
+      if (!bankCode) {
+        toast.error("Please select a bank.")
+        return
+      }
 
       const response = await getAccountDetails({
         bankCode,
@@ -98,20 +104,14 @@ const [accountName, setAccountName] = useState("")
 
       setVerified(true)
       setAccountName(response.data.account_name)
-    } catch (error) {
-      toast.error(`${error}`)
+    } catch (error: any) {
+      const data = error?.response?.data;
+      const msg = data?.detail ?? data?.message ?? error?.message ?? "Could not verify account.";
+      toast.error(msg)
     } finally {
       setVerfying(false)
     }
   }
-
-  useEffect(() => {
-     form.watch("accountNumber");
-        form.watch("bankName")
-  }, [])
-  
-
-
 
   return (
     <div className='mt-4 '>

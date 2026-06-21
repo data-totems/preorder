@@ -51,8 +51,9 @@ const router = useRouter();
               router.push(setupComplete ? '/' : '/setup');
           }
       } catch (error: any) {
-        console.log(error.response.data)
-          toast.error(`${error}`)
+        const data = error?.response?.data;
+        const msg = data?.detail ?? data?.message ?? error?.message ?? "Login failed. Please try again.";
+        toast.error(msg);
       }finally{
           setIsLoading(false)
       }

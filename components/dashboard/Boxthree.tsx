@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { getuserProducts } from "@/actions/products.actions"
 import Image from "next/image"
 import CreateProduct from "../shared/CreateProduct"
+import { errorMessage } from "@/lib/errors"
 
 const Boxthree = () => {
     const [products, setProducts] = useState<ProductProps[]>([]);
@@ -17,7 +18,7 @@ const Boxthree = () => {
 
             setProducts(response.data)
         } catch (error) {
-            toast.error(`${error}`)
+            toast.error(errorMessage(error, "Could not load products."))
         }
     }
 

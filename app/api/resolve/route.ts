@@ -2,6 +2,14 @@ import { NextResponse } from "next/server"
 import axios from "axios"
 
 export async function POST(req: Request) {
+  const secretKey = process.env.FLUTTERWAVE_SECRET_KEY
+  if (!secretKey) {
+    return NextResponse.json(
+      { message: "Bank verification is not configured. Set FLUTTERWAVE_SECRET_KEY on the server." },
+      { status: 500 }
+    )
+  }
+
   try {
     const { bankCode, accountNumber } = await req.json()
 
@@ -13,7 +21,7 @@ export async function POST(req: Request) {
       },
       {
         headers: {
-          Authorization: `Bearer FLWSECK-cd6a3ae6cfbb31fa73e8f008a8843561-19b3b17db3cvt-X`,
+          Authorization: `Bearer ${secretKey}`,
           "Content-Type": "application/json",
         },
       }

@@ -19,7 +19,7 @@
     return `${weekday} ${day}${suffix} ${month} ${year}`;
 }
 
-function getOrdinalSuffix(day: any) {
+function getOrdinalSuffix(day: number) {
     if (day >= 11 && day <= 13) return 'th';
     
     switch (day % 10) {

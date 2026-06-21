@@ -54,8 +54,6 @@ const Register = () => {
             password_confirm: values.confirmPassword
         });
 
-        console.log("Register Response",response)
-
         if(response.status === 201) {
             toast.success("Account Registered")
 
@@ -65,7 +63,6 @@ const Register = () => {
               router.push('/setup')
         }
     } catch (error: any) {
-        console.log(error)
         const msg = error?.email?.[0] || error?.detail || 'Registration failed. Please try again.'
         toast.error(msg)
     }finally{
@@ -203,6 +200,3 @@ const Register = () => {
 }
 
 export default Register
-
-
-// Cybergirl@2005

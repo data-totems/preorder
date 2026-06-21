@@ -31,6 +31,8 @@ import { toast } from "sonner"
 import { acceptOrder, declineOrder, getAcceptedOrders, getIncomingOrders, getShippedOrder } from "@/actions/orders.actions"
 import { formatDateWithOrdinal, formatTimestamp } from "@/lib/reuseable"
 import { Button } from "@/components/ui/button"
+import type { Order } from "@/types/api"
+import { errorMessage } from "@/lib/errors"
 
 
 const step = [
@@ -57,55 +59,55 @@ const Orders = () => {
    const [openCompleted, setOpenCompleted] = useState(false);
    const [addDispatchModal, setAddDispatchModal] = useState(false)
    const [selectedride, setSelectedride] = useState(0);
-   const [orders, setOrders] = useState<any[]>([])
-   const [acceptedOrders, setAcceptedOrders] = useState<any[]>([]);
-   const [shippedOrder, setShippedOrder] = useState<any[] | null>(null)
+   const [orders, setOrders] = useState<Order[]>([])
+   const [acceptedOrders, setAcceptedOrders] = useState<Order[]>([]);
+   const [shippedOrder, setShippedOrder] = useState<Order[] | null>(null)
 
    const [accepting, setAccepting] = useState(false)
    const [declining, setDeclining] = useState(false)
 
    // Group orders by date
-   const groupedOrders = orders.reduce((groups, order) => {
+   const groupedOrders = orders.reduce<Record<string, Order[]>>((groups, order) => {
      const date = new Date(order.created_at).toISOString().split('T')[0];
      if (!groups[date]) {
        groups[date] = [];
      }
      groups[date].push(order);
      return groups;
-   }, {} as Record<string, any[]>);
+   }, {});
 
    // Sort dates from newest to oldest
    const sortedDates = Object.keys(groupedOrders).sort((a, b) => 
      new Date(b).getTime() - new Date(a).getTime()
    );
 
-     const groupedAcceptedOrders = acceptedOrders.reduce((groups, order) => {
+     const groupedAcceptedOrders = acceptedOrders.reduce<Record<string, Order[]>>((groups, order) => {
      const date = new Date(order.updated_at).toISOString().split('T')[0];
      if (!groups[date]) {
        groups[date] = [];
      }
      groups[date].push(order);
      return groups;
-   }, {} as Record<string, any[]>);
+   }, {});
 
    // Sort dates from newest to oldest
    const acceptedsortedDates = Object.keys(groupedAcceptedOrders).sort((a, b) => 
      new Date(b).getTime() - new Date(a).getTime()
    );
 
-    const groupedShippedOrders = shippedOrder && shippedOrder.reduce((groups, order) => {
+    const groupedShippedOrders = shippedOrder && shippedOrder.reduce<Record<string, Order[]>>((groups, order) => {
      const date = new Date(order.updated_at).toISOString().split('T')[0];
      if (!groups[date]) {
        groups[date] = [];
      }
      groups[date].push(order);
      return groups;
-   }, {} as Record<string, any[]>);
+   }, {});
 
    // Sort dates from newest to oldest
-   const shippedsortedDates = shippedOrder &&  Object.keys(groupedShippedOrders).sort((a, b) => 
+   const shippedsortedDates = groupedShippedOrders ? Object.keys(groupedShippedOrders).sort((a, b) =>
      new Date(b).getTime() - new Date(a).getTime()
-   );
+   ) : null;
 
 
    useEffect(() => {
@@ -116,9 +118,9 @@ const Orders = () => {
       const shippedOrder = await getShippedOrder();
       setOrders(response.data.orders);
       setAcceptedOrders(accepted.data.orders)
-      setShippedOrder(shippedOrder.data.order)
+      setShippedOrder(shippedOrder.data.orders)
     } catch (error) {
-      toast.error(`${error}`)
+      toast.error(errorMessage(error, "Could not load orders."))
     }
    }
    getData();
@@ -133,7 +135,7 @@ const Orders = () => {
         toast.success("Order Accepted")
       }
     } catch (error) {
-      toast.error(`${error}`)
+      toast.error(errorMessage(error, "Could not accept order."))
     } finally {
       setAccepting(false)
     }
@@ -152,7 +154,7 @@ const Orders = () => {
          setDeclinePay(true)
       }
     } catch (error) {
-      toast.error(`${error}`)
+      toast.error(errorMessage(error, "Could not decline order."))
     } finally {
       setDeclining(false)
     }
@@ -185,7 +187,7 @@ const Orders = () => {
                     </h2>
                     
                     <div className="flex flex-col gap-4">
-                      {groupedOrders[date].map((order: any) => (
+                      {groupedOrders[date].map((order: Order) => (
                         <div className="w-full bg-white rounded-[12px] p-4 flex flex-col gap-4" key={order.id}>
                           <div className="flex flex-col lg:flex-row gap-5 items-center justify-between">
                             <div className="flex flex-col lg:flex-row items-center gap-4">
@@ -204,7 +206,7 @@ const Orders = () => {
 
                                 <div className="flex items-center gap-1 text-sm">
                                   <h2 className="text-[#03140A80] font-[500]">Transaction code:</h2>
-                                  <span className="font-[600]">{order.code}</span>
+                                  <span className="font-[600]">{order.id}</span>
                                 </div>
                               </div>
                             </div>
@@ -374,7 +376,7 @@ const Orders = () => {
                     </h2>
                     
                     <div className="flex flex-col gap-4">
-                      {groupedAcceptedOrders[date].map((order: any) => (
+                      {groupedAcceptedOrders[date].map((order: Order) => (
                         <div className="w-full bg-white rounded-[12px] p-4 flex flex-col gap-4" key={order.id}>
                           <div className="flex flex-col lg:flex-row gap-5 items-center justify-between">
                             <div className="flex flex-col lg:flex-row items-center gap-4">
@@ -393,7 +395,7 @@ const Orders = () => {
 
                                 <div className="flex items-center gap-1 text-sm">
                                   <h2 className="text-[#03140A80] font-[500]">Transaction code:</h2>
-                                  <span className="font-[600]">{order.code}</span>
+                                  <span className="font-[600]">{order.id}</span>
                                 </div>
                               </div>
                             </div>
@@ -467,7 +469,7 @@ const Orders = () => {
                     </h2>
                     
                     <div className="flex flex-col gap-4">
-                      {groupedShippedOrders[date].map((order: any) => (
+                      {groupedShippedOrders?.[date].map((order: Order) => (
                         <div className="w-full bg-white rounded-[12px] p-4 flex flex-col gap-4" key={order.id}>
                           <div className="flex flex-col lg:flex-row gap-5 items-center justify-between">
                             <div className="flex flex-col lg:flex-row items-center gap-4">
@@ -486,7 +488,7 @@ const Orders = () => {
 
                                 <div className="flex items-center gap-1 text-sm">
                                   <h2 className="text-[#03140A80] font-[500]">Transaction code:</h2>
-                                  <span className="font-[600]">{order.code}</span>
+                                  <span className="font-[600]">{order.id}</span>
                                 </div>
                               </div>
                             </div>

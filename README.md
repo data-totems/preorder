@@ -1,40 +1,58 @@
-<<<<<<< HEAD
 # preorder
-=======
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+BuzzMart's merchant dashboard and public storefront — a Next.js 14 app paired with the Django REST API at [data-totems/Buzzmart_backend](https://github.com/data-totems/Buzzmart_backend) (`final` branch).
+
+Merchants register, complete a 3-step setup (personal → business → bank), list products, and accept / decline / ship customer orders. Customers browse public storefronts at `/store` and place orders without authentication.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` with at least:
 
-## Learn More
+```env
+# Buzzmart backend (Django REST API)
+NEXT_PUBLIC_BASE_URI=http://127.0.0.1:8000/api
 
-To learn more about Next.js, take a look at the following resources:
+# Appwrite (used for product / dispatcher image uploads)
+NEXT_PUBLIC_APPWRITE_BASE_URI=
+NEXT_PUBLIC_APPWRITE_PROJECT_ID=
+NEXT_PUBLIC_APPWRITE_BUCKET_ID=
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Optional integrations
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY=
+FLUTTERWAVE_SECRET_KEY=
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The app boots without the optional vars, but image upload and bank-account verification will fail until they're set.
 
-## Deploy on Vercel
+## Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Next.js 14 (App Router), React 18, TypeScript
+- Tailwind CSS v4, shadcn/ui (Radix primitives)
+- React Hook Form + Zod
+- Zustand for client state
+- axios for backend calls
+- Appwrite SDK for file storage
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
->>>>>>> rabiat
+## Routes
+
+| Group | Path | Purpose |
+|---|---|---|
+| `(auth)` | `/login`, `/register`, `/forgot-password` | Merchant auth |
+| `(setup)` | `/setup` | 3-step onboarding wizard |
+| `(dashboard)` | `/`, `/marketplace`, `/orders`, `/manage` | Authenticated merchant tools |
+| public | `/store`, `/store/[storeId]`, `/store/product/[id]` | Customer-facing storefront |
+| api | `/api/resolve` | Server-side Flutterwave bank account verification |
+
+## Deploy
+
+Deploys on Vercel. The production frontend talks to the Render-hosted backend (`buzzmart-backend-5l1f.onrender.com`).

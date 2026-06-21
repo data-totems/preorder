@@ -1,0 +1,159 @@
+{
+  "planPath": "docs/superpowers/plans/2026-06-21-share-links-and-configurable-slugs.md",
+  "tasks": [
+    {
+      "id": 23,
+      "subject": "Task 0: Backend prep — settings, env, deps",
+      "status": "pending",
+      "description": "**Goal:** Install phonenumbers + django-ratelimit, wire LEAD_TOKEN_SECRET and SHARE_LINKS_ENABLED env vars, add DRF pagination defaults. **Files:** Buzzmart_backend/requirements.txt, buzzmart/settings.py, .env.example. **Verify:** python manage.py check\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/requirements.txt\",\"Buzzmart_backend/buzzmart/settings.py\",\"Buzzmart_backend/.env.example\"],\"verifyCommand\":\"python manage.py check\",\"acceptanceCriteria\":[\"phonenumbers + django-ratelimit installed\",\"LEAD_TOKEN_SECRET env var with prod fail-loud + dev fallback\",\"SHARE_LINKS_ENABLED env var\",\"CACHES default to locmem\",\"PageNumberPagination default size 20\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 24,
+      "subject": "Task 1: Data model + migrations with backfill",
+      "status": "pending",
+      "blockedBy": [23],
+      "description": "**Goal:** ShareLink, Lead, ClickEvent, StoreSlugAlias models + migration that backfills aliases + share links for existing rows.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/models.py\",\"Buzzmart_backend/accounts/admin.py\",\"Buzzmart_backend/accounts/migrations/0009_share_links_leads_clicks_aliases.py\",\"Buzzmart_backend/accounts/tests/test_share_link_models.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_share_link_models -v 2\",\"acceptanceCriteria\":[\"Four new models with unique/index constraints from spec\",\"Migration backfills StoreSlugAlias + ShareLink for existing data\",\"Admin registers all four\",\"3 model tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 25,
+      "subject": "Task 2: Utility modules — lead tokens, slug validation, phone",
+      "status": "pending",
+      "blockedBy": [23],
+      "description": "**Goal:** Three well-tested utility modules used across API layer.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/lead_tokens.py\",\"Buzzmart_backend/accounts/slug_validation.py\",\"Buzzmart_backend/accounts/phone.py\",\"Buzzmart_backend/accounts/tests/test_lead_tokens.py\",\"Buzzmart_backend/accounts/tests/test_slug_validation.py\",\"Buzzmart_backend/accounts/tests/test_phone.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_lead_tokens accounts.tests.test_slug_validation accounts.tests.test_phone -v 2\",\"acceptanceCriteria\":[\"HMAC sign/verify with tamper + expiry detection\",\"Slug validate + 3-suggestion generator\",\"E.164 normalize with NG default + invalid raises\",\"13 tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 26,
+      "subject": "Task 3: Auto-create ShareLink on Product / BusinessDetails save",
+      "status": "pending",
+      "blockedBy": [24],
+      "description": "**Goal:** Django signal handlers ensuring every Product and every BusinessDetails has a corresponding ShareLink at all times.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/signals.py\",\"Buzzmart_backend/accounts/apps.py\",\"Buzzmart_backend/accounts/tests/test_share_link_models.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_share_link_models -v 2\",\"acceptanceCriteria\":[\"post_save signal on Products creates ShareLink(kind=product)\",\"post_save signal on BusinessDetails creates ShareLink(kind=store) + StoreSlugAlias(is_current=true)\",\"get_or_create prevents duplicates on re-save\",\"3 new signal tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 27,
+      "subject": "Task 4: GET /api/share-links/<short_id>/resolve/",
+      "status": "pending",
+      "blockedBy": [26],
+      "description": "**Goal:** Public endpoint returning merchant + product info for a short_id.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/views.py\",\"Buzzmart_backend/accounts/serializers.py\",\"Buzzmart_backend/accounts/urls_share_links.py\",\"Buzzmart_backend/buzzmart/urls.py\",\"Buzzmart_backend/accounts/tests/test_share_link_api.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_share_link_api.ShareLinkResolveTests -v 2\",\"acceptanceCriteria\":[\"200 with {kind, merchant, product?} for product link\",\"200 with product=null for store link\",\"404 for unknown OR inactive\",\"AllowAny perm\",\"4 tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 28,
+      "subject": "Task 5: POST /api/share-links/<short_id>/identify/",
+      "status": "pending",
+      "blockedBy": [25, 27],
+      "description": "**Goal:** Public endpoint capturing visitor WhatsApp number, creating/updating Lead + ClickEvent, returning signed lead_token + redirect.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/views.py\",\"Buzzmart_backend/accounts/urls_share_links.py\",\"Buzzmart_backend/accounts/tests/test_share_link_api.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_share_link_api.ShareLinkIdentifyTests -v 2\",\"acceptanceCriteria\":[\"No-cookie identify creates Lead + ClickEvent(submit)\",\"Valid cookie matches merchant -> ClickEvent(view), no new Lead\",\"Cross-merchant cookie -> new Lead for current merchant\",\"Invalid wa_number -> 400\",\"Inactive link -> 404\",\"6 tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 29,
+      "subject": "Task 6: Slug-alias resolution on public /store/<slug>/",
+      "status": "pending",
+      "blockedBy": [24],
+      "description": "**Goal:** Retired slugs 301-redirect to current; unknowns 404; current still 200.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/views.py\",\"Buzzmart_backend/products/views.py\",\"Buzzmart_backend/accounts/tests/test_store_alias_routing.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_store_alias_routing -v 2\",\"acceptanceCriteria\":[\"Current slug -> 200\",\"Retired slug -> 301 to current\",\"Unknown -> 404\",\"UUID path preserved through redirect\",\"4 tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 30,
+      "subject": "Task 7: Merchant slug endpoints — PATCH + availability check",
+      "status": "pending",
+      "blockedBy": [25],
+      "description": "**Goal:** Atomic slug update with alias retirement + debounced availability check.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/views.py\",\"Buzzmart_backend/accounts/urls.py\",\"Buzzmart_backend/accounts/tests/test_slug_api.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_slug_api -v 2\",\"acceptanceCriteria\":[\"PATCH atomic: retire old + create new + update store_slug\",\"400 on taken (incl retired), reserved, invalid format\",\"GET /check/ returns {available, reason?, suggestions?}\",\"Suggestions only when reason=taken\",\"8 tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 31,
+      "subject": "Task 8: Merchant leads endpoints — list + activity",
+      "status": "pending",
+      "blockedBy": [28],
+      "description": "**Goal:** Paginated leads + per-lead activity drawer endpoint.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/views.py\",\"Buzzmart_backend/accounts/serializers.py\",\"Buzzmart_backend/accounts/urls_share_links.py\",\"Buzzmart_backend/accounts/tests/test_leads_api.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_leads_api -v 2\",\"acceptanceCriteria\":[\"GET /leads/ paginated 20, includes whatsapp_link + click_count + order_count\",\"?since= and ?search= filters work\",\"Cross-merchant isolated\",\"GET /leads/<id>/activity/ returns newest-first events; 404 on other merchant\",\"7 tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 32,
+      "subject": "Task 9: Merchant share-stats endpoints (product + store)",
+      "status": "pending",
+      "blockedBy": [28],
+      "description": "**Goal:** Analytics rollup endpoints for product detail + manage store-link tab.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/products/views.py\",\"Buzzmart_backend/products/urls.py\",\"Buzzmart_backend/accounts/views.py\",\"Buzzmart_backend/accounts/serializers.py\",\"Buzzmart_backend/accounts/urls_share_links.py\",\"Buzzmart_backend/accounts/tests/test_share_link_api.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_share_link_api.ShareStatsTests -v 2\",\"acceptanceCriteria\":[\"GET /api/products/<id>/share-stats/ returns short_id, full_url, counts, recent_clicks[:20]\",\"Cross-merchant 403/404\",\"GET /api/share-links/store-link/ same shape\",\"3 tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 33,
+      "subject": "Task 10: Setup serializer accepts slug + store/link aliases",
+      "status": "pending",
+      "blockedBy": [30],
+      "description": "**Goal:** Merchants pick custom slug at setup; GET /store/link/ includes alias history.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/serializers.py\",\"Buzzmart_backend/accounts/views.py\",\"Buzzmart_backend/accounts/tests/test_slug_api.py\"],\"verifyCommand\":\"python manage.py test accounts.tests.test_slug_api -v 2\",\"acceptanceCriteria\":[\"Setup accepts optional store_slug, falls back to auto-slugify\",\"Invalid slug at setup -> 400\",\"store/link/ response includes aliases array\",\"3 new tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 34,
+      "subject": "Task 11: Rate limiting on /resolve/ and /identify/",
+      "status": "pending",
+      "blockedBy": [28, 27],
+      "description": "**Goal:** 60/min/IP on /resolve/, 10/min/IP + 5/min/(IP,short_id) on /identify/.\n\n```json:metadata\n{\"files\":[\"Buzzmart_backend/accounts/views.py\",\"Buzzmart_backend/accounts/tests/test_share_link_api.py\"],\"verifyCommand\":\"python manage.py test accounts -v 2\",\"acceptanceCriteria\":[\"61st /resolve/ from same IP -> 429\",\"11th /identify/ from same IP -> 429\",\"django-ratelimit with locmem cache\",\"All backend tests pass\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 35,
+      "subject": "Task 12: Frontend prep — deps, type regen, env, action stubs",
+      "status": "pending",
+      "blockedBy": [34, 32, 31, 33, 29],
+      "description": "**Goal:** Install libphonenumber-js, regen types, write typed actions + phone util.\n\n```json:metadata\n{\"files\":[\"preorder/package.json\",\"preorder/.env.example\",\"preorder/lib/phone.ts\",\"preorder/actions/share-links.actions.ts\",\"preorder/actions/slug.actions.ts\",\"preorder/types/api.ts\",\"preorder/types/api-generated.ts\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"libphonenumber-js installed\",\"NEXT_PUBLIC_SITE_URL env var\",\"Types regenerated with new endpoints\",\"ShareLinkResolve/Lead/ShareStats type aliases\",\"All actions typed against schema\",\"tsc + build clean\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 36,
+      "subject": "Task 13: SlugInput component",
+      "status": "pending",
+      "blockedBy": [35],
+      "description": "**Goal:** Reusable input with prefix, debounced availability check, visual states, suggestion chips.\n\n```json:metadata\n{\"files\":[\"preorder/components/slug/SlugInput.tsx\"],\"verifyCommand\":\"npx tsc --noEmit\",\"acceptanceCriteria\":[\"Accepts value/onChange/onAvailability/excludeCurrent\",\"300ms debounce on availability check\",\"Visual states: idle/checking/available/unavailable\",\"Suggestion chips when reason=taken\",\"Auto-lowercase + format helper text\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 37,
+      "subject": "Task 14: Interstitial component",
+      "status": "pending",
+      "blockedBy": [35],
+      "description": "**Goal:** Identity-capture form rendered inside share-link pages.\n\n```json:metadata\n{\"files\":[\"preorder/components/share/Interstitial.tsx\"],\"verifyCommand\":\"npx tsc --noEmit\",\"acceptanceCriteria\":[\"Accepts resolved + shortId props\",\"Phone validates via lib/phone.ts\",\"Submit disabled until valid\",\"Submit POSTs to /api/share-link-identify, router.replace on success\",\"Errors via errorMessage helper\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 38,
+      "subject": "Task 15: /p/[shortId] + /s/[shortId] pages + Route Handler",
+      "status": "pending",
+      "blockedBy": [37],
+      "description": "**Goal:** Server-rendered share-link landing pages with OG meta, cookie skip, cookie-setting Route Handler.\n\n```json:metadata\n{\"files\":[\"preorder/app/p/[shortId]/page.tsx\",\"preorder/app/s/[shortId]/page.tsx\",\"preorder/app/api/share-link-identify/route.ts\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"SSR fetches /resolve/, renders OG via generateMetadata\",\"Valid bz_lead cookie -> server-side redirect (no flash)\",\"No/invalid cookie -> render Interstitial\",\"Route Handler sets HttpOnly Secure SameSite=Lax cookie\",\"404 from resolve -> fallback UI\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 39,
+      "subject": "Task 16: SharePanel + ShareButton + product detail integration",
+      "status": "pending",
+      "blockedBy": [35],
+      "description": "**Goal:** Reusable analytics card + share button, wired into product detail page.\n\n```json:metadata\n{\"files\":[\"preorder/components/share/SharePanel.tsx\",\"preorder/components/share/ShareButton.tsx\",\"preorder/app/(dashboard)/marketplace/product/[id]/page.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"SharePanel renders URL + counts + recent_clicks[:20]\",\"Copy button -> clipboard + toast\",\"ShareButton: mobile navigator.share, desktop clipboard + wa.me/?text=\",\"Pre-filled message template per spec\",\"Renders at top of product detail page\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 40,
+      "subject": "Task 17: Leads inbox page + activity drawer",
+      "status": "pending",
+      "blockedBy": [35],
+      "description": "**Goal:** /leads page with paginated list, search, per-lead activity drawer.\n\n```json:metadata\n{\"files\":[\"preorder/app/(dashboard)/leads/page.tsx\",\"preorder/components/leads/LeadRow.tsx\",\"preorder/components/leads/LeadActivityDrawer.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"Paginated 20/page sorted by last_seen_at desc\",\"Search filter (debounced 300ms)\",\"Each row: name, number, counts, Chat WA link, View activity\",\"Drawer shows newest-first events\",\"Empty state with Copy store link\",\"localStorage lastSeenLeadsAt set on visit\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 41,
+      "subject": "Task 18: Sidebar nav — Leads link with badge",
+      "status": "pending",
+      "blockedBy": [40],
+      "description": "**Goal:** Add Leads link between Orders and Manage with unread-since badge.\n\n```json:metadata\n{\"files\":[\"preorder/app/(dashboard)/layout.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"Leads link appears between Orders and Manage\",\"Badge count from getLeads({since: localStorage.lastSeenLeadsAt})\",\"Badge hidden when count=0\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 42,
+      "subject": "Task 19: Manage Store Link tab + EditSlugModal",
+      "status": "pending",
+      "blockedBy": [36, 39],
+      "description": "**Goal:** Store Link tab on manage page with SharePanel + Edit slug modal.\n\n```json:metadata\n{\"files\":[\"preorder/components/slug/EditSlugModal.tsx\",\"preorder/app/(dashboard)/manage/page.tsx\",\"preorder/actions/slug.actions.ts\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"Store Link tab shows current slug + SharePanel + Edit button\",\"Modal: SlugInput with excludeCurrent + warning copy + alias history\",\"Submit: PATCH /slug/, success toast, refresh; error -> inline field error\",\"Update disabled until available && slug != currentSlug\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 43,
+      "subject": "Task 20: Setup wizard slug integration",
+      "status": "pending",
+      "blockedBy": [36],
+      "description": "**Goal:** SlugInput in setup wizard step 2 with auto-suggest; send store_slug in setup payload.\n\n```json:metadata\n{\"files\":[\"preorder/components/setup/BussinessDetails.tsx\",\"preorder/actions/auth.actions.ts\",\"preorder/components/setup/BankDetails.tsx\"],\"verifyCommand\":\"npm run build\",\"acceptanceCriteria\":[\"SlugInput under business name\",\"Business name typing auto-fills slugify(name)\",\"Manual slug edit prevents further auto-fill\",\"Continue disabled until available\",\"setup payload includes store_slug\"],\"requiresUserVerification\":false}\n```"
+    },
+    {
+      "id": 44,
+      "subject": "Task 21: User verification — manual smoke checklist",
+      "status": "pending",
+      "blockedBy": [38, 41, 42, 43],
+      "description": "**Goal:** User confirms all 10 spec-defined smoke checks pass.\n\n**User Verification Required:**\nBefore marking this task complete, you MUST call AskUserQuestion with the 10-step checklist.\n\n```json:metadata\n{\"files\":[],\"verifyCommand\":\"\",\"acceptanceCriteria\":[\"user confirms all 10 smoke checks pass\"],\"requiresUserVerification\":true,\"userVerificationPrompt\":\"All 10 smoke checks pass?\"}\n```"
+    }
+  ],
+  "lastUpdated": "2026-06-21T19:30:00Z"
+}
