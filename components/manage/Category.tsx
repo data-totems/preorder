@@ -5,7 +5,7 @@ const Category = ({ setCurrentTab} : {
     setCurrentTab: (value: number) => void
 }) => {
     const categories = [
-        "Account", "Bussiness Details", "Payment", "Dispatch"
+        "Account", "Bussiness Details", "Payment", "Dispatch", "Store Link"
     ];
 
     const [currentCategory, setCurrentCategory] = useState("Account")

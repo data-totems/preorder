@@ -4,6 +4,7 @@ import BussinessDetails from "@/components/manage/BussinessDetails"
 import Category from "@/components/manage/Category"
 import Dispatch from "@/components/manage/Dispatch"
 import Payment from "@/components/manage/Payment"
+import StoreLink from "@/components/manage/StoreLink"
 import Navbar from "@/components/shared/Navbar"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -49,7 +50,11 @@ const Manage = () => {
            {currentTab === 3 && (
             <Dispatch />
           )}
-        
+
+           {currentTab === 4 && (
+            <StoreLink />
+          )}
+
           </div>
 
          
