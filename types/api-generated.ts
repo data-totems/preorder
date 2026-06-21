@@ -44,6 +44,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/accounts/business/slug/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["api_accounts_business_slug_partial_update"];
+        trace?: never;
+    };
+    "/api/accounts/business/slug/check/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["api_accounts_business_slug_check_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/accounts/profile/": {
         parameters: {
             query?: never;
@@ -743,6 +775,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/products/{id}/share-stats/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["api_products_share_stats_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/products/{id}/toggle-archive/": {
         parameters: {
             query?: never;
@@ -971,6 +1019,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/share-links/{short_id}/identify/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_share_links_identify_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/share-links/{short_id}/resolve/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["api_share_links_resolve_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/share-links/leads/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["api_share_links_leads_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/share-links/leads/{lead_id}/activity/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["api_share_links_leads_activity_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/share-links/store-link/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["api_share_links_store_link_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/store/{store_slug}/": {
         parameters: {
             query?: never;
@@ -1079,6 +1207,18 @@ export interface components {
             readonly updated_at: string;
             readonly user: number;
         };
+        LeadList: {
+            readonly id: number;
+            wa_number: string;
+            name?: string;
+            /** Format: date-time */
+            readonly first_seen_at: string;
+            /** Format: date-time */
+            readonly last_seen_at: string;
+            readonly whatsapp_link: string;
+            readonly click_count: number;
+            readonly order_count: number;
+        };
         Login: {
             /** Format: email */
             email: string;
@@ -1146,6 +1286,21 @@ export interface components {
          * @enum {string}
          */
         OrderStatusUpdateStatusEnum: "accepted" | "shipped" | "declined" | "completed";
+        PaginatedLeadListList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["LeadList"][];
+        };
         /** @description Serializer for merchants to update order status */
         PatchedOrderStatusUpdate: {
             status?: components["schemas"]["OrderStatusUpdateStatusEnum"];
@@ -1186,6 +1341,7 @@ export interface components {
             BusinessDetails?: components["schemas"]["BusinessDetails"];
             BankDetail?: components["schemas"]["BankDetail"];
             WhatsApp?: components["schemas"]["WhatsAppDetail"];
+            store_slug?: string;
         };
         /** @description Serializer for updating WhatsApp number */
         PatchedWhatsAppUpdate: {
@@ -1356,6 +1512,42 @@ export interface operations {
             };
             /** @description Validation error */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    api_accounts_business_slug_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    api_accounts_business_slug_check_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2203,6 +2395,26 @@ export interface operations {
             };
         };
     };
+    api_products_share_stats_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     api_products_toggle_archive_partial_update: {
         parameters: {
             query?: never;
@@ -2484,6 +2696,110 @@ export interface operations {
                         [key: string]: unknown;
                     };
                 };
+            };
+        };
+    };
+    api_share_links_identify_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                short_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    api_share_links_resolve_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                short_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    api_share_links_leads_list: {
+        parameters: {
+            query?: {
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description A search term. */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedLeadListList"];
+                };
+            };
+        };
+    };
+    api_share_links_leads_activity_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lead_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    api_share_links_store_link_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
