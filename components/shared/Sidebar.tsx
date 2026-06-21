@@ -1,9 +1,10 @@
 "use client"
 
-import { Grid, House, Package, Store } from "lucide-react"
+import { Grid, House, Package, Store, Users } from "lucide-react"
 import UserProfile from "./UserProfile"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import LeadsNavBadge from "./LeadsNavBadge"
 
 const Sidebar = () => {
     const pathname = usePathname();
@@ -11,7 +12,8 @@ const Sidebar = () => {
         {id: 1, title: "Dashboard", href: "/", icon: House},
         {id: 2, title: "Marketplace", href: "/marketplace", icon: Store},
          {id: 3, title: "Orders", href: "/orders", notify: true, icon: Package},
-         {id: 4, title: "Manage", href: "/manage", notify: true, icon: Grid},
+         {id: 4, title: "Leads", href: "/leads", icon: Users, badge: true},
+         {id: 5, title: "Manage", href: "/manage", notify: true, icon: Grid},
     ]
   return (
     <div
@@ -25,6 +27,7 @@ const Sidebar = () => {
                 <div className={` ${pathname === item.href ? 'bg-white text-black font-[500] ' : '' } p-2 rounded-[12px] w-[175px]  flex items-center gap-5`}>
                     <item.icon className={` ${pathname === item.href ? 'text-black' : 'text-[#CDD0CE]'}`} />
                     <span className="">{item.title}</span>
+                    {item.badge && <LeadsNavBadge />}
                 </div>
             </Link>
         ))}
