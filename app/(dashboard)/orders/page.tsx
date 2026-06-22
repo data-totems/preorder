@@ -1,11 +1,18 @@
-'use client'
-import PageHeader from "@/components/shared/PageHeader"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Eyebrow } from "@/components/ui/eyebrow"
-import { Card } from "@/components/ui/card"
-import { ArrowRight, Box, Check, ChevronDown, Loader2, Plus, Truck } from "lucide-react"
-import Image from "next/image"
-import { useEffect, useState } from "react"
+"use client";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { toast } from "sonner";
+import { ArrowRight, Box, Check, ChevronDown, Loader2, Plus, Truck } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
+import EmptyState from "@/components/shared/EmptyState";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,150 +23,281 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import Distribute from "@/components/orders/Distribute"
-import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
-import { acceptOrder, declineOrder, getAcceptedOrders, getIncomingOrders, getShippedOrder } from "@/actions/orders.actions"
-import { formatDateWithOrdinal, formatTimestamp } from "@/lib/reuseable"
-import { Button } from "@/components/ui/button"
-import type { Order } from "@/types/api"
-import { errorMessage } from "@/lib/errors"
+} from "@/components/ui/dialog";
+import Distribute from "@/components/orders/Distribute";
+import {
+  acceptOrder,
+  declineOrder,
+  getAcceptedOrders,
+  getIncomingOrders,
+  getShippedOrder,
+} from "@/actions/orders.actions";
+import { formatDateWithOrdinal, formatTimestamp } from "@/lib/reuseable";
+import { cn } from "@/lib/utils";
+import type { Order } from "@/types/api";
+import { errorMessage } from "@/lib/errors";
 
+const distributeStepConfig = [
+  { id: 1, title: "Select dispatch", icon: Truck },
+  { id: 2, title: "Select product", icon: Box },
+];
 
-const step = [
-    {
-      id: 1,
-      title: "Select dispatch",
-      icon: Truck
-    },
-     {
-      id: 2,
-      title: "Select product",
-      icon: Box
-    },
-   ]
+type Row = { order: Order; actions?: React.ReactNode };
+
+const OrderRow = ({ order, actions }: Row) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <Card padding="compact" className="px-4">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="relative size-14 rounded-md bg-ink-100 overflow-hidden shrink-0">
+              {order.product_details?.primary_image && (
+                <Image
+                  src={order.product_details.primary_image}
+                  alt={order.product_details.name ?? ""}
+                  fill
+                  sizes="56px"
+                  className="object-cover"
+                />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[15px] font-semibold text-foreground truncate">
+                {order.customer_name}
+              </div>
+              <div className="mt-0.5 flex items-center gap-2 text-[13px] text-muted-foreground tabular-nums">
+                <span className="font-semibold text-forest-700">₦{order.total_price}</span>
+                <span>·</span>
+                <span>#{order.id}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+            >
+              {expanded ? "Less" : "More"}
+              <ChevronDown
+                className={cn("size-4 transition-transform", expanded && "rotate-180")}
+              />
+            </Button>
+            {actions}
+          </div>
+        </div>
+
+        {expanded && (
+          <div className="border-t border-border pt-3 flex flex-col gap-2 text-[13px]">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-muted-foreground">Contact</span>
+              <span className="text-foreground">{order.customer_whatsapp}</span>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-muted-foreground">Time</span>
+              <span className="text-foreground">{formatTimestamp(order.updated_at)}</span>
+            </div>
+            <div className="flex items-start justify-between gap-4">
+              <span className="text-muted-foreground shrink-0">Address</span>
+              <span className="text-foreground text-right break-words">
+                {order.customer_address}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};
+
+const DeclineButton = ({
+  orderId,
+  onConfirm,
+  declining,
+}: {
+  orderId: number;
+  onConfirm: (orderId: number, reason: string) => Promise<boolean>;
+  declining: boolean;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+          Decline
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Decline this order?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be reversed. The customer will be notified with your reason.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        <div className="flex flex-col gap-3">
+          <Label htmlFor={`decline-reason-${orderId}`}>Reason for declining</Label>
+          <Textarea
+            id={`decline-reason-${orderId}`}
+            placeholder="A message to your customer"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </div>
+
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={!reason.trim() || declining}
+            className="bg-destructive text-white hover:bg-destructive/90"
+            onClick={async (e) => {
+              e.preventDefault();
+              const ok = await onConfirm(orderId, reason.trim());
+              if (ok) {
+                setOpen(false);
+                setReason("");
+              }
+            }}
+          >
+            {declining && <Loader2 className="size-4 animate-spin" />}
+            Decline order
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
+
+const DateGroupedOrders = ({
+  orders,
+  getDate,
+  renderActions,
+}: {
+  orders: Order[];
+  getDate: (order: Order) => string;
+  renderActions?: (order: Order) => React.ReactNode;
+}) => {
+  const grouped = orders.reduce<Record<string, Order[]>>((acc, order) => {
+    const date = new Date(getDate(order)).toISOString().split("T")[0];
+    (acc[date] ??= []).push(order);
+    return acc;
+  }, {});
+  const sortedDates = Object.keys(grouped).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+  );
+
+  return (
+    <>
+      {sortedDates.map((date) => (
+        <section key={date}>
+          <Eyebrow className="block mb-3">
+            {formatDateWithOrdinal(date + "T00:00:00.000Z")}
+          </Eyebrow>
+          <div className="flex flex-col gap-3">
+            {grouped[date].map((order) => (
+              <OrderRow key={order.id} order={order} actions={renderActions?.(order)} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </>
+  );
+};
+
+const TabSkeleton = () => (
+  <div className="flex flex-col gap-3">
+    {Array.from({ length: 3 }).map((_, i) => (
+      <Skeleton key={i} className="h-20 w-full rounded-lg" />
+    ))}
+  </div>
+);
+
 const Orders = () => {
-   const [currentTab, setCurrentTab] = useState<string>("incoming");
-   const [open, setOpen] = useState(false)
-   const [openId, setOpenId] = useState(0);
-   const [declineMessage, setDeclineMessage] = useState('');
-   const [openDecline, setOpenDecline] = useState(false);
-   const [declinePay, setDeclinePay] = useState(false);
-   const [distributeDialog, setDistributeDialog] = useState(false)
-   const [distributeStep, setDistributeStep] = useState(1);
-   const [openCompleted, setOpenCompleted] = useState(false);
-   const [addDispatchModal, setAddDispatchModal] = useState(false)
-   const [selectedride, setSelectedride] = useState(0);
-   const [orders, setOrders] = useState<Order[]>([])
-   const [acceptedOrders, setAcceptedOrders] = useState<Order[]>([]);
-   const [shippedOrder, setShippedOrder] = useState<Order[] | null>(null)
+  const [currentTab, setCurrentTab] = useState<string>("incoming");
+  const [distributeDialog, setDistributeDialog] = useState(false);
+  const [distributeStep, setDistributeStep] = useState(1);
+  const [openCompleted, setOpenCompleted] = useState(false);
+  const [addDispatchModal, setAddDispatchModal] = useState(false);
+  const [selectedRide, setSelectedRide] = useState(0);
 
-   const [accepting, setAccepting] = useState(false)
-   const [declining, setDeclining] = useState(false)
+  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [acceptedOrders, setAcceptedOrders] = useState<Order[] | null>(null);
+  const [shippedOrders, setShippedOrders] = useState<Order[] | null>(null);
 
-   // Group orders by date
-   const groupedOrders = orders.reduce<Record<string, Order[]>>((groups, order) => {
-     const date = new Date(order.created_at).toISOString().split('T')[0];
-     if (!groups[date]) {
-       groups[date] = [];
-     }
-     groups[date].push(order);
-     return groups;
-   }, {});
+  const [accepting, setAccepting] = useState<number | null>(null);
+  const [declining, setDeclining] = useState<number | null>(null);
 
-   // Sort dates from newest to oldest
-   const sortedDates = Object.keys(groupedOrders).sort((a, b) =>
-     new Date(b).getTime() - new Date(a).getTime()
-   );
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const [inc, acc, ship] = await Promise.all([
+          getIncomingOrders(),
+          getAcceptedOrders(),
+          getShippedOrder(),
+        ]);
+        if (!alive) return;
+        setOrders(inc.data?.orders ?? []);
+        setAcceptedOrders(acc.data?.orders ?? []);
+        setShippedOrders(ship.data?.orders ?? []);
+      } catch (error) {
+        if (alive) {
+          toast.error(errorMessage(error, "Could not load orders."));
+          setOrders([]);
+          setAcceptedOrders([]);
+          setShippedOrders([]);
+        }
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
-     const groupedAcceptedOrders = acceptedOrders.reduce<Record<string, Order[]>>((groups, order) => {
-     const date = new Date(order.updated_at).toISOString().split('T')[0];
-     if (!groups[date]) {
-       groups[date] = [];
-     }
-     groups[date].push(order);
-     return groups;
-   }, {});
-
-   // Sort dates from newest to oldest
-   const acceptedsortedDates = Object.keys(groupedAcceptedOrders).sort((a, b) =>
-     new Date(b).getTime() - new Date(a).getTime()
-   );
-
-    const groupedShippedOrders = shippedOrder && shippedOrder.reduce<Record<string, Order[]>>((groups, order) => {
-     const date = new Date(order.updated_at).toISOString().split('T')[0];
-     if (!groups[date]) {
-       groups[date] = [];
-     }
-     groups[date].push(order);
-     return groups;
-   }, {});
-
-   // Sort dates from newest to oldest
-   const shippedsortedDates = groupedShippedOrders ? Object.keys(groupedShippedOrders).sort((a, b) =>
-     new Date(b).getTime() - new Date(a).getTime()
-   ) : null;
-
-
-   useEffect(() => {
-   const getData = async () => {
+  const handleAccept = async (orderId: number) => {
+    setAccepting(orderId);
     try {
-      const response = await getIncomingOrders();
-      const accepted = await getAcceptedOrders();
-      const shippedOrder = await getShippedOrder();
-      setOrders(response.data.orders);
-      setAcceptedOrders(accepted.data.orders)
-      setShippedOrder(shippedOrder.data.orders)
-    } catch (error) {
-      toast.error(errorMessage(error, "Could not load orders."))
-    }
-   }
-   getData();
-   }, [])
-
-   const handleAccpetOrders = async (orderId: number) => {
-    setAccepting(true)
-    try {
-      const response = await acceptOrder(orderId)
-
-      if(response.status === 200){
-        toast.success("Order Accepted")
+      const response = await acceptOrder(orderId);
+      if (response.status === 200) {
+        toast.success("Order accepted");
+        setOrders((prev) => (prev ?? []).filter((o) => o.id !== orderId));
       }
     } catch (error) {
-      toast.error(errorMessage(error, "Could not accept order."))
+      toast.error(errorMessage(error, "Could not accept order."));
     } finally {
-      setAccepting(false)
+      setAccepting(null);
     }
-   }
+  };
 
-    const handleDeclineOrders = async (orderId: number) => {
-    setDeclining(true)
+  const handleDecline = async (orderId: number, _reason: string): Promise<boolean> => {
+    setDeclining(orderId);
     try {
-      const response = await declineOrder(orderId)
-
-      if(response.status === 200){
-        toast.success("Order Declined")
-
-         setOpenDecline(false)
-         setDeclineMessage('');
-         setDeclinePay(true)
+      const response = await declineOrder(orderId);
+      if (response.status === 200) {
+        toast.success("Order declined");
+        setOrders((prev) => (prev ?? []).filter((o) => o.id !== orderId));
+        return true;
       }
+      return false;
     } catch (error) {
-      toast.error(errorMessage(error, "Could not decline order."))
+      toast.error(errorMessage(error, "Could not decline order."));
+      return false;
     } finally {
-      setDeclining(false)
+      setDeclining(null);
     }
-   }
+  };
 
   return (
     <div className="flex flex-col gap-5 max-w-7xl mx-auto">
@@ -167,507 +305,253 @@ const Orders = () => {
         eyebrow="ORDERS"
         title="Your orders"
         description="Manage incoming orders and dispatch."
-        actions={<Button onClick={() => setDistributeDialog(true)}><Truck className="size-4" /> Distribute</Button>}
+        actions={
+          <Button onClick={() => setDistributeDialog(true)}>
+            <Truck className="size-4" /> Distribute
+          </Button>
+        }
       />
 
-      <Tabs value={currentTab} onValueChange={setCurrentTab} className="px-6 md:px-10">
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="px-6 md:px-10 pb-12">
         <TabsList variant="underline">
-          <TabsTrigger value="incoming" variant="underline">Incoming</TabsTrigger>
-          <TabsTrigger value="accepted" variant="underline">Accepted</TabsTrigger>
-          <TabsTrigger value="shipped" variant="underline">Shipped</TabsTrigger>
-          <TabsTrigger value="declined" variant="underline">Declined</TabsTrigger>
+          <TabsTrigger value="incoming" variant="underline">
+            Incoming
+          </TabsTrigger>
+          <TabsTrigger value="accepted" variant="underline">
+            Accepted
+          </TabsTrigger>
+          <TabsTrigger value="shipped" variant="underline">
+            Shipped
+          </TabsTrigger>
+          <TabsTrigger value="declined" variant="underline">
+            Declined
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="incoming" className="mt-6 flex flex-col gap-6">
-          {orders.length > 0 && (
-            <span className="cursor-pointer text-sm font-[500] text-forest-500">Download order file</span>
-          )}
-          {orders.length > 0 ? (
-            sortedDates.map((date) => (
-              <section key={date}>
-                <Eyebrow className="block mb-3">
-                  {formatDateWithOrdinal(date + 'T00:00:00.000Z')}
-                </Eyebrow>
-                <div className="flex flex-col gap-3">
-                  {groupedOrders[date].map((order: Order) => (
-                    <Card key={order.id} padding="compact" className="flex flex-col gap-4 px-4">
-                      <div className="flex flex-col lg:flex-row gap-5 items-center justify-between">
-                        <div className="flex flex-col lg:flex-row items-center gap-4">
-                          <Image src={order.product_details?.primary_image || '/placeholder.jpg'} alt="product" width={60} height={60} />
-
-                          <div className="">
-                            <div className="flex items-center gap-1 text-sm">
-                              <h2 className="text-ink-500 font-[500]">Buyer name:</h2>
-                              <span className="font-[600]">{order.customer_name}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1 text-sm">
-                              <h2 className="text-ink-500 font-[500]">Amount paid:</h2>
-                              <span className="font-[600]">{order.total_price}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1 text-sm">
-                              <h2 className="text-ink-500 font-[500]">Transaction code:</h2>
-                              <span className="font-[600]">{order.id}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-5">
-                          <div className="cursor-pointer flex items-center" onClick={() => {
-                            setOpen(!open)
-                            if(openId !== order.id) {
-                              setOpenId(order.id)
-                            } else {
-                              setOpenId(0)
-                            }
-                          }}>
-                            <span className="text-forest-500 text-sm font-[500] hidden lg:block">
-                              {openId === order.id ? 'Less details' : 'More details'}
-                            </span>
-                            <ChevronDown fill="#27BA5F" color="#27BA5F" />
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            <AlertDialog onOpenChange={setOpenDecline} open={openDecline}>
-                              <AlertDialogTrigger>
-                                <div className="cursor-pointer">
-                                  <h2 className="text-destructive font-[700] text-sm">Decline</h2>
-                                </div>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="flex flex-col items-center justify-center">
-                                    Are you sure you want to decline this payment
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription className="flex flex-col items-center justify-center text-[#A9AEAB]">
-                                    This action is cannot be reversed
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-
-                                <div className="flex flex-col gap-4">
-                                  <Label className="font-[700] text-ink-500">
-                                    REASON FOR DECLINING
-                                  </Label>
-
-                                  <Textarea
-                                    placeholder="A message to your customer"
-                                    className="bg-ink-100"
-                                    onChange={(e) => setDeclineMessage(e.target.value)}
-                                    value={declineMessage}
-                                  />
-                                </div>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => {
-                                      handleDeclineOrders(order.id)
-                                    }}
-                                    disabled={declineMessage === '' || declining}
-                                    className={`${declineMessage !== ''  && 'bg-destructive hover:bg-red-400'}`}
-                                  >
-                                    {declining && <Loader2 className="animate-spin" />}
-                                    Decline payment
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-
-                            <AlertDialog onOpenChange={setDeclinePay} open={declinePay}>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="flex items-center justify-center">
-                                    Payment declined!
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription></AlertDialogDescription>
-                                </AlertDialogHeader>
-
-                                <div className="flex flex-col gap-4">
-                                  <Label className="font-[700] text-ink-500">PRODUCT IMAGE</Label>
-                                  <div className="bg-ink-100 w-full h-fit flex flex-col gap-5 rounded-md p-4">
-                                    <h2 className="font-[700]">ORDER DETAILS</h2>
-                                    <div className="flex items-center gap-4">
-                                      <Image src={order.product_details.primary_image} alt="product" width={50} height={50} />
-                                      <div className="">
-                                        <div className="flex gap-4">
-                                          <h2 className="text-ink-500">Product Name: </h2>
-                                          <span className="font-[700]">{order.product_details.name}</span>
-                                        </div>
-
-                                        <div className="flex gap-4">
-                                          <h2 className="text-ink-500">Amount paid:</h2>
-                                          <span className="font-[700]"> NGN{order.total_price}</span>
-                                        </div>
-
-                                        <div className="flex text-sm gap-4">
-                                          <h2 className="text-ink-500">Transaction code: </h2>
-                                          <span className="font-[700]">SFJRW3000</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="w-full bg-forest-500 hover:bg-green-400 hover:text-white rounded-md text-white">
-                                    Close
-                                  </AlertDialogCancel>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-
-                            <Button disabled={accepting} onClick={() => handleAccpetOrders(order.id)} className="cursor-pointer hover:bg-forest-500 bg-forest-500 w-fit min-w-[65px] h-[32px] flex gap-2 justify-center rounded-full items-center">
-                              {accepting && <Loader2 className="animate-spin" />}
-                              <h2 className="text-sm text-white font-[700]">Accept{accepting && 'ing'}</h2>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="">
-                        {(open && openId === order.id) && (
-                          <div className="">
-                            <hr />
-                            <div className="p-4 flex flex-col gap-2">
-                              <div className="flex items-center justify-between text-ink-500">
-                                <h3 className="font-[500]">Contact</h3>
-                                <span>{order.customer_whatsapp}</span>
-                              </div>
-
-                              <div className="flex items-center justify-between text-ink-500">
-                                <h3 className="font-[500]">Timestamp</h3>
-                                <span>{formatTimestamp(order.updated_at)}</span>
-                              </div>
-
-                              <div className="flex items-center justify-between text-ink-500">
-                                <h3 className="font-[500]">Address</h3>
-                                <span className="w-[237px] text-right">{order.customer_address}</span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            ))
+          {orders === null ? (
+            <TabSkeleton />
+          ) : orders.length === 0 ? (
+            <EmptyState
+              icon={<Box />}
+              title="No incoming orders"
+              description="When customers place orders from your store, they'll show up here."
+            />
           ) : (
-            <div className="flex flex-col items-center justify-center gap-4">
-              <Image src={'/box.png'} alt="box" width={200} height={200} />
-              <h2 className="text-sm">You have no incoming order</h2>
-            </div>
+            <DateGroupedOrders
+              orders={orders}
+              getDate={(o) => o.created_at}
+              renderActions={(order) => (
+                <>
+                  <DeclineButton
+                    orderId={order.id}
+                    onConfirm={handleDecline}
+                    declining={declining === order.id}
+                  />
+                  <Button
+                    size="sm"
+                    disabled={accepting === order.id}
+                    onClick={() => handleAccept(order.id)}
+                  >
+                    {accepting === order.id ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      "Accept"
+                    )}
+                  </Button>
+                </>
+              )}
+            />
           )}
         </TabsContent>
 
         <TabsContent value="accepted" className="mt-6 flex flex-col gap-6">
-          {acceptedOrders.length > 0 ? (
-            acceptedsortedDates.map((date) => (
-              <section key={date}>
-                <Eyebrow className="block mb-3">
-                  {formatDateWithOrdinal(date + 'T00:00:00.000Z')}
-                </Eyebrow>
-                <div className="flex flex-col gap-3">
-                  {groupedAcceptedOrders[date].map((order: Order) => (
-                    <Card key={order.id} padding="compact" className="flex flex-col gap-4 px-4">
-                      <div className="flex flex-col lg:flex-row gap-5 items-center justify-between">
-                        <div className="flex flex-col lg:flex-row items-center gap-4">
-                          <Image src={order.product_details?.primary_image || '/placeholder.jpg'} alt="product" width={60} height={60} />
-
-                          <div className="">
-                            <div className="flex items-center gap-1 text-sm">
-                              <h2 className="text-ink-500 font-[500]">Buyer name:</h2>
-                              <span className="font-[600]">{order.customer_name}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1 text-sm">
-                              <h2 className="text-ink-500 font-[500]">Amount paid:</h2>
-                              <span className="font-[600]">{order.total_price}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1 text-sm">
-                              <h2 className="text-ink-500 font-[500]">Transaction code:</h2>
-                              <span className="font-[600]">{order.id}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-5">
-                          <div className="cursor-pointer flex items-center" onClick={() => {
-                            setOpen(!open)
-                            if(openId !== order.id) {
-                              setOpenId(order.id)
-                            } else {
-                              setOpenId(0)
-                            }
-                          }}>
-                            <span className="text-forest-500 text-sm font-[500] hidden lg:block">
-                              {openId === order.id ? 'Less details' : 'More details'}
-                            </span>
-                            <ChevronDown fill="#27BA5F" color="#27BA5F" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="">
-                        {(open && openId === order.id) && (
-                          <div className="">
-                            <hr />
-                            <div className="p-4 flex flex-col gap-2">
-                              <div className="flex items-center justify-between text-ink-500">
-                                <h3 className="font-[500]">Contact</h3>
-                                <span>{order.customer_whatsapp}</span>
-                              </div>
-
-                              <div className="flex items-center justify-between text-ink-500">
-                                <h3 className="font-[500]">Timestamp</h3>
-                                <span>{formatTimestamp(order.updated_at)}</span>
-                              </div>
-
-                              <div className="flex items-center justify-between text-ink-500">
-                                <h3 className="font-[500]">Address</h3>
-                                <span className="w-[237px] text-right">{order.customer_address}</span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            ))
+          {acceptedOrders === null ? (
+            <TabSkeleton />
+          ) : acceptedOrders.length === 0 ? (
+            <EmptyState
+              icon={<Box />}
+              title="No accepted orders"
+              description="Accept an incoming order to see it here."
+            />
           ) : (
-            <div className="flex flex-col items-center justify-center gap-4">
-              <Image src={'/box.png'} alt="box" width={200} height={200} />
-              <h2 className="text-sm">You have no accepted order</h2>
-            </div>
+            <DateGroupedOrders orders={acceptedOrders} getDate={(o) => o.updated_at} />
           )}
         </TabsContent>
 
         <TabsContent value="shipped" className="mt-6 flex flex-col gap-6">
-          {shippedOrder && shippedOrder.length > 0 ? (
-            shippedsortedDates?.map((date) => (
-              <section key={date}>
-                <Eyebrow className="block mb-3">
-                  {formatDateWithOrdinal(date + 'T00:00:00.000Z')}
-                </Eyebrow>
-                <div className="flex flex-col gap-3">
-                  {groupedShippedOrders?.[date].map((order: Order) => (
-                    <Card key={order.id} padding="compact" className="flex flex-col gap-4 px-4">
-                      <div className="flex flex-col lg:flex-row gap-5 items-center justify-between">
-                        <div className="flex flex-col lg:flex-row items-center gap-4">
-                          <Image src={order.product_details?.primary_image || '/placeholder.jpg'} alt="product" width={60} height={60} />
-
-                          <div className="">
-                            <div className="flex items-center gap-1 text-sm">
-                              <h2 className="text-ink-500 font-[500]">Buyer name:</h2>
-                              <span className="font-[600]">{order.customer_name}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1 text-sm">
-                              <h2 className="text-ink-500 font-[500]">Amount paid:</h2>
-                              <span className="font-[600]">{order.total_price}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1 text-sm">
-                              <h2 className="text-ink-500 font-[500]">Transaction code:</h2>
-                              <span className="font-[600]">{order.id}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-5">
-                          <div className="cursor-pointer flex items-center" onClick={() => {
-                            setOpen(!open)
-                            if(openId !== order.id) {
-                              setOpenId(order.id)
-                            } else {
-                              setOpenId(0)
-                            }
-                          }}>
-                            <span className="text-forest-500 text-sm font-[500] hidden lg:block">
-                              {openId === order.id ? 'Less details' : 'More details'}
-                            </span>
-                            <ChevronDown fill="#27BA5F" color="#27BA5F" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="">
-                        {(open && openId === order.id) && (
-                          <div className="">
-                            <hr />
-                            <div className="p-4 flex flex-col gap-2">
-                              <div className="flex items-center justify-between text-ink-500">
-                                <h3 className="font-[500]">Contact</h3>
-                                <span>{order.customer_whatsapp}</span>
-                              </div>
-
-                              <div className="flex items-center justify-between text-ink-500">
-                                <h3 className="font-[500]">Timestamp</h3>
-                                <span>{formatTimestamp(order.created_at)}</span>
-                              </div>
-
-                              <div className="flex items-center justify-between text-ink-500">
-                                <h3 className="font-[500]">Address</h3>
-                                <span className="w-[237px] text-right">{order.customer_address}</span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            ))
+          {shippedOrders === null ? (
+            <TabSkeleton />
+          ) : shippedOrders.length === 0 ? (
+            <EmptyState
+              icon={<Truck />}
+              title="No shipped orders"
+              description="Orders you've dispatched will appear here."
+            />
           ) : (
-            <div className="flex flex-col items-center justify-center gap-4">
-              <Image src={'/box.png'} alt="box" width={200} height={200} />
-              <h2 className="text-sm">You have no shipped order</h2>
-            </div>
+            <DateGroupedOrders orders={shippedOrders} getDate={(o) => o.updated_at} />
           )}
         </TabsContent>
 
         <TabsContent value="declined" className="mt-6 flex flex-col gap-6">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <Image src={'/box.png'} alt="box" width={200} height={200} />
-            <h2 className="text-sm">You have no declined order</h2>
-          </div>
+          <EmptyState
+            icon={<Box />}
+            title="No declined orders"
+            description="Declined orders will appear here for your records."
+          />
         </TabsContent>
       </Tabs>
 
-      <Dialog onOpenChange={setDistributeDialog} open={distributeDialog}>
+      <Dialog open={distributeDialog} onOpenChange={setDistributeDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              <div className="flex">
-                {step.map((item) => (
-                  <div key={item.id} className="flex gap-2">
-                    <div className="flex flex-col items-center cursor-pointer">
-                      <item.icon color={`${distributeStep === item.id ? '#27BA5F' : '#03140A4D'}`} fill={`${distributeStep === item.id ? '#27BA5F' : '#03140A4D'}`} />
-                      <span className={`text-[10px] ${distributeStep === item.id ? 'text-forest-500' : 'text-[#03140A4D]'}`}>
-                        {item.title}
-                      </span>
-                    </div>
-
-                    <div className="pt-5">
-                      <div className="h-[0px] w-[41px] border border-[#03140A33]" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </DialogTitle>
-            <DialogDescription></DialogDescription>
+            <DialogTitle>Distribute order</DialogTitle>
+            <DialogDescription>
+              Pick a dispatch rider and the product you want to send out.
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="">
-            <Distribute
-              currentStep={distributeStep}
-              setCurrentStep={setDistributeStep}
-              setOpen={setDistributeDialog}
-              openCompleted={openCompleted}
-              setOpenCompleted={setOpenCompleted}
-              setDispatchModal={setAddDispatchModal}
-            />
+          <div className="flex items-center gap-2 mt-2">
+            {distributeStepConfig.map((item, idx) => {
+              const Icon = item.icon;
+              const active = distributeStep === item.id;
+              return (
+                <div key={item.id} className="flex items-center gap-2">
+                  <div className="flex flex-col items-center">
+                    <Icon
+                      className={cn("size-5", active ? "text-forest-700" : "text-ink-300")}
+                    />
+                    <span
+                      className={cn(
+                        "mt-1 text-[10px] font-semibold tracking-[0.04em] uppercase",
+                        active ? "text-forest-700" : "text-ink-500",
+                      )}
+                    >
+                      {item.title}
+                    </span>
+                  </div>
+                  {idx < distributeStepConfig.length - 1 && (
+                    <div className="h-px w-10 bg-border" />
+                  )}
+                </div>
+              );
+            })}
           </div>
+
+          <Distribute
+            currentStep={distributeStep}
+            setCurrentStep={setDistributeStep}
+            setOpen={setDistributeDialog}
+            openCompleted={openCompleted}
+            setOpenCompleted={setOpenCompleted}
+            setDispatchModal={setAddDispatchModal}
+          />
         </DialogContent>
       </Dialog>
 
-      <AlertDialog onOpenChange={setOpenCompleted} open={openCompleted}>
+      <AlertDialog open={openCompleted} onOpenChange={setOpenCompleted}>
         <AlertDialogContent>
-          <AlertDialogTitle></AlertDialogTitle>
-          <div className="">
-            <div className="flex flex-col items-center justify-center">
-              <div className="bg-forest-500/16 w-[85px] h-[85px] rounded-full flex flex-col items-center justify-center">
-                <div className="bg-forest-500/16 w-[69px] h-[69px] rounded-full flex items-center justify-center flex-col">
-                  <div className="bg-forest-500 w-[54px] h-[54px] rounded-full flex flex-col items-center justify-center">
-                    <Check color="white" size={20} />
-                  </div>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="sr-only">Distribution successful</AlertDialogTitle>
+            <AlertDialogDescription className="sr-only">
+              Your product distribution has been initiated.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="flex flex-col items-center justify-center py-4">
+            <div className="bg-forest-500/15 size-20 rounded-full flex items-center justify-center">
+              <div className="bg-forest-500/15 size-16 rounded-full flex items-center justify-center">
+                <div className="bg-forest-500 size-12 rounded-full flex items-center justify-center">
+                  <Check className="size-5 text-white" />
                 </div>
               </div>
-
-              <h3 className="text-[20px] font-[700]">Successful</h3>
-              <span className="text-ink-500 text-sm w-[200px] text-center">
-                Your product distribution has been initiated
-              </span>
             </div>
+            <h3 className="mt-4 text-[20px] font-bold text-foreground">Successful</h3>
+            <span className="mt-1 text-[13px] text-muted-foreground text-center max-w-[220px]">
+              Your product distribution has been initiated.
+            </span>
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel className="w-full bg-forest-500 text-white hover:bg-green-400 hover:text-white rounded-md">
-              Close
-            </AlertDialogCancel>
+            <AlertDialogCancel className="w-full">Close</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog onOpenChange={setAddDispatchModal} open={addDispatchModal}>
+      <Dialog open={addDispatchModal} onOpenChange={setAddDispatchModal}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add one-time dispatch</DialogTitle>
-            <DialogDescription></DialogDescription>
+            <DialogDescription>Register a rider for this distribution.</DialogDescription>
           </DialogHeader>
 
-          <div className="">
-            <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-4">
-                <Label className="font-[700] text-ink-500">DISPATCH NAME</Label>
-                <Input placeholder="Dispatch IV" className="bg-ink-100" />
-              </div>
+          <div className="mt-2 flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="dispatch-name">Dispatch name</Label>
+              <Input id="dispatch-name" placeholder="e.g. Dispatch IV" />
+            </div>
 
-              <div className="flex flex-col gap-4">
-                <Label className="font-[700] text-ink-500">PHONE NUMBER</Label>
-                <Input placeholder="+2349023....." className="bg-ink-100" />
-              </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="dispatch-phone">Phone number</Label>
+              <Input id="dispatch-phone" type="tel" placeholder="+234902 …" />
+            </div>
 
-              <div className="flex flex-col gap-4">
-                <Label className="font-[700] text-ink-500">VEHICLE</Label>
-                <div className="flex items-center gap-4">
-                  {["Motorcycle", "Car"].map((item, index) => (
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => setSelectedride(index)} key={index}>
-                      <div className={`border h-[16px] w-[16px] rounded-full flex flex-col items-center justify-center ${selectedride === index ? "border-forest-500" : "border-[#D9D9D9]"}`}>
-                        {selectedride === index && (
-                          <div className="bg-forest-500 h-[12px] w-[12px] rounded-full" />
+            <div className="flex flex-col gap-2">
+              <Label>Vehicle</Label>
+              <div className="flex items-center gap-3">
+                {["Motorcycle", "Car"].map((item, index) => {
+                  const active = selectedRide === index;
+                  return (
+                    <button
+                      type="button"
+                      key={item}
+                      onClick={() => setSelectedRide(index)}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-md border transition-colors",
+                        active
+                          ? "border-forest-500 bg-forest-50 text-forest-700"
+                          : "border-border bg-paper text-foreground hover:bg-ink-50",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "size-4 rounded-full border flex items-center justify-center transition-colors",
+                          active ? "border-forest-500" : "border-ink-300",
                         )}
-                      </div>
-                      <h2 className={`${selectedride === index ? 'text-forest-500 font-[500]' : 'text-ink-500'} text-sm`}>
-                        {item}
-                      </h2>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <Label className="font-[700] text-ink-500">PLATE NUMBER</Label>
-                <Input placeholder="BNDJOWEF" className="bg-ink-100" />
+                      >
+                        {active && <span className="size-2 rounded-full bg-forest-500" />}
+                      </span>
+                      <span className="text-[13px] font-semibold">{item}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="flex items-center justify-between mt-5 p-2">
-              <div className="text-forest-500 w-full text-[16px] font-[700] flex items-center gap-2 cursor-pointer">
-                <Plus />
-                <span>Register dispatch</span>
-              </div>
-
-              <div
-                onClick={() => {
-                  setDistributeStep(2)
-                  setDistributeDialog(true)
-                  setAddDispatchModal(false)
-                }}
-                className="bg-forest-500 w-full text-white p-2 justify-center rounded-full text-[16px] font-[700] flex items-center gap-2 cursor-pointer"
-              >
-                <span className="">Use dispatch</span>
-                <ArrowRight className="text-end" />
-              </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="dispatch-plate">Plate number</Label>
+              <Input id="dispatch-plate" placeholder="e.g. BND-209-JX" />
             </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <Button variant="ghost" className="text-forest-700">
+              <Plus className="size-4" /> Register dispatch
+            </Button>
+            <Button
+              onClick={() => {
+                setDistributeStep(2);
+                setDistributeDialog(true);
+                setAddDispatchModal(false);
+              }}
+            >
+              Use dispatch <ArrowRight className="size-4" />
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
+  );
+};
 
-export default Orders
+export default Orders;

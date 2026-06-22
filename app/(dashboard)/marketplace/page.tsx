@@ -5,6 +5,7 @@ import EmptyState from "@/components/shared/EmptyState"
 import PageHeader from "@/components/shared/PageHeader"
 import ProductCard from "@/components/shared/ProductCard"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Plus, Store } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -13,22 +14,27 @@ import { errorMessage } from "@/lib/errors"
 
 const Marketplace = () => {
   const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
   const [openDialog, setOpenDialog] = useState(false)
 
   useEffect(() => {
+    let alive = true;
     const getProducts = async () => {
       try {
         const response = await getuserProducts();
-
+        if (!alive) return;
         if(response.status === 200 && Array.isArray(response.data)) {
           setProducts(response.data)
         }
       } catch (error) {
-        toast.error(errorMessage(error, "Could not load products."))
+        if (alive) toast.error(errorMessage(error, "Could not load products."))
+      } finally {
+        if (alive) setLoading(false)
       }
     }
 
     getProducts();
+    return () => { alive = false; };
   }, [])
 
   return (
@@ -49,7 +55,17 @@ const Marketplace = () => {
       />
 
       <section className="px-6 md:px-10 pb-12">
-        {products.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-3">
+                <Skeleton className="aspect-square w-full rounded-lg" />
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-7 w-1/3" />
+              </div>
+            ))}
+          </div>
+        ) : products.length === 0 ? (
           <EmptyState
             icon={<Store />}
             title="No products yet"
