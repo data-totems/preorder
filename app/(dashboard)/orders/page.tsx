@@ -2,14 +2,13 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { ArrowRight, Box, Check, ChevronDown, Loader2, Plus, Truck } from "lucide-react";
+import { Box, ChevronDown, Loader2, Truck } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,29 +24,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import Distribute from "@/components/orders/Distribute";
-import {
   acceptOrder,
   declineOrder,
   getAcceptedOrders,
   getIncomingOrders,
   getShippedOrder,
+  shipOrder,
 } from "@/actions/orders.actions";
 import { formatDateWithOrdinal, formatTimestamp } from "@/lib/reuseable";
 import { cn } from "@/lib/utils";
 import type { Order } from "@/types/api";
 import { errorMessage } from "@/lib/errors";
-
-const distributeStepConfig = [
-  { id: 1, title: "Select dispatch", icon: Truck },
-  { id: 2, title: "Select product", icon: Box },
-];
 
 type Row = { order: Order; actions?: React.ReactNode };
 
@@ -226,11 +213,6 @@ const TabSkeleton = () => (
 
 const Orders = () => {
   const [currentTab, setCurrentTab] = useState<string>("incoming");
-  const [distributeDialog, setDistributeDialog] = useState(false);
-  const [distributeStep, setDistributeStep] = useState(1);
-  const [openCompleted, setOpenCompleted] = useState(false);
-  const [addDispatchModal, setAddDispatchModal] = useState(false);
-  const [selectedRide, setSelectedRide] = useState(0);
 
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [acceptedOrders, setAcceptedOrders] = useState<Order[] | null>(null);
@@ -238,6 +220,7 @@ const Orders = () => {
 
   const [accepting, setAccepting] = useState<number | null>(null);
   const [declining, setDeclining] = useState<number | null>(null);
+  const [shipping, setShipping] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -304,17 +287,32 @@ const Orders = () => {
     }
   };
 
+  const handleShip = async (orderId: number) => {
+    setShipping(orderId);
+    try {
+      const response = await shipOrder(orderId);
+      if (response.status === 200) {
+        toast.success("Order marked shipped");
+        const shipped = acceptedOrders?.find((o) => o.id === orderId);
+        setAcceptedOrders((prev) => (prev ?? []).filter((o) => o.id !== orderId));
+        if (shipped) {
+          const stamped = { ...shipped, updated_at: new Date().toISOString() };
+          setShippedOrders((prev) => [stamped, ...(prev ?? [])]);
+        }
+      }
+    } catch (error) {
+      toast.error(errorMessage(error, "Could not ship order."));
+    } finally {
+      setShipping(null);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-5 max-w-7xl mx-auto">
       <PageHeader
         eyebrow="ORDERS"
         title="Your orders"
-        description="Manage incoming orders and dispatch."
-        actions={
-          <Button onClick={() => setDistributeDialog(true)}>
-            <Truck className="size-4" /> Distribute
-          </Button>
-        }
+        description="Accept, ship, and track every customer order."
       />
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="px-6 md:px-10 pb-12">
@@ -380,7 +378,25 @@ const Orders = () => {
               description="Accept an incoming order to see it here."
             />
           ) : (
-            <DateGroupedOrders orders={acceptedOrders} getDate={(o) => o.updated_at} />
+            <DateGroupedOrders
+              orders={acceptedOrders}
+              getDate={(o) => o.updated_at}
+              renderActions={(order) => (
+                <Button
+                  size="sm"
+                  disabled={shipping === order.id}
+                  onClick={() => handleShip(order.id)}
+                >
+                  {shipping === order.id ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Truck className="size-4" /> Ship
+                    </>
+                  )}
+                </Button>
+              )}
+            />
           )}
         </TabsContent>
 
@@ -406,155 +422,6 @@ const Orders = () => {
           />
         </TabsContent>
       </Tabs>
-
-      <Dialog open={distributeDialog} onOpenChange={setDistributeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Distribute order</DialogTitle>
-            <DialogDescription>
-              Pick a dispatch rider and the product you want to send out.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex items-center gap-2 mt-2">
-            {distributeStepConfig.map((item, idx) => {
-              const Icon = item.icon;
-              const active = distributeStep === item.id;
-              return (
-                <div key={item.id} className="flex items-center gap-2">
-                  <div className="flex flex-col items-center">
-                    <Icon
-                      className={cn("size-5", active ? "text-forest-700" : "text-ink-300")}
-                    />
-                    <span
-                      className={cn(
-                        "mt-1 text-[10px] font-semibold tracking-[0.04em] uppercase",
-                        active ? "text-forest-700" : "text-ink-500",
-                      )}
-                    >
-                      {item.title}
-                    </span>
-                  </div>
-                  {idx < distributeStepConfig.length - 1 && (
-                    <div className="h-px w-10 bg-border" />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <Distribute
-            currentStep={distributeStep}
-            setCurrentStep={setDistributeStep}
-            setOpen={setDistributeDialog}
-            openCompleted={openCompleted}
-            setOpenCompleted={setOpenCompleted}
-            setDispatchModal={setAddDispatchModal}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={openCompleted} onOpenChange={setOpenCompleted}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="sr-only">Distribution successful</AlertDialogTitle>
-            <AlertDialogDescription className="sr-only">
-              Your product distribution has been initiated.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className="flex flex-col items-center justify-center py-4">
-            <div className="bg-forest-500/15 size-20 rounded-full flex items-center justify-center">
-              <div className="bg-forest-500/15 size-16 rounded-full flex items-center justify-center">
-                <div className="bg-forest-500 size-12 rounded-full flex items-center justify-center">
-                  <Check className="size-5 text-white" />
-                </div>
-              </div>
-            </div>
-            <h3 className="mt-4 text-[20px] font-bold text-foreground">Successful</h3>
-            <span className="mt-1 text-[13px] text-muted-foreground text-center max-w-[220px]">
-              Your product distribution has been initiated.
-            </span>
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel className="w-full">Close</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog open={addDispatchModal} onOpenChange={setAddDispatchModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add one-time dispatch</DialogTitle>
-            <DialogDescription>Register a rider for this distribution.</DialogDescription>
-          </DialogHeader>
-
-          <div className="mt-2 flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="dispatch-name">Dispatch name</Label>
-              <Input id="dispatch-name" placeholder="e.g. Dispatch IV" />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="dispatch-phone">Phone number</Label>
-              <Input id="dispatch-phone" type="tel" placeholder="+234902 …" />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label>Vehicle</Label>
-              <div className="flex items-center gap-3">
-                {["Motorcycle", "Car"].map((item, index) => {
-                  const active = selectedRide === index;
-                  return (
-                    <button
-                      type="button"
-                      key={item}
-                      onClick={() => setSelectedRide(index)}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-md border transition-colors",
-                        active
-                          ? "border-forest-500 bg-forest-50 text-forest-700"
-                          : "border-border bg-paper text-foreground hover:bg-ink-50",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "size-4 rounded-full border flex items-center justify-center transition-colors",
-                          active ? "border-forest-500" : "border-ink-300",
-                        )}
-                      >
-                        {active && <span className="size-2 rounded-full bg-forest-500" />}
-                      </span>
-                      <span className="text-[13px] font-semibold">{item}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="dispatch-plate">Plate number</Label>
-              <Input id="dispatch-plate" placeholder="e.g. BND-209-JX" />
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <Button variant="ghost" className="text-forest-700">
-              <Plus className="size-4" /> Register dispatch
-            </Button>
-            <Button
-              onClick={() => {
-                setDistributeStep(2);
-                setDistributeDialog(true);
-                setAddDispatchModal(false);
-              }}
-            >
-              Use dispatch <ArrowRight className="size-4" />
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

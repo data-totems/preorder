@@ -107,3 +107,18 @@ export const declineOrder = async (orderId: number): Promise<AxiosResponse<Order
         throw error;
     }
 }
+
+export const shipOrder = async (orderId: number): Promise<AxiosResponse<Order>> => {
+    const token = localStorage.getItem("buzzToken")
+    try {
+        const response = await axios.patch<Order>(`${baseUrl}/orders/${orderId}/ship/`, {}, {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        });
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
