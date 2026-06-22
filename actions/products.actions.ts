@@ -121,15 +121,21 @@ export const listDispatch = async () => {
 export const createDispatch = async ({
     name, phone_number, address, next_of_kin, utility_bill, bank_name, account_number, account_name, vehicle_type, plate_number, location_area, peferred_transport_area, is_available
 }: {
-    name: string, phone_number: string, is_available: boolean, peferred_transport_area: string, location_area: string, address: string, 
-    account_number: string, account_name: string, plate_number: string, utility_bill: string, next_of_kin: string, vehicle_type: string, bank_name: string
+    name: string, phone_number: string, is_available: boolean, peferred_transport_area: string, location_area: string, address: string,
+    account_number: string, account_name: string, plate_number: string, utility_bill?: string, next_of_kin: string, vehicle_type: string, bank_name: string
 }) => {
     const token = localStorage.getItem('buzzToken');
 
+    // utility_bill is an ImageField on the backend; sending an empty string
+    // fails validation with "data was not a file". Omit when not provided.
+    const payload: Record<string, unknown> = {
+        name, phone_number, address, next_of_kin, bank_name, account_number, account_name,
+        vehicle_type, plate_number, location_area, peferred_transport_area, is_available,
+    };
+    if (utility_bill) payload.utility_bill = utility_bill;
+
     try {
-        const response = await axios.post(`${baseUrl}/dispatch/list_update/`, {
-            name, phone_number, address, next_of_kin, utility_bill, bank_name, account_number, account_name, vehicle_type, plate_number, location_area, peferred_transport_area, is_available
-        }, {
+        const response = await axios.post(`${baseUrl}/dispatch/list_update/`, payload, {
             headers: {
                 "Authorization": `token ${token}`
             }

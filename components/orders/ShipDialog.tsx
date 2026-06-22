@@ -104,7 +104,6 @@ export default function ShipDialog({ orderId, shipping, onConfirm }: Props) {
         account_name: "—",
         location_area: "Local",
         peferred_transport_area: "anywhere",
-        utility_bill: "",
         is_available: true,
       });
       const added: Dispatcher = r.data;
