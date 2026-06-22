@@ -1,26 +1,56 @@
-import Image from "next/image"
+"use client";
+import { Card } from "@/components/ui/card";
+import Image from "next/image";
+import Link from "next/link";
 
-const ProductCard = ({name, price, type, onPress, image_url}: ProductProps) => {
-  return (
-    <div className="flex flex-col gap-4 cursor-pointer" 
-    onClick={onPress}
-    >
-        <div className={` bg-white flex flex-col items-center justify-center ${type === 'market' ? 'lg:w-[227px] lg:h-[264px] ' : ' lg:w-[110px] lg:h-[128px]'}  w-full `}>
-            <Image src={image_url ? image_url : ''} alt="Product image" width={200} height={200} />
-        </div>
-
-        <div className="flex flex-col gap-2.5">
-            <h2 className={` ${type === 'market' ? 'lg:w-[227px] ' : 'lg:w-[130px] '} w-full text-[12px] font-[500] `}>{name}</h2>
-            {price && (
-                <div className="text-[#F48614] flex gap-0.5 ">
-                <span className="text-[8px] ">NGN</span>
-            <h2 className="text-[15px] font-[600] ">{price}</h2>
-            </div>
-            )}
-          
-        </div>
-    </div>
-  )
+interface ProductCardProps {
+  id: number;
+  name: string;
+  price?: string | number;
+  image_url?: string;
+  storeName?: string;
+  storeHref?: string;
+  href?: string;
 }
 
-export default ProductCard
+const ProductCard = ({ id, name, price, image_url, storeName, storeHref, href }: ProductCardProps) => {
+  const target = href ?? `/marketplace/product/${id}`;
+  return (
+    <Link href={target} className="group block">
+      <Card variant="flat" padding="none" className="overflow-hidden">
+        <div className="relative aspect-square w-full bg-ink-100 overflow-hidden">
+          {image_url && (
+            <Image
+              src={image_url}
+              alt={name}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            />
+          )}
+        </div>
+        <div className="p-4">
+          <div className="text-[18px] leading-[26px] font-semibold text-foreground line-clamp-2 min-h-[52px]">
+            {name}
+          </div>
+          {price !== undefined && (
+            <div className="mt-1 text-[22px] leading-[30px] font-bold text-forest-700 tracking-[-0.005em]">
+              ₦{price}
+            </div>
+          )}
+          {storeName && (
+            <Link
+              href={storeHref ?? "#"}
+              className="mt-1 block text-[12px] font-medium tracking-[0.02em] text-muted-foreground hover:text-foreground"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {storeName}
+            </Link>
+          )}
+        </div>
+      </Card>
+    </Link>
+  );
+};
+
+export default ProductCard;

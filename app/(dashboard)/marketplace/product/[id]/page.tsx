@@ -1,5 +1,5 @@
 'use client'
-import Navbar from "@/components/shared/Navbar"
+import PageHeader from "@/components/shared/PageHeader"
 import { Switch } from "@/components/ui/switch"
 import { ArchiveRestore, ImagePlus, LinkIcon, Loader, PenIcon, PlusIcon, Trash, Upload } from "lucide-react"
 import Image from "next/image"
@@ -228,10 +228,20 @@ const ProductDetails = () => {
   if(!product) return <LoadingModal />
   return (
     <div>
-        <Navbar leftType='arrow' showIcon  primarybtn="Create Product"  width="168px" height="40px"  />
+        <PageHeader
+          eyebrow="PRODUCT"
+          title={product?.name ?? "Loading…"}
+          description={product?.price ? `₦${product.price}` : undefined}
+          actions={
+            <>
+              <Button variant="outline" onClick={() => setOpenDialog(true)}>Edit</Button>
+              {/* archive/delete buttons remain in the body panel below */}
+            </>
+          }
+        />
 
         {product && (
-          <div className="mt-6">
+          <div className="mt-6 px-6 md:px-10">
             <SharePanel
               stats={shareStats}
               shareTitle={product.name}
@@ -240,7 +250,7 @@ const ProductDetails = () => {
           </div>
         )}
 
-        <div className="mt-10 flex lg:flex-row flex-col  justify-between gap-5  ">
+        <div className="mt-10 px-6 md:px-10 pb-12 flex lg:flex-row flex-col  justify-between gap-5  ">
           <div className="w-full">
 
             <Image src={currentImag ? currentImag : (product?.images?.[0]?.image_url ?? product?.image_url ?? "")} alt="product1" width={350} height={350} />
@@ -262,7 +272,7 @@ const ProductDetails = () => {
               </div>
             </div>
 
-            <div className="bg-[#F0F0F0] w-full h-[200px] p-5 mt-4 rounded-[13px] gap-3 flex flex-col ">
+            <div className="bg-ink-100 w-full h-[200px] p-5 mt-4 rounded-[13px] gap-3 flex flex-col ">
               <Dialog onOpenChange={setOpenDialog} open={openDialog}>
   <DialogTrigger>
      <div className="cursor-pointer flex items-center gap-7 ">
@@ -279,17 +289,17 @@ const ProductDetails = () => {
 
     <div className="flex flex-col gap-6 ">
       <div className="flex flex-col gap-3">
-        <Label className="font-[700] text-[#03140A80] ">PRODUCT NAME</Label>
+        <Label className="font-[700] text-ink-500 ">PRODUCT NAME</Label>
 
-        <Input  className="bg-[#F0F0F0] rounded-[12px] " placeholder="Enter product name" defaultValue={updateDetails?.name} onChange={(e) => setUpdateDetails({...updateDetails, name: e.target.value})} />
+        <Input  className="bg-ink-100 rounded-md " placeholder="Enter product name" defaultValue={updateDetails?.name} onChange={(e) => setUpdateDetails({...updateDetails, name: e.target.value})} />
       </div>
 
         <div className="flex flex-col gap-3">
-        <Label className="font-[700] text-[#03140A80] ">PRICE</Label>
-        <div className="bg-[#F0F0F0] h-[40px] flex items-center gap-1.5  rounded-[12px] ">
+        <Label className="font-[700] text-ink-500 ">PRICE</Label>
+        <div className="bg-ink-100 h-[40px] flex items-center gap-1.5  rounded-md ">
           <div className="pl-2">
-             <div className="w-[42px] h-[34px] bg-[#27BA5F1F] flex flex-col rounded-[8px] items-center justify-center">
-            <span className="text-[12px] text-[#27BA5F] ">NGN</span>
+             <div className="w-[42px] h-[34px] bg-forest-500/10 flex flex-col rounded-sm items-center justify-center">
+            <span className="text-[12px] text-forest-500 ">NGN</span>
           </div>
           </div>
          
@@ -299,22 +309,22 @@ const ProductDetails = () => {
       </div>
 
       <div className="flex flex-col gap-3">
-        <Label className="font-[700] text-[#03140A80] ">PRODUCT DESCRIPTION</Label>
+        <Label className="font-[700] text-ink-500 ">PRODUCT DESCRIPTION</Label>
 
-        <Textarea  className="bg-[#F0F0F0] rounded-[12px] text-[#03140A80] " placeholder="Enter product name" defaultValue={`${updateDetails?.description}`}
+        <Textarea  className="bg-ink-100 rounded-md text-ink-500 " placeholder="Enter product name" defaultValue={`${updateDetails?.description}`}
         onChange={(e) => setUpdateDetails({...updateDetails, description: e.target.value})}
          />
       </div>
 
         {/* <div className="flex flex-col gap-3">
-        <Label className="font-[700] text-[#03140A80] ">CATEGORY</Label>
+        <Label className="font-[700] text-ink-500 ">CATEGORY</Label>
 
         <div className="flex items-center gap-6 ">
           {categories.map((category, index) => (
             <div onClick={() => setActiveCategory(index)} key={index} className="flex items-center gap-4 ">
-              <div className={ `border h-[16px] w-[16px] rounded-full ${activeCategory === index ? 'border-[#27BA5F]' : 'border-[#D9D9D9] '} flex flex-col items-center justify-center  `} >
+              <div className={ `border h-[16px] w-[16px] rounded-full ${activeCategory === index ? 'border-forest-500' : 'border-[#D9D9D9] '} flex flex-col items-center justify-center  `} >
                 {activeCategory === index && (
-                  <div className="bg-[#27BA5F] h-[12px] w-[12px] rounded-full " />
+                  <div className="bg-forest-500 h-[12px] w-[12px] rounded-full " />
                 )}
               </div>
               <span>{category}</span>
@@ -322,7 +332,7 @@ const ProductDetails = () => {
           ))}
         </div>
 
-        <div className="flex items-center gap-5 text-[#27BA5F] font-semibold  ">
+        <div className="flex items-center gap-5 text-forest-500 font-semibold  ">
           <PlusIcon />
           Add Category
         </div>
@@ -356,7 +366,7 @@ const ProductDetails = () => {
                 <div className="flex flex-col gap-6">
                   {/* Image type selector */}
                   <div className="flex flex-col gap-3">
-                    <Label className="font-[700] text-[#03140A80]">SELECT IMAGE TYPE</Label>
+                    <Label className="font-[700] text-ink-500">SELECT IMAGE TYPE</Label>
                     <Select 
                       value={selectedImageType} 
                       onValueChange={(value: 'front' | 'back' | 'left' | 'right') => setSelectedImageType(value)}
@@ -374,7 +384,7 @@ const ProductDetails = () => {
                   </div>
                   {/* File upload section */}
                   <div className="flex flex-col gap-3">
-                    <Label className="font-[700] text-[#03140A80]">UPLOAD NEW IMAGE</Label>
+                    <Label className="font-[700] text-ink-500">UPLOAD NEW IMAGE</Label>
                     <div className="border-2 border-dashed border-[#D9D9D9] rounded-[15px] p-6 text-center">
                       <input
                         type="file"
@@ -387,8 +397,8 @@ const ProductDetails = () => {
                         htmlFor="image-upload" 
                         className="cursor-pointer flex flex-col items-center gap-3"
                       >
-                        <Upload className="w-8 h-8 text-[#03140A80]" />
-                        <span className="text-[#03140A80]">
+                        <Upload className="w-8 h-8 text-ink-500" />
+                        <span className="text-ink-500">
                           {selectedFile ? selectedFile.name : 'Click to upload image'}
                         </span>
                         <span className="text-sm text-gray-500">
@@ -400,8 +410,8 @@ const ProductDetails = () => {
                     {/* Preview of selected file */}
                     {previewImage && (
                       <div className="mt-4">
-                        <Label className="font-[700] text-[#03140A80] mb-2 block">PREVIEW</Label>
-                        <div className="bg-[#F0F0F0] w-full h-[120px] flex items-center justify-center rounded-[15px] overflow-hidden">
+                        <Label className="font-[700] text-ink-500 mb-2 block">PREVIEW</Label>
+                        <div className="bg-ink-100 w-full h-[120px] flex items-center justify-center rounded-[15px] overflow-hidden">
                           <Image 
                             src={previewImage} 
                             alt="Preview" 
@@ -455,7 +465,7 @@ const ProductDetails = () => {
     </AlertDialogHeader>
     <AlertDialogFooter className="flex justify-center items-center ">
       <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction onClick={toggleArchive} className="bg-[#27BA5F] hover:bg-green-400">Archive product</AlertDialogAction>
+      <AlertDialogAction onClick={toggleArchive} className="bg-forest-500 hover:bg-green-400">Archive product</AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
                </AlertDialog>
@@ -464,7 +474,7 @@ const ProductDetails = () => {
   <AlertDialogTrigger>
      <div className="cursor-pointer flex items-center gap-7 ">
                 <Trash color="#ED2525" fill="#ED2525" />
-                <span className="text-[16px] text-[#ED2525] ">Delete product</span>
+                <span className="text-[16px] text-destructive ">Delete product</span>
               </div>
   </AlertDialogTrigger>
   <AlertDialogContent>
@@ -476,7 +486,7 @@ const ProductDetails = () => {
     </AlertDialogHeader>
     <AlertDialogFooter className="flex justify-center items-center ">
       <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction onClick={handleDelete} className="bg-[#ED2525] hover:bg-red-400">Delete product</AlertDialogAction>
+      <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-red-400">Delete product</AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
         </AlertDialog>
@@ -484,7 +494,7 @@ const ProductDetails = () => {
               <hr />
             </div>
           </div>
-          <div className="w-full bg-[#F0F0F0] h-fit rounded-[12px] p-5  ">
+          <div className="w-full bg-ink-100 h-fit rounded-md p-5  ">
             <h2 className="text-[20px] font-[500] ">{updateDetails?.name}</h2>
             
 
@@ -494,15 +504,15 @@ const ProductDetails = () => {
             <h2 className="text-[16px] font-[600] ">{updateDetails?.price}</h2>
             </div>
 
-            <Link className="bg-[#27BA5F1F] flex p-2 items-center gap-3  h-[31px] rounded-[15px] " href='/'>
+            <Link className="bg-forest-500/10 flex p-2 items-center gap-3  h-[31px] rounded-[15px] " href='/'>
                         <LinkIcon  color="#27BA5F" width={15} />
-                        <span className="text-[#27BA5F] text-[12px] font-[700] ">Copy Link</span>
+                        <span className="text-forest-500 text-[12px] font-[700] ">Copy Link</span>
                         </Link>
             </div>
 
             <h3 className="font-extrabold mt-9 ">PRODUCT DESCRIPTION</h3>
 
-            <p className="pt-4 text-[#03140A80] ">
+            <p className="pt-4 text-ink-500 ">
              {updateDetails?.description}
             </p>
           </div>
