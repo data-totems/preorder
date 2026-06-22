@@ -35,8 +35,18 @@ import { formatDateWithOrdinal, formatTimestamp } from "@/lib/reuseable";
 import { cn } from "@/lib/utils";
 import type { Order } from "@/types/api";
 import { errorMessage } from "@/lib/errors";
+import ShipDialog from "@/components/orders/ShipDialog";
 
-type Row = { order: Order; actions?: React.ReactNode };
+interface OrderWithDispatcher extends Order {
+  dispatcher_details?: {
+    id: number;
+    name: string;
+    phone_number: string;
+    vehicle_type?: string;
+  } | null;
+}
+
+type Row = { order: OrderWithDispatcher; actions?: React.ReactNode };
 
 const OrderRow = ({ order, actions }: Row) => {
   const [expanded, setExpanded] = useState(false);
@@ -100,6 +110,14 @@ const OrderRow = ({ order, actions }: Row) => {
                 {order.customer_address}
               </span>
             </div>
+            {order.dispatcher_details && (
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-muted-foreground">Rider</span>
+                <span className="text-foreground text-right">
+                  {order.dispatcher_details.name} · {order.dispatcher_details.phone_number}
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -214,9 +232,9 @@ const TabSkeleton = () => (
 const Orders = () => {
   const [currentTab, setCurrentTab] = useState<string>("incoming");
 
-  const [orders, setOrders] = useState<Order[] | null>(null);
-  const [acceptedOrders, setAcceptedOrders] = useState<Order[] | null>(null);
-  const [shippedOrders, setShippedOrders] = useState<Order[] | null>(null);
+  const [orders, setOrders] = useState<OrderWithDispatcher[] | null>(null);
+  const [acceptedOrders, setAcceptedOrders] = useState<OrderWithDispatcher[] | null>(null);
+  const [shippedOrders, setShippedOrders] = useState<OrderWithDispatcher[] | null>(null);
 
   const [accepting, setAccepting] = useState<number | null>(null);
   const [declining, setDeclining] = useState<number | null>(null);
@@ -287,21 +305,21 @@ const Orders = () => {
     }
   };
 
-  const handleShip = async (orderId: number) => {
+  const handleShip = async (orderId: number, dispatcherId: number): Promise<boolean> => {
     setShipping(orderId);
     try {
-      const response = await shipOrder(orderId);
+      const response = await shipOrder(orderId, dispatcherId);
       if (response.status === 200) {
-        toast.success("Order marked shipped");
-        const shipped = acceptedOrders?.find((o) => o.id === orderId);
+        toast.success("Order shipped");
+        const updated = response.data as OrderWithDispatcher;
         setAcceptedOrders((prev) => (prev ?? []).filter((o) => o.id !== orderId));
-        if (shipped) {
-          const stamped = { ...shipped, updated_at: new Date().toISOString() };
-          setShippedOrders((prev) => [stamped, ...(prev ?? [])]);
-        }
+        setShippedOrders((prev) => [updated, ...(prev ?? [])]);
+        return true;
       }
+      return false;
     } catch (error) {
       toast.error(errorMessage(error, "Could not ship order."));
+      return false;
     } finally {
       setShipping(null);
     }
@@ -382,19 +400,11 @@ const Orders = () => {
               orders={acceptedOrders}
               getDate={(o) => o.updated_at}
               renderActions={(order) => (
-                <Button
-                  size="sm"
-                  disabled={shipping === order.id}
-                  onClick={() => handleShip(order.id)}
-                >
-                  {shipping === order.id ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Truck className="size-4" /> Ship
-                    </>
-                  )}
-                </Button>
+                <ShipDialog
+                  orderId={order.id}
+                  shipping={shipping === order.id}
+                  onConfirm={handleShip}
+                />
               )}
             />
           )}
