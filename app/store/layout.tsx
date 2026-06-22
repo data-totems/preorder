@@ -1,36 +1,28 @@
-import { ReactNode } from "react";
-import { Home, Search, Grid } from "lucide-react";
+import TopNav from "@/components/shared/TopNav";
+import Link from "next/link";
+import { Search } from "lucide-react";
 
-const BottomNav = () => {
+export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t">
-      <div className="flex justify-around items-center h-16">
-        <button className="flex flex-col items-center text-[#27BA5F]">
-          <Home size={20} />
-          <span className="text-xs">Marketplace</span>
-        </button>
-
-        <button className="flex flex-col items-center text-gray-400">
-          <Search size={20} />
-          <span className="text-xs">Search</span>
-        </button>
-
-        <button className="flex flex-col items-center text-gray-400">
-          <Grid size={20} />
-          <span className="text-xs">Category</span>
-        </button>
-      </div>
-    </nav>
-  );
-};
-
-const StoreLayout = ({ children }: { children: ReactNode }) => {
-  return (
-    <div className="min-h-screen bg-[#FFF6E5] pb-20">
+    <div className="min-h-screen bg-paper">
+      <TopNav
+        variant="storefront"
+        centerSlot={
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-ink-300" />
+            <input
+              placeholder="Search stores or products"
+              className="w-full h-10 rounded-md bg-ink-100 border-0 pl-10 pr-3 text-[14px] placeholder:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:bg-white"
+            />
+          </div>
+        }
+        rightSlot={
+          <Link href="/login" className="text-[13px] font-medium text-ink-500 hover:text-foreground">
+            Are you a merchant? <span className="text-forest-500">Sign in →</span>
+          </Link>
+        }
+      />
       {children}
-      <BottomNav />
     </div>
   );
-};
-
-export default StoreLayout;
+}

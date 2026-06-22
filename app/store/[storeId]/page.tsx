@@ -1,130 +1,63 @@
-'use client'
-
-import { getStoreDetails } from "@/actions/products.actions"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, ArrowRight } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
-import type { Product, PublicStoreResponse } from "@/types/api"
-import { errorMessage } from "@/lib/errors"
+"use client";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { getStoreDetails } from "@/actions/products.actions";
+import { toast } from "sonner";
+import { errorMessage } from "@/lib/errors";
+import MerchantHero from "@/components/store/MerchantHero";
+import ProductCard from "@/components/shared/ProductCard";
+import { Search } from "lucide-react";
+import type { Product, PublicStoreResponse } from "@/types/api";
 
 const StoreDetails = () => {
-    const router = useRouter();
-    const slug = usePathname().split('/')[2];
-    const [currentFiltter, setCurrentFiltter] = useState('All')
+  const slug = usePathname().split("/")[2];
+  const [store, setStore] = useState<PublicStoreResponse>();
+  const [query, setQuery] = useState("");
 
-    const [store, setStore] = useState<PublicStoreResponse>()
+  useEffect(() => {
+    getStoreDetails(slug)
+      .then((r) => setStore(r.data))
+      .catch((e) => toast.error(errorMessage(e, "Could not load store.")));
+  }, [slug]);
 
-    useEffect(() => {
-        const getStore = async () => {
-            try {
-                const response = await getStoreDetails(slug);
-                setStore(response.data);
+  if (!store) return null;
 
-              
-            } catch (error) {
-                toast.error(errorMessage(error, "Could not load store."))
-            }
-        }
-        getStore();
-    }, [])
-    
+  const products = (store.products ?? []).filter((p: Product) =>
+    query ? p.name?.toLowerCase().includes(query.toLowerCase()) : true
+  );
 
-    if(!store) return;
   return (
-    <div className="p-5 ">
-         <Button onClick={() => {router.back()}} variant={'ghost'}>
-            <ArrowLeft />
-        </Button>
-
-        <div className="bg-[#F0F0F0] w-full flex flex-col gap-4  mt-5  h-fit p-4 ">
-             <div className="flex items-center  justify-between">
-                                    <div className="flex items-center gap-3 ">
-                                        <div className="bg-[#E0D33D] w-[40px] h-[40px] rounded-[30px] ">
-                                            <Image src={'/avatar.png'} alt="seller img" width={40} height={40}  />
-                                        </div>
-                                        <div className="">
-                                            <h2 className="text-[#03140A80] text-[16px] ">{store.merchant?.business_name}</h2>
-                                            <span className="text-[12px] text-[#03140A80]">Joined 2 weeks ago</span>
-                                        </div>
-                                        
-                                    </div>
-            
-                                     <div className="flex items-center bg-white p-3 h-[24px] rounded-[12px] gap-2  ">
-                                                    <Image
-                                                    src={'/gem.png'}
-                                                    alt="gem"
-                                                    width={16}
-                                                    height={16}
-                                                     />
-                                                     <h2 className="text-[12px] text-[#03140A80] font-[500] ">Verified ID</h2>
-                                                </div>
-                                </div>
-                                <div className="border w-full h-0" />
-
-                                <div className="mt-5 flex flex-col gap-4 ">
-                                    <h2 className="font-bold uppercase text-md ">contact</h2>
-                                    <div className="">
-                                        <div className="flex items-center justify-between text-[#03140A80] text-sm ">
-                                            {store.merchant?.phone_number}
-
-                                            <Link className="text-sm text-[#27BA5F] font-bold" href={'/store'}>Chat on Whatsapp</Link>
-                                        </div>
-
-                                          <div className="flex items-center justify-between text-[#03140A80] text-sm ">
-                                            {store.merchant?.business_email}
-                                        </div>
-                                    </div>
-                                </div>
-        </div>
-
-        <div className="mt-7">
-            <h2 className="font-bold text-xl uppercase">marketplace</h2>
-
-            <div className="flex items-center gap-7 mt-4">
-                {["All", "Phone", "Tablets", "Laptop"].map((item) => (
-                    <div key={item} onClick={() => setCurrentFiltter(item)} className={`${currentFiltter === item ? 'bg-[#27BA5F1F] text-[#27BA5F] p-4 rounded-[12px] font-bold ' : 'text-[#03140A4D] '}`}>
-                        <h1>{item}</h1>
-                    </div>
-                ))}
-            </div>
-
-          <div className="mt-10">
-            <ProductGrid items={store.products ?? []} />
+    <>
+      <MerchantHero merchant={store.merchant ?? {}} />
+      <div className="sticky top-14 md:top-16 z-30 bg-paper/95 backdrop-blur border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 md:px-10 py-4">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-ink-300" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search products"
+              className="w-full h-10 rounded-md bg-ink-100 border-0 pl-10 pr-3 text-[14px] placeholder:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:bg-white"
+            />
           </div>
         </div>
-    </div>
-  )
-}
-
-export default StoreDetails;
-
-
-
-const ProductGrid = ({ items }: { items: Product[] }) => {
-  return (
-    <div className="grid grid-cols-2 gap-4">
-      {items.map((item) => (
-        <Link href={`/store/product/${item.id}`}
-          key={item.id}
-          className="bg-white rounded-xl p-3 shadow-sm"
-        >
-          <img
-            src={item.images?.[0]?.image_url ?? ''}
-            alt="product"
-            className="w-full h-32 object-contain"
-          />
-          <h3 className="text-xs font-medium mt-2">
-          {item.name}
-          </h3>
-          <p className="text-orange-500 text-xs font-semibold">
-            NGN{item.price}
-          </p>
-        </Link>
-      ))}
-    </div>
+      </div>
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-8 pb-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {products.map((p: Product) => (
+            <ProductCard
+              key={p.id}
+              id={p.id}
+              name={p.name}
+              price={p.price}
+              image_url={p.images?.[0]?.image_url ?? undefined}
+              href={`/store/product/${p.id}`}
+            />
+          ))}
+        </div>
+      </section>
+    </>
   );
 };
+
+export default StoreDetails;

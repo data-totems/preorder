@@ -1,146 +1,100 @@
-'use client'
-
-import { getAllProducts } from "@/actions/products.actions";
-import { Button } from "@/components/ui/button";
-import { ArrowUpRight, BellIcon } from "lucide-react";
-import Link  from 'next/link'
+"use client";
 import { useEffect, useState } from "react";
+import { getAllProducts } from "@/actions/products.actions";
+import ProductCard from "@/components/shared/ProductCard";
+import CategoryGrid from "@/components/store/CategoryGrid";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import type { Product } from "@/types/api";
 
 const Store = () => {
-
-  const [products, setProducts] = useState<Product[]>([])
-
+  const [products, setProducts] = useState<Product[]>([]);
   useEffect(() => {
-  const getProduct = async () => {
-    const response = await getAllProducts();
+    getAllProducts()
+      .then((r) => Array.isArray(r.data) && setProducts(r.data))
+      .catch(() => {});
+  }, []);
 
-    if(response.status === 200 && Array.isArray(response.data)) {
-       setProducts(response.data)
-    }
+  const trending = products.slice(0, 8);
+  const newest = [...products].reverse().slice(0, 8);
 
-  }
-
-  getProduct();
-  }, [])
-  
   return (
-    <div className="px-4 pt-4 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-gray-500 text-sm">Good morning</h1>
-        {/* <div className="w-8 h-8 bg-gray-200 rounded-full" /> */}
-        <Button variant={'ghost'} >
-          <BellIcon color="#A9AEAB" />
-        </Button>
-      </div>
+    <main className="max-w-7xl mx-auto">
+      <section className="px-6 md:px-10 py-12 md:py-16">
+        <Eyebrow tone="accent" className="block mb-3">BUZZMART</Eyebrow>
+        <h1 className="text-[44px] md:text-[56px] leading-[1.1] font-bold tracking-[-0.02em] text-foreground max-w-2xl">
+          Discover stores you&apos;ll love.
+        </h1>
+        <p className="mt-4 text-[17px] leading-[26px] text-muted-foreground max-w-xl">
+          Find products from merchants you can talk to directly. Every order is one tap to a real human on WhatsApp.
+        </p>
+        <div className="mt-8 max-w-xl relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-ink-300" />
+          <input
+            placeholder="Search products or stores"
+            className="w-full h-14 rounded-md bg-ink-100 border-0 pl-12 pr-4 text-[16px] placeholder:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:bg-white"
+          />
+        </div>
+      </section>
 
-      {/* Search */}
-      <div>
-        <input
-          placeholder="Search item"
-          className="w-full px-4 py-3 rounded-xl bg-gray-100 text-sm outline-none"
-        />
-      </div>
+      {trending.length > 0 && (
+        <section className="px-6 md:px-10 py-8">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <Eyebrow className="block mb-1">TRENDING NOW</Eyebrow>
+              <h2 className="text-[28px] leading-[36px] font-bold tracking-[-0.01em] text-foreground">Most clicked this week</h2>
+            </div>
+            <Button variant="link" className="text-forest-500">See all →</Button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {trending.map((p) => (
+              <ProductCard
+                key={p.id}
+                id={p.id}
+                name={p.name}
+                price={p.price}
+                image_url={p.images?.[0]?.image_url ?? undefined}
+                href={`/store/product/${p.id}`}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* Top Sellers */}
-      <SectionHeader href="/store/top-sellers" title="TOP SELLERS" color="bg-orange-500" />
-      <ProductGrid items={products} />
+      {newest.length > 0 && (
+        <section className="px-6 md:px-10 py-8">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <Eyebrow className="block mb-1">NEW ARRIVALS</Eyebrow>
+              <h2 className="text-[28px] leading-[36px] font-bold tracking-[-0.01em] text-foreground">Just listed</h2>
+            </div>
+            <Button variant="link" className="text-forest-500">See all →</Button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {newest.map((p) => (
+              <ProductCard
+                key={p.id}
+                id={p.id}
+                name={p.name}
+                price={p.price}
+                image_url={p.images?.[0]?.image_url ?? undefined}
+                href={`/store/product/${p.id}`}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* New Arrivals */}
-      <SectionHeader href="/store/new-arrival" title="NEW ARRIVALS" color="bg-yellow-400" />
-      <ProductGrid items={products} />
-
-      {/* Categories */}
-      <Categories />
-    </div>
+      <section className="px-6 md:px-10 py-8 pb-16">
+        <div className="mb-6">
+          <Eyebrow className="block mb-1">BROWSE BY CATEGORY</Eyebrow>
+          <h2 className="text-[28px] leading-[36px] font-bold tracking-[-0.01em] text-foreground">Categories</h2>
+        </div>
+        <CategoryGrid />
+      </section>
+    </main>
   );
 };
 
 export default Store;
-
-
-const SectionHeader = ({
-  title,
-  color,
-  href
-}: {
-  title: string;
-  color: string;
-  href: string
-}) => (
-  <div
-    className={`${color} text-white px-4 py-2 rounded-xl flex justify-between items-center`}
-  >
-    <div className="flex items-center gap-3 ">
-      <span className="font-semibold text-sm">{title}</span>
-      <img  className="h-[40px] w-[40px]" src={'/star.png'} alt="star" width={100} height={100} />
-    </div>
-    <Link href={`${href}`} className="flex items-center gap-3 ">
-      <span className="text-xs">See all</span>
-      <ArrowUpRight className="text-sm" size={20}  />
-    </Link>
-    
-  </div>
-);
-
-
-const ProductGrid = ({ items }: { items: Product[] }) => {
-  return (
-    <div className="grid grid-cols-2 gap-4">
-      {items.map((item) => (
-        <Link href={`/store/product/${item.id}`}
-          key={item.id}
-          className="bg-white rounded-xl p-3 shadow-sm"
-        >
-          <img
-            src={item.images?.[0]?.image_url ?? ''}
-            alt="product"
-            className="w-full h-32 object-contain"
-          />
-          <h3 className="text-xs font-medium mt-2">
-          {item.name}
-          </h3>
-          <p className="text-orange-500 text-xs font-semibold">
-            NGN{item.price}
-          </p>
-        </Link>
-      ))}
-    </div>
-  );
-};
-
-
-const Categories = () => {
-  const categories = [
-    "Outdoor Gear",
-    "Mobile Devices",
-    "Home Appliances",
-    "Notebooks",
-    "Fitness Equipment",
-    "E-Readers",
-    "Craft Supplies",
-    "Gadgets",
-    "Artistic Materials",
-    "Smart Devices",
-    "Creative Supplies",
-    "Tech Innovations",
-    "DIY Essentials",
-    "Electronic Accessories",
-  ];
-
-  return (
-    <div className="bg-white rounded-xl p-4">
-      <div className="flex justify-between mb-3">
-        <h3 className="text-sm font-semibold">CATEGORIES</h3>
-        <span className="text-xs text-gray-400">See all →</span>
-      </div>
-
-      <div className="grid grid-cols-2 gap-y-2 text-xs text-gray-600">
-        {categories.map((cat) => (
-          <span key={cat}>{cat}</span>
-        ))}
-      </div>
-    </div>
-  );
-};
