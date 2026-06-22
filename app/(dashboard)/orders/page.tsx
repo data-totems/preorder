@@ -167,7 +167,7 @@ const Orders = () => {
         eyebrow="ORDERS"
         title="Your orders"
         description="Manage incoming orders and dispatch."
-        actions={<Button onClick={() => setDistributeDialog(true)}>Distribute</Button>}
+        actions={<Button onClick={() => setDistributeDialog(true)}><Truck className="size-4" /> Distribute</Button>}
       />
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="px-6 md:px-10">
@@ -579,8 +579,8 @@ const Orders = () => {
           <AlertDialogTitle></AlertDialogTitle>
           <div className="">
             <div className="flex flex-col items-center justify-center">
-              <div className="bg-[#27BA5F29] w-[85px] h-[85px] rounded-full flex flex-col items-center justify-center">
-                <div className="bg-[#27BA5F29] w-[69px] h-[69px] rounded-full flex items-center justify-center flex-col">
+              <div className="bg-forest-500/16 w-[85px] h-[85px] rounded-full flex flex-col items-center justify-center">
+                <div className="bg-forest-500/16 w-[69px] h-[69px] rounded-full flex items-center justify-center flex-col">
                   <div className="bg-forest-500 w-[54px] h-[54px] rounded-full flex flex-col items-center justify-center">
                     <Check color="white" size={20} />
                   </div>

@@ -162,7 +162,7 @@ const BussinessDetails = () => {
 
                         <div className="flex flex-col gap-3 ">
                       <h2 className="text-ink-500 font-[700] ">INDUSTRY</h2>
-                      <div className="flex items-center bg-white w-fit p-1 text-[12px] text-[#03140A] rounded-[4px] gap-5 ">
+                      <div className="flex items-center bg-white w-fit p-1 text-[12px] text-foreground rounded-sm gap-5 ">
                           <span>Technology</span>
                           
                       </div>
