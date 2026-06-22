@@ -2,7 +2,7 @@
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, MapPin, Star, Copy } from "lucide-react";
+import { MessageCircle, MapPin, Copy } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -40,17 +40,13 @@ const MerchantHero = ({ merchant }: Props) => {
               {merchant.business_description}
             </p>
           )}
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge variant="success">Verified</Badge>
-            {merchant.address && (
+          {merchant.address && (
+            <div className="mt-4 flex flex-wrap gap-2">
               <Badge>
                 <MapPin className="size-3" /> {merchant.address}
               </Badge>
-            )}
-            <Badge variant="info">
-              <Star className="size-3" /> 4.8 · 123 orders
-            </Badge>
-          </div>
+            </div>
+          )}
           <div className="mt-6 flex flex-wrap gap-3">
             {merchant.phone_number && (
               <a
