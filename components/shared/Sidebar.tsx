@@ -51,11 +51,12 @@ const Sidebar = () => {
 
       <div className="mt-auto pt-4 border-t border-white/10">
         <button
+          type="button"
           onClick={handleLogout}
-          className="w-full h-11 px-3 rounded-md flex items-center gap-3 text-[15px] text-ink-200 hover:bg-white/5 hover:text-white transition-colors duration-150 border border-white/10"
           aria-label="Log out"
+          className="group w-full h-11 px-3 rounded-md flex items-center gap-3 text-[15px] font-medium text-ink-200 hover:bg-destructive/15 hover:text-white transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 focus-visible:ring-offset-forest-900"
         >
-          <LogOut className="size-5 text-ink-300" />
+          <LogOut className="size-5 text-ink-300 group-hover:text-white transition-colors" />
           <span>Log out</span>
         </button>
       </div>
