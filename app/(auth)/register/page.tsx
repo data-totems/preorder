@@ -19,6 +19,7 @@ import { toast } from "sonner"
 import { registeUser } from "@/actions/auth.actions"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { Eyebrow } from "@/components/ui/eyebrow"
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -57,7 +58,7 @@ const Register = () => {
         if(response.status === 201) {
             toast.success("Account Registered")
 
-            
+
               localStorage.setItem('buzzToken', response.data.Token);
 
               router.push('/setup')
@@ -72,7 +73,7 @@ const Register = () => {
 
   // Watch password to validate in real-time
   const password = form.watch("password", "")
-  
+
   const validatePassword = (password: string) => {
     const hasLowerCase = /[a-z]/.test(password)
     const hasUpperCase = /[A-Z]/.test(password)
@@ -91,110 +92,132 @@ const Register = () => {
   const passwordValidation = validatePassword(password)
 
   return (
-    <div>
-      <div className="flex flex-col gap-1">
-        <h2 className="font-bold text-2xl">Create Account</h2>
-        <h1 className="font-semibold text-[#03140A80] text-sm">
-          Already have an account? <Link href={'/login'} className="text-[#27BA5F]">Login</Link>
-        </h1>
-      </div>
+    <div className="flex-1 grid lg:grid-cols-2">
+      <section className="px-6 md:px-12 py-12 md:py-20 flex items-center justify-center">
+        <div className="w-full max-w-md">
+          <Eyebrow className="block mb-3">GET STARTED</Eyebrow>
+          <h1 className="text-[44px] leading-[52px] font-bold tracking-[-0.02em] text-foreground">Create your store</h1>
+          <p className="mt-3 text-[17px] leading-[26px] text-muted-foreground">
+            Start selling in minutes.
+          </p>
 
-      <div className="mt-12">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#03140A80] uppercase font-bold">Email</FormLabel>
-                  <FormControl>
-                    <Input 
-                      className="bg-[#F0F0F0] rounded-[12px] max-w-lg" 
-                      placeholder="Enter your email" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div>
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[#03140A80] uppercase font-bold">Create password</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="password"
-                        className="bg-[#F0F0F0] rounded-[12px] max-w-lg" 
-                        placeholder="Enter your password" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <div className="mt-8">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="pt-4 flex flex-col gap-2">
-                <h2 className="font-bold">Password must contain:</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-1">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${passwordValidation.hasLowerCase ? 'bg-green-500' : 'bg-[#03140A1F]'}`} />
-                    <span className={`text-sm ${passwordValidation.hasLowerCase ? 'text-green-600 font-medium' : 'text-[#03140A4D]'}`}>
-                      At least one lowercase letter
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${passwordValidation.hasUpperCase ? 'bg-green-500' : 'bg-[#03140A1F]'}`} />
-                    <span className={`text-sm ${passwordValidation.hasUpperCase ? 'text-green-600 font-medium' : 'text-[#03140A4D]'}`}>
-                      At least one uppercase letter
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${passwordValidation.hasNumber ? 'bg-green-500' : 'bg-[#03140A1F]'}`} />
-                    <span className={`text-sm ${passwordValidation.hasNumber ? 'text-green-600 font-medium' : 'text-[#03140A4D]'}`}>
-                      At least one number
-                    </span>
+                <div>
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Create password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Enter your password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="pt-4 flex flex-col gap-2">
+                    <h2 className="font-semibold text-sm text-foreground">Password must contain:</h2>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-1">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${passwordValidation.hasLowerCase ? 'bg-forest-500' : 'bg-ink-200'}`} />
+                        <span className={`text-sm ${passwordValidation.hasLowerCase ? 'text-forest-500 font-medium' : 'text-ink-500'}`}>
+                          At least one lowercase letter
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${passwordValidation.hasUpperCase ? 'bg-forest-500' : 'bg-ink-200'}`} />
+                        <span className={`text-sm ${passwordValidation.hasUpperCase ? 'text-forest-500 font-medium' : 'text-ink-500'}`}>
+                          At least one uppercase letter
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${passwordValidation.hasNumber ? 'bg-forest-500' : 'bg-ink-200'}`} />
+                        <span className={`text-sm ${passwordValidation.hasNumber ? 'text-forest-500 font-medium' : 'text-ink-500'}`}>
+                          At least one number
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#03140A80] uppercase font-bold">Confirm password</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="password"
-                      className="bg-[#F0F0F0] rounded-[12px] max-w-lg" 
-                      placeholder="Confirm your password" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Confirm your password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Button 
-              type="submit" 
-              className="w-full bg-[#27BA5F] hover:bg-green-400"
-              disabled={ isLoading}
-            >
-                {isLoading && (<Loader2 className="animate-spin" />)}
-              Create{isLoading && 'ing'} account
-            </Button>
-          </form>
-        </Form>
-      </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading && (<Loader2 className="animate-spin" />)}
+                  Create{isLoading && 'ing'} account
+                </Button>
+              </form>
+            </Form>
+          </div>
+
+          <div className="mt-10 flex items-center gap-4">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[12px] text-ink-500">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <p className="mt-6 text-[14px] text-ink-500">
+            Already have an account?{" "}
+            <Link href="/login" className="text-forest-500 font-semibold hover:underline underline-offset-4">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      <aside className="hidden lg:flex bg-forest-700 text-forest-50 p-12 flex-col justify-end min-h-[calc(100vh-4rem)]">
+        <Eyebrow tone="accent" className="block text-forest-400 mb-4">BUZZMART</Eyebrow>
+        <h2 className="text-[56px] leading-[64px] font-bold tracking-[-0.02em] text-white">
+          Sell more,<br />stress less.
+        </h2>
+        <p className="mt-6 text-[17px] leading-[26px] text-forest-50/80 max-w-md">
+          Shareable storefronts, lead capture, orders via WhatsApp. Everything your store needs in one place.
+        </p>
+      </aside>
     </div>
   )
 }
