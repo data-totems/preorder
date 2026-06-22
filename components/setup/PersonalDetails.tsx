@@ -13,11 +13,9 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import type { Dispatch, SetStateAction } from "react"
 import ImageUploader from "./ImageUploader"
 import { Card } from "@/components/ui/card"
-import { Eyebrow } from "@/components/ui/eyebrow"
 import { useSetupStore } from "@/zustand"
 
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
@@ -31,11 +29,9 @@ const formSchema = z.object({
  address: z.string()
 })
 
-const PersonalDetails = ({ setCurrentStep }: { setCurrentStep: (value: number) => void}) => {
+const PersonalDetails = ({ setCurrentStep }: { setCurrentStep: Dispatch<SetStateAction<1 | 2 | 3>>}) => {
 const { setStore } = useSetupStore((state) => state)
 
- const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -64,8 +60,6 @@ const { setStore } = useSetupStore((state) => state)
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
         <Card variant="flat" className="p-6 gap-6">
-          <Eyebrow className="block">PERSONAL DETAILS</Eyebrow>
-
           <FormField
             control={form.control}
             name="fullName"
@@ -205,10 +199,10 @@ const { setStore } = useSetupStore((state) => state)
           />
         </Card>
 
-        <div className="fixed left-0 right-0 bottom-0 bg-paper/95 backdrop-blur border-t border-border py-4 px-6 z-30">
+        <div className="fixed left-0 right-0 bottom-0 bg-paper/95 backdrop-blur border-t border-border pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] px-6 z-30">
           <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
             <div />
-            <Button type="submit" disabled={isLoading}>Continue →</Button>
+            <Button type="submit">Continue →</Button>
           </div>
         </div>
       </form>

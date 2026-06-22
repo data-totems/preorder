@@ -16,10 +16,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
+import type { Dispatch, SetStateAction } from "react"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card } from "@/components/ui/card"
-import { Eyebrow } from "@/components/ui/eyebrow"
 import { useSetupStore } from "@/zustand"
 import { getAccountDetails } from "@/actions/storage.actions"
 import { toast } from "sonner"
@@ -30,11 +30,11 @@ const formSchema = z.object({
  bankName: z.string(),
  accountNumber: z.string(),
 })
-const BankDetails = ({ isLoading, setIsLoading, banks, setCurrentStep }: { isLoading: boolean, setIsLoading: (value: boolean) => void, banks: FlutterwaveBank[], setCurrentStep: (value: number) => void }) => {
+const BankDetails = ({ isLoading, setIsLoading, banks, setCurrentStep }: { isLoading: boolean, setIsLoading: Dispatch<SetStateAction<boolean>>, banks: FlutterwaveBank[], setCurrentStep: Dispatch<SetStateAction<1 | 2 | 3>> }) => {
 const { setStore, store } = useSetupStore((state) => state);
 const [verified, setVerified] = useState(false);
 
-const [verifying, setVerfying] = useState(false);
+const [verifying, setVerifying] = useState(false);
 const [accountName, setAccountName] = useState("")
 
 
@@ -89,7 +89,7 @@ const [accountName, setAccountName] = useState("")
   }
 
   const handleVerifyAccount = async () => {
-    setVerfying(true)
+    setVerifying(true)
     try {
       const selectedBank = form.getValues("bankName")
       const accountNumber = form.getValues("accountNumber");
@@ -112,7 +112,7 @@ const [accountName, setAccountName] = useState("")
       const msg = data?.detail ?? data?.message ?? error?.message ?? "Could not verify account.";
       toast.error(msg)
     } finally {
-      setVerfying(false)
+      setVerifying(false)
     }
   }
 
@@ -120,8 +120,6 @@ const [accountName, setAccountName] = useState("")
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
         <Card variant="flat" className="p-6 gap-6">
-          <Eyebrow className="block">BANK DETAILS</Eyebrow>
-
           <FormField
             control={form.control}
             name="bankName"
@@ -137,7 +135,7 @@ const [accountName, setAccountName] = useState("")
                       {banks.length > 0 ? banks.map((bank) => (
                         <SelectItem key={bank.id} value={bank.name}>{bank.name}</SelectItem>
                       )) : (
-                        <h2>No bank found.</h2>
+                        <div role="presentation" className="px-3 py-2 text-sm text-ink-500">No bank found.</div>
                       )}
                     </SelectContent>
                   </Select>
@@ -183,7 +181,7 @@ const [accountName, setAccountName] = useState("")
           )}
         </Card>
 
-        <div className="fixed left-0 right-0 bottom-0 bg-paper/95 backdrop-blur border-t border-border py-4 px-6 z-30">
+        <div className="fixed left-0 right-0 bottom-0 bg-paper/95 backdrop-blur border-t border-border pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] px-6 z-30">
           <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
             <Button type="button" variant="ghost" onClick={() => setCurrentStep(2)}>Back</Button>
             <Button type="submit" disabled={isLoading || !verified}>Finish setup</Button>

@@ -14,10 +14,9 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useCallback, useState } from "react"
-import { useRouter } from "next/navigation"
+import type { Dispatch, SetStateAction } from "react"
 import { Textarea } from "../ui/textarea"
 import { Card } from "@/components/ui/card"
-import { Eyebrow } from "@/components/ui/eyebrow"
 import { Label } from "@/components/ui/label"
 import { useSetupStore } from "@/zustand"
 import SlugInput from "@/components/slug/SlugInput"
@@ -38,7 +37,7 @@ function slugify(s: string): string {
     .slice(0, 40);
 }
 
-const BussinessDetails = ({ setCurrentStep }: { setCurrentStep: (value: number) => void}) => {
+const BussinessDetails = ({ setCurrentStep }: { setCurrentStep: Dispatch<SetStateAction<1 | 2 | 3>>}) => {
 const { setStore, store } = useSetupStore((state) => state)
 
  const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +46,6 @@ const { setStore, store } = useSetupStore((state) => state)
    Boolean(store?.storeSlug)
  );
  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
-    const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -90,8 +88,6 @@ const { setStore, store } = useSetupStore((state) => state)
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
         <Card variant="flat" className="p-6 gap-6">
-          <Eyebrow className="block">STORE IDENTITY</Eyebrow>
-
           <FormField
             control={form.control}
             name="bussinessName"
@@ -156,7 +152,7 @@ const { setStore, store } = useSetupStore((state) => state)
           />
         </Card>
 
-        <div className="fixed left-0 right-0 bottom-0 bg-paper/95 backdrop-blur border-t border-border py-4 px-6 z-30">
+        <div className="fixed left-0 right-0 bottom-0 bg-paper/95 backdrop-blur border-t border-border pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] px-6 z-30">
           <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
             <Button type="button" variant="ghost" onClick={() => setCurrentStep(1)}>Back</Button>
             <Button type="submit" disabled={isLoading || slugAvailable !== true}>Continue →</Button>

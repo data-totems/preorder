@@ -16,7 +16,7 @@ const stepCopy = {
 }
 
 const Setup = () => {
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
      const [isLoading, setIsLoading] = useState(false);
      const [banks, setBanks] = useState<FlutterwaveBank[]>([]);
 
@@ -36,7 +36,7 @@ const Setup = () => {
 
       if(isLoading) return <LoadingModal message="Setting up for you..." />
 
-      const copy = stepCopy[currentStep as 1 | 2 | 3]
+      const copy = stepCopy[currentStep]
 
   return (
     <>
