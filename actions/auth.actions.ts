@@ -1,6 +1,18 @@
 import axios from 'axios'
 export const baseUrl = process.env.NEXT_PUBLIC_BASE_URI;
 
+export const getMerchantDashboard = async () => {
+    const token = localStorage.getItem('buzzToken');
+    try {
+        const response = await axios.get(`${baseUrl}/accounts/dashboard/`, {
+            headers: { "Authorization": `token ${token}` },
+        });
+        return response;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
+    }
+};
+
 
 export const registeUser = async ({email,  password, password_confirm}: {email: string, password: string, password_confirm: string}) => {
     try {
