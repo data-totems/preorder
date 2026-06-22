@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getSingleProduct, getStoreDetails } from "@/actions/products.actions";
+import { getPublicProduct, getStoreDetails } from "@/actions/products.actions";
 import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -22,7 +22,7 @@ const CustomerProductDetail = () => {
   const [merchantName, setMerchantName] = useState<string | null>(null);
 
   useEffect(() => {
-    getSingleProduct(Number(productId))
+    getPublicProduct(Number(productId))
       .then((r) => setProduct(r.data))
       .catch((e) =>
         toast.error(errorMessage(e, "Could not load product."))
