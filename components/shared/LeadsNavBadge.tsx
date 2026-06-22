@@ -7,8 +7,8 @@ const LeadsNavBadge = () => {
   const [count, setCount] = useState(0);
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const since = localStorage.getItem("lastSeenLeadsAt") ?? undefined;
-    getLeads({ since }).then((data) => setCount(data.count ?? 0)).catch(() => {});
+    const since = localStorage.getItem("lastSeenLeadsAt");
+    getLeads(since ? { since } : {}).then((data) => setCount(data.count ?? 0)).catch(() => {});
   }, []);
   if (count === 0) return null;
   return (

@@ -30,7 +30,7 @@ interface UserProps {
 
 interface UserStoreProps {
     user: UserProps | null,
-    setUser: (value: UserProps) => void
+    setUser: (value: UserProps | null) => void
 }
 
 

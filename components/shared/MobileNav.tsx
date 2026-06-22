@@ -19,18 +19,17 @@ const MobileNav = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const since = localStorage.getItem("lastSeenLeadsAt") ?? undefined;
-    getLeads({ since }).then((d) => setHasLeads((d.count ?? 0) > 0)).catch(() => {});
+    const since = localStorage.getItem("lastSeenLeadsAt");
+    getLeads(since ? { since } : {}).then((d) => setHasLeads((d.count ?? 0) > 0)).catch(() => {});
   }, []);
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-border"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-border pb-[env(safe-area-inset-bottom)]"
     >
       <ul className="grid grid-cols-5 h-16">
         {navItems.map((item) => {
-          const active = pathname === item.href;
+          const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"));
           return (
             <li key={item.href}>
               <Link

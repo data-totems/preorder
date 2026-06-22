@@ -24,7 +24,7 @@ const Sidebar = () => {
       localStorage.removeItem("buzzToken");
       localStorage.removeItem("lastSeenLeadsAt");
     }
-    setUser(null as unknown as UserProps);
+    setUser(null);
     router.replace("/login");
   };
 
@@ -37,7 +37,7 @@ const Sidebar = () => {
 
       <nav className="mt-8 flex flex-col gap-1">
         {navMenu.map((item) => {
-          const active = pathname === item.href;
+          const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"));
           return (
             <Link
               key={item.id}
