@@ -1,22 +1,26 @@
-'use client'
-import { useUserStore } from "@/zustand"
-import Image from "next/image"
+"use client";
+import { useUserStore } from "@/zustand";
 
+const initials = (name?: string | null) => {
+  if (!name) return "B";
+  return name.trim().split(/\s+/).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("") || "B";
+};
 
 const UserProfile = () => {
-  const { user } = useUserStore((state) => state)
+  const user = useUserStore((s) => s.user);
+  const name = user?.fullName ?? "Welcome";
+  const business = user?.business_name ?? "Set up your store";
   return (
-    <div className="p-5 flex flex-col justify-center items-center cursor-pointer "
-    >
-        <div className="bg-[#FFFFFF] h-[40px] w-[140px] rounded-[25px] flex items-center justify-center gap-3  ">
-            {/* IMAGE */}
-            <div className="bg-[#E0D33D] h-[32px] w-[32px] rounded-full items-center justify-center">
-                <Image src={user?.imageUrl ? user?.imageUrl : '/avatar.png'} width={50} height={50} alt="avatar" />
-            </div>
-            <h2 className="text-[#03140A] text-[14px] font-semibold    line-clamp-1  ">{user?.fullName}</h2>
-        </div>
+    <div className="rounded-md bg-white/5 p-3 mt-4 flex items-center gap-3">
+      <div className="h-9 w-9 rounded-full bg-forest-400 text-white flex items-center justify-center font-bold text-[13px]">
+        {initials(name)}
+      </div>
+      <div className="min-w-0">
+        <div className="text-[14px] font-semibold text-ink-100 truncate">{name}</div>
+        <div className="text-[12px] text-ink-300 truncate">{business}</div>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default UserProfile
+export default UserProfile;

@@ -1,64 +1,76 @@
-"use client"
+"use client";
+import { Grid, House, LogOut, Package, Store, Users } from "lucide-react";
+import UserProfile from "./UserProfile";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import LeadsNavBadge from "./LeadsNavBadge";
+import { useUserStore } from "@/zustand";
 
-import { Grid, House, LogOut, Package, Store, Users } from "lucide-react"
-import UserProfile from "./UserProfile"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import LeadsNavBadge from "./LeadsNavBadge"
-import { useUserStore } from "@/zustand"
+const navMenu = [
+  { id: 1, title: "Dashboard", href: "/", icon: House },
+  { id: 2, title: "Marketplace", href: "/marketplace", icon: Store },
+  { id: 3, title: "Orders", href: "/orders", icon: Package },
+  { id: 4, title: "Leads", href: "/leads", icon: Users, badge: true },
+  { id: 5, title: "Manage", href: "/manage", icon: Grid },
+];
 
 const Sidebar = () => {
-    const pathname = usePathname();
-    const router = useRouter();
-    const setUser = useUserStore((state) => state.setUser);
-    const navMenu = [
-        {id: 1, title: "Dashboard", href: "/", icon: House},
-        {id: 2, title: "Marketplace", href: "/marketplace", icon: Store},
-         {id: 3, title: "Orders", href: "/orders", notify: true, icon: Package},
-         {id: 4, title: "Leads", href: "/leads", icon: Users, badge: true},
-         {id: 5, title: "Manage", href: "/manage", notify: true, icon: Grid},
-    ]
+  const pathname = usePathname();
+  const router = useRouter();
+  const setUser = useUserStore((s) => s.setUser);
 
-    const handleLogout = () => {
-        if (typeof window !== "undefined") {
-            localStorage.removeItem("buzzToken");
-            localStorage.removeItem("lastSeenLeadsAt");
-        }
-        // Clear in-memory user state so the dashboard doesn't briefly show stale data.
-        setUser(null as unknown as UserProps);
-        router.replace("/login");
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("buzzToken");
+      localStorage.removeItem("lastSeenLeadsAt");
     }
+    setUser(null as unknown as UserProps);
+    router.replace("/login");
+  };
 
   return (
-    <div
-    className="h-screen bg-black w-[230px] flex flex-col"
-    >
+    <aside className="hidden md:flex h-screen w-64 flex-col bg-forest-900 py-6 px-3">
+      <div className="px-3">
+        <span className="text-2xl font-extrabold tracking-tight text-forest-50">Buzzmart</span>
+      </div>
       <UserProfile />
 
-      <div className="">
-        {navMenu.map((item) => (
-            <Link key={item.id} href={item.href} className={` p-3 flex flex-col items-center justify-center text-white `}>
-                <div className={` ${pathname === item.href ? 'bg-white text-black font-[500] ' : '' } p-2 rounded-[12px] w-[175px]  flex items-center gap-5`}>
-                    <item.icon className={` ${pathname === item.href ? 'text-black' : 'text-[#CDD0CE]'}`} />
-                    <span className="">{item.title}</span>
-                    {item.badge && <LeadsNavBadge />}
-                </div>
+      <nav className="mt-8 flex flex-col gap-1">
+        {navMenu.map((item) => {
+          const active = pathname === item.href;
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={`relative h-11 rounded-md px-3 flex items-center gap-3 text-[15px] transition-colors duration-150 ${
+                active
+                  ? "bg-forest-700 text-white font-semibold"
+                  : "text-ink-200 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              {active && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-pill bg-forest-400" />
+              )}
+              <item.icon className={`size-5 ${active ? "text-forest-400" : "text-ink-300"}`} />
+              <span>{item.title}</span>
+              {item.badge && <LeadsNavBadge />}
             </Link>
-        ))}
-      </div>
+          );
+        })}
+      </nav>
 
-      <div className="mt-auto p-3 flex justify-center">
+      <div className="mt-auto pt-4 border-t border-white/10">
         <button
           onClick={handleLogout}
-          className="p-2 rounded-[12px] w-[175px] flex items-center gap-5 text-white hover:bg-white/10 transition-colors"
+          className="w-full h-11 px-3 rounded-md flex items-center gap-3 text-[15px] text-ink-200 hover:bg-white/5 hover:text-white transition-colors duration-150 border border-white/10"
           aria-label="Log out"
         >
-          <LogOut className="text-[#CDD0CE]" />
+          <LogOut className="size-5 text-ink-300" />
           <span>Log out</span>
         </button>
       </div>
-        </div>
-  )
-}
+    </aside>
+  );
+};
 
-export default Sidebar
+export default Sidebar;
