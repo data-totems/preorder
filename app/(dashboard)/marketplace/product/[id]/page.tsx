@@ -1,11 +1,41 @@
-'use client'
-import PageHeader from "@/components/shared/PageHeader"
-import { Switch } from "@/components/ui/switch"
-import { ArchiveRestore, ImagePlus, LinkIcon, Loader, PenIcon, PlusIcon, Trash, Upload } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import { errorMessage } from "@/lib/errors"
+"use client";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
+import {
+  Archive,
+  ImagePlus,
+  Loader2,
+  MoreHorizontal,
+  Pen,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import { toast } from "sonner";
+import PageHeader from "@/components/shared/PageHeader";
+import SharePanel from "@/components/share/SharePanel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,87 +45,78 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { usePathname, useRouter } from "next/navigation"
-import { deleteProduct, getProductbyId, togglearchiveProduct, updateProductDetails, updateProductImage } from "@/actions/products.actions"
-import { toast } from "sonner"
-import LoadingModal from "@/components/shared/LoadingModal";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import SharePanel from "@/components/share/SharePanel";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { errorMessage } from "@/lib/errors";
+import { cn } from "@/lib/utils";
+import {
+  deleteProduct,
+  getProductbyId,
+  togglearchiveProduct,
+  updateProductDetails,
+  updateProductImage,
+} from "@/actions/products.actions";
 import { getProductShareStats } from "@/actions/share-links.actions";
 import type { ShareStats } from "@/types/api";
 
+const formatNgn = (price?: string | number) => {
+  if (price === undefined || price === null || price === "") return "—";
+  const n = typeof price === "string" ? parseFloat(price) : price;
+  if (!isFinite(n)) return String(price);
+  return `₦${n.toLocaleString("en-NG", { maximumFractionDigits: 0 })}`;
+};
 
-interface ProductImageState {
-  front_image: File | string | null;
-  back_image: File | string | null;
-  left_image: File | string | null;
-  right_image: File | string | null;
-}
+type ImageSlot = "front" | "back" | "left" | "right";
 
 const ProductDetails = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [product, setProduct] = useState<ProductProps | null>(null);
-  const [selectedImageType, setSelectedImageType] = useState<'front' | 'back' | 'left' | 'right'>('front');
   const pathname = usePathname();
-  const [updateDetails, setUpdateDetails] = useState({
-    name: product ? product.name : '',
-    description: product ? product.description : '',
-    price: product ? product.price :  ''
-  });
-  const [updating, setUpdating] = useState(false)
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [openDialog, setOpenDialog] = useState(false)
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
-    const [currentImag, setCurrentImag] = useState('')
-  const [shareStats, setShareStats] = useState<ShareStats | null>(null);
-  const productId = pathname.split('/')[3];
-
-  const categories = [
-    "Phones", "Tablets", "Laptops"
-  ]
   const router = useRouter();
+  const productId = pathname.split("/")[3];
 
-  useEffect(() => {
-    const getProducts = async () => {
-      try {
-        const response = await getProductbyId(Number(productId));
+  const [product, setProduct] = useState<ProductProps | null>(null);
+  const [shareStats, setShareStats] = useState<ShareStats | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-        setProduct(response.data);
+  const [editOpen, setEditOpen] = useState(false);
+  const [imageOpen, setImageOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
-        setUpdateDetails({
-          name: response.data.name,
-          description: response.data.description,
-          price: response.data.price
-        })
-      } catch (error) {
-        toast.error(errorMessage(error, "Could not load product."))
-      }
-    }
+  const [updating, setUpdating] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
+  const [editForm, setEditForm] = useState({ name: "", description: "", price: "" });
 
-    getProducts();
-  }, []);
+  const [selectedImageType, setSelectedImageType] = useState<ImageSlot>("front");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (!productId) return;
     const id = Number(productId);
     if (!Number.isFinite(id)) return;
     let alive = true;
+    getProductbyId(id)
+      .then((r) => {
+        if (!alive) return;
+        setProduct(r.data);
+        setEditForm({
+          name: r.data.name ?? "",
+          description: r.data.description ?? "",
+          price: String(r.data.price ?? ""),
+        });
+      })
+      .catch((e) => {
+        if (alive) toast.error(errorMessage(e, "Could not load product."));
+      });
     getProductShareStats(id)
       .then((s) => {
         if (alive) setShareStats(s);
@@ -106,41 +127,29 @@ const ProductDetails = () => {
     };
   }, [productId]);
 
-  const handleDelete = async  () => {
-    try {
-      const response = await deleteProduct(Number(productId));
-
-      if(response.status === 200) {
-        toast.success("Product deleted!")
-        setProduct(null)
-        router.back();
-      }
-    } catch (error) {
-      toast.error(errorMessage(error, "Could not delete product."))
+  const openEdit = () => {
+    if (product) {
+      setEditForm({
+        name: product.name ?? "",
+        description: product.description ?? "",
+        price: String(product.price ?? ""),
+      });
     }
-  }
-   const toggleArchive = async  () => {
-    try {
-      const response = await togglearchiveProduct(Number(productId));
+    setEditOpen(true);
+  };
 
-      if(response.status === 200) {
-        toast.success("Product Archived!")
-        setProduct(null)
-        router.back();
-      }
-    } catch (error) {
-      toast.error(errorMessage(error, "Could not archive product."))
-    }
-  }
+  const clearImagePreview = () => {
+    if (previewImage) URL.revokeObjectURL(previewImage);
+    setSelectedFile(null);
+    setPreviewImage(null);
+  };
 
-   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setPreviewImage(previewUrl);
-    }
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (previewImage) URL.revokeObjectURL(previewImage);
+    setSelectedFile(file);
+    setPreviewImage(URL.createObjectURL(file));
   };
 
   const handleUpdateImage = async () => {
@@ -148,52 +157,19 @@ const ProductDetails = () => {
       toast.error("Please select an image first");
       return;
     }
-
     setIsUploading(true);
     try {
-      // Create FormData for file upload
       const formData = new FormData();
-      formData.append('productId', productId);
-      
-      // Only append the selected image type to avoid null values for others
-      // The API should handle preserving existing values for other image fields
-      switch (selectedImageType) {
-        case 'front':
-          formData.append('front_image', selectedFile);
-          break;
-        case 'back':
-          formData.append('back_image', selectedFile);
-          break;
-        case 'left':
-          formData.append('left_image', selectedFile);
-          break;
-        case 'right':
-          formData.append('right_image', selectedFile);
-          break;
+      formData.append("productId", productId);
+      formData.append(`${selectedImageType}_image`, selectedFile);
+      const response = await updateProductImage({ productId, formData });
+      if (response.status === 200) {
+        toast.success(`${selectedImageType} image updated`);
+        clearImagePreview();
+        setImageOpen(false);
       }
-
-      const response = await updateProductImage({
-        productId,
-        // Send FormData instead of individual fields
-        formData
-      });
-
-      if(response.status === 200) {
-        toast.success(`${selectedImageType.replace('_', ' ')} image updated successfully!`);
-        
-        // Update local state with the new image
-        if (product && previewImage) {
-          const updatedProduct = { ...product };
-        
-          setProduct(updatedProduct);
-        }
-        
-        // Reset states
-        setSelectedFile(null);
-        setPreviewImage(null);
-      }
-    } catch (error) {
-      toast.error(errorMessage(error, "Could not upload image."));
+    } catch (e) {
+      toast.error(errorMessage(e, "Could not upload image."));
     } finally {
       setIsUploading(false);
     }
@@ -203,322 +179,397 @@ const ProductDetails = () => {
     setUpdating(true);
     try {
       const response = await updateProductDetails({
-        name: updateDetails.name,
-        description: updateDetails.description ?? "",
-        price: updateDetails.price ?? '',
-        id: Number(productId)
+        name: editForm.name,
+        description: editForm.description,
+        price: editForm.price,
+        id: Number(productId),
       });
-
-      if(response.status === 200) {
-        setOpenDialog(false)
-        toast.success("Product Updated")
+      if (response.status === 200) {
+        toast.success("Product updated");
+        setProduct((p) =>
+          p
+            ? { ...p, name: editForm.name, description: editForm.description, price: editForm.price }
+            : p,
+        );
+        setEditOpen(false);
       }
-    } catch (error) {
-      toast.error(errorMessage(error, "Could not update product."))
-      setUpdateDetails({
-        name: product?.name ?? '',
-        description: product?.description,
-        price: product?.price
-      })
+    } catch (e) {
+      toast.error(errorMessage(e, "Could not update product."));
     } finally {
-      setUpdating(false)
+      setUpdating(false);
     }
+  };
+
+  const handleArchive = async () => {
+    setArchiving(true);
+    try {
+      const response = await togglearchiveProduct(Number(productId));
+      if (response.status === 200) {
+        toast.success("Product archived");
+        setArchiveOpen(false);
+        router.back();
+      }
+    } catch (e) {
+      toast.error(errorMessage(e, "Could not archive product."));
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const response = await deleteProduct(Number(productId));
+      if (response.status === 200) {
+        toast.success("Product deleted");
+        setDeleteOpen(false);
+        router.back();
+      }
+    } catch (e) {
+      toast.error(errorMessage(e, "Could not delete product."));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (!product) {
+    return (
+      <div className="max-w-7xl mx-auto pb-12">
+        <div className="px-6 md:px-10 py-8">
+          <Skeleton className="h-4 w-20 mb-3" />
+          <Skeleton className="h-10 w-2/3 mb-2" />
+          <Skeleton className="h-5 w-32" />
+        </div>
+        <div className="px-6 md:px-10 grid lg:grid-cols-2 gap-8">
+          <Skeleton className="aspect-square w-full rounded-lg" />
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-48 w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  if(!product) return <LoadingModal />
+  const images = product.images ?? [];
+  const currentImage =
+    images[currentIndex]?.image_url ?? product.image_url ?? null;
+
   return (
-    <div>
-        <PageHeader
-          eyebrow="PRODUCT"
-          title={product?.name ?? "Loading…"}
-          description={product?.price ? `₦${product.price}` : undefined}
-          actions={
-            <>
-              <Button variant="outline" onClick={() => setOpenDialog(true)}>Edit</Button>
-              {/* archive/delete buttons remain in the body panel below */}
-            </>
-          }
+    <div className="max-w-7xl mx-auto pb-12">
+      <PageHeader
+        eyebrow="PRODUCT"
+        title={product.name}
+        description={formatNgn(product.price)}
+        actions={
+          <>
+            <Button variant="outline" onClick={openEdit}>
+              <Pen className="size-4" /> Edit
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" aria-label="More actions">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => setImageOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <ImagePlus className="size-4" />
+                  Replace image
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setArchiveOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <Archive className="size-4" />
+                  Archive
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setDeleteOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <Trash2 className="size-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        }
+      />
+
+      <div className="px-6 md:px-10 mt-6">
+        <SharePanel
+          stats={shareStats}
+          shareTitle={product.name}
+          messageTemplate={`📱 *${product.name}* — ${formatNgn(product.price)}\nTap to view:`}
         />
+      </div>
 
-        {product && (
-          <div className="mt-6 px-6 md:px-10">
-            <SharePanel
-              stats={shareStats}
-              shareTitle={product.name}
-              messageTemplate={`📱 *${product.name}* — ₦${product.price}\nTap to view:`}
-            />
+      <div className="px-6 md:px-10 mt-10 grid lg:grid-cols-2 gap-8 lg:gap-12">
+        <div>
+          <div className="relative aspect-square w-full bg-ink-100 rounded-lg overflow-hidden flex items-center justify-center">
+            {currentImage ? (
+              <Image
+                src={currentImage}
+                alt={product.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-ink-300">
+                <ImagePlus className="size-8" />
+                <span className="text-[13px]">No image yet</span>
+              </div>
+            )}
           </div>
-        )}
-
-        <div className="mt-10 px-6 md:px-10 pb-12 flex lg:flex-row flex-col  justify-between gap-5  ">
-          <div className="w-full">
-
-            <Image src={currentImag ? currentImag : (product?.images?.[0]?.image_url ?? product?.image_url ?? "")} alt="product1" width={350} height={350} />
-
-            <div className="flex items-center justify-between" >
-              <div className="flex items-center gap-4 justify-center pt-4 cursor-pointer">
-                   {product?.images?.map((image, index) => (
-                <div key={index} onClick={() => {setCurrentIndex(index)
-                  setCurrentImag(image.image_url)
-                }} className={`${currentIndex === index && 'border-2 rounded-[6px] border-green-400'}`}>
-                  <Image src={image.image_url} alt="product1" width={56} height={56} />
-                </div>
+          {images.length > 1 && (
+            <div className="mt-4 grid grid-cols-4 gap-3">
+              {images.map((img, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setCurrentIndex(i)}
+                  className={cn(
+                    "relative aspect-square rounded-md overflow-hidden bg-ink-100 transition-colors",
+                    currentIndex === i
+                      ? "ring-2 ring-forest-500"
+                      : "border border-border hover:border-ink-300",
+                  )}
+                  aria-label={`View image ${i + 1}`}
+                >
+                  <Image
+                    src={img.image_url}
+                    alt={`${product.name} ${i + 1}`}
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                </button>
               ))}
-              </div>
-           
-              <div className="flex items-center gap-3 mt-6 mr-15">
-                <span className="text-[16px]">In stock</span>
-                <Switch />
-              </div>
             </div>
-
-            <div className="bg-ink-100 w-full h-[200px] p-5 mt-4 rounded-[13px] gap-3 flex flex-col ">
-              <Dialog onOpenChange={setOpenDialog} open={openDialog}>
-  <DialogTrigger>
-     <div className="cursor-pointer flex items-center gap-7 ">
-                <PenIcon color="#03140A66" fill="#03140A66" />
-                <span className="text-[16px] ">Edit product details</span>
-              </div>
-  </DialogTrigger>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Product Details</DialogTitle>
-      <DialogDescription>
-      </DialogDescription>
-    </DialogHeader>
-
-    <div className="flex flex-col gap-6 ">
-      <div className="flex flex-col gap-3">
-        <Label className="font-[700] text-ink-500 ">PRODUCT NAME</Label>
-
-        <Input  className="bg-ink-100 rounded-md " placeholder="Enter product name" defaultValue={updateDetails?.name} onChange={(e) => setUpdateDetails({...updateDetails, name: e.target.value})} />
-      </div>
-
-        <div className="flex flex-col gap-3">
-        <Label className="font-[700] text-ink-500 ">PRICE</Label>
-        <div className="bg-ink-100 h-[40px] flex items-center gap-1.5  rounded-md ">
-          <div className="pl-2">
-             <div className="w-[42px] h-[34px] bg-forest-500/10 flex flex-col rounded-sm items-center justify-center">
-            <span className="text-[12px] text-forest-500 ">NGN</span>
-          </div>
-          </div>
-         
-          <Input onChange={(e) => setUpdateDetails({...updateDetails, price: e.target.value})}   placeholder="Enter product name" defaultValue={updateDetails?.price} />
-        </div>
-        
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <Label className="font-[700] text-ink-500 ">PRODUCT DESCRIPTION</Label>
-
-        <Textarea  className="bg-ink-100 rounded-md text-ink-500 " placeholder="Enter product name" defaultValue={`${updateDetails?.description}`}
-        onChange={(e) => setUpdateDetails({...updateDetails, description: e.target.value})}
-         />
-      </div>
-
-        {/* <div className="flex flex-col gap-3">
-        <Label className="font-[700] text-ink-500 ">CATEGORY</Label>
-
-        <div className="flex items-center gap-6 ">
-          {categories.map((category, index) => (
-            <div onClick={() => setActiveCategory(index)} key={index} className="flex items-center gap-4 ">
-              <div className={ `border h-[16px] w-[16px] rounded-full ${activeCategory === index ? 'border-forest-500' : 'border-[#D9D9D9] '} flex flex-col items-center justify-center  `} >
-                {activeCategory === index && (
-                  <div className="bg-forest-500 h-[12px] w-[12px] rounded-full " />
-                )}
-              </div>
-              <span>{category}</span>
-            </div>
-          ))}
+          )}
         </div>
 
-        <div className="flex items-center gap-5 text-forest-500 font-semibold  ">
-          <PlusIcon />
-          Add Category
-        </div>
-      </div> */}
-
-
-      <Button disabled={updating} onClick={handleUpdateDetails} className="bg-green-500 hover:bg-green-400">
-        {updating ? <Loader className="animate-spin" /> : 'Save'}
-      </Button>
-    </div>
-  </DialogContent>
-</Dialog>
-             
-              <hr />
-
-        <Dialog>
-              <DialogTrigger>
-                <div className="cursor-pointer flex items-center gap-7">
-                  <ImagePlus color="#03140A66" fill="#03140A66" />
-                  <span className="text-[16px]">Edit product Image</span>
-                </div>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Update Product Image</DialogTitle>
-                  <DialogDescription>
-                    Select which view you want to update and upload a new image
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="flex flex-col gap-6">
-                  {/* Image type selector */}
-                  <div className="flex flex-col gap-3">
-                    <Label className="font-[700] text-ink-500">SELECT IMAGE TYPE</Label>
-                    <Select 
-                      value={selectedImageType} 
-                      onValueChange={(value: 'front' | 'back' | 'left' | 'right') => setSelectedImageType(value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select image type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="front">Front View</SelectItem>
-                        <SelectItem value="back">Back View</SelectItem>
-                        <SelectItem value="left">Left Side</SelectItem>
-                        <SelectItem value="right">Right Side</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {/* File upload section */}
-                  <div className="flex flex-col gap-3">
-                    <Label className="font-[700] text-ink-500">UPLOAD NEW IMAGE</Label>
-                    <div className="border-2 border-dashed border-[#D9D9D9] rounded-[15px] p-6 text-center">
-                      <input
-                        type="file"
-                        id="image-upload"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileSelect}
-                      />
-                      <Label 
-                        htmlFor="image-upload" 
-                        className="cursor-pointer flex flex-col items-center gap-3"
-                      >
-                        <Upload className="w-8 h-8 text-ink-500" />
-                        <span className="text-ink-500">
-                          {selectedFile ? selectedFile.name : 'Click to upload image'}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          JPG, PNG up to 5MB
-                        </span>
-                      </Label>
-                    </div>
-
-                    {/* Preview of selected file */}
-                    {previewImage && (
-                      <div className="mt-4">
-                        <Label className="font-[700] text-ink-500 mb-2 block">PREVIEW</Label>
-                        <div className="bg-ink-100 w-full h-[120px] flex items-center justify-center rounded-[15px] overflow-hidden">
-                          <Image 
-                            src={previewImage} 
-                            alt="Preview" 
-                            width={100} 
-                            height={100} 
-                            className="object-contain"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex gap-3">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => {
-                        setSelectedFile(null);
-                        setPreviewImage(null);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-green-500 hover:bg-green-400"
-                      onClick={handleUpdateImage}
-                      disabled={!selectedFile || isUploading}
-                    >
-                      {isUploading ? 'Uploading...' : 'Update Image'}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-              <hr />
-              
-                 <AlertDialog>
-  <AlertDialogTrigger>
-      <div className="cursor-pointer flex items-center gap-7 ">
-                <ArchiveRestore color="#03140A66" fill="#03140A66" />
-                <span className="text-[16px] ">Archive product</span>
-              </div>
-  </AlertDialogTrigger>
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle className="font-[700] text-center ">Are you sure you want to archive this product?</AlertDialogTitle>
-      <AlertDialogDescription className="text-[#A9AEAB] text-center">
-        Buyers won’t be able to see it, you can always unarchive it in marketplace
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter className="flex justify-center items-center ">
-      <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction onClick={toggleArchive} className="bg-forest-500 hover:bg-green-400">Archive product</AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-               </AlertDialog>
-              <hr />
-              <AlertDialog>
-  <AlertDialogTrigger>
-     <div className="cursor-pointer flex items-center gap-7 ">
-                <Trash color="#ED2525" fill="#ED2525" />
-                <span className="text-[16px] text-destructive ">Delete product</span>
-              </div>
-  </AlertDialogTrigger>
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle className="font-[700] text-center ">Are you sure you want to delete this product</AlertDialogTitle>
-      <AlertDialogDescription className="text-[#A9AEAB] text-center">
-        This action is permanent and cannot be reversed
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter className="flex justify-center items-center ">
-      <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-red-400">Delete product</AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-        </AlertDialog>
-              
-              <hr />
+        <div className="flex flex-col gap-6">
+          <Card padding="none" className="p-6">
+            <Eyebrow className="block">PRICE</Eyebrow>
+            <div className="mt-2 text-[32px] leading-[40px] font-bold text-forest-700 tracking-[-0.01em] tabular-nums">
+              {formatNgn(product.price)}
             </div>
-          </div>
-          <div className="w-full bg-ink-100 h-fit rounded-md p-5  ">
-            <h2 className="text-[20px] font-[500] ">{updateDetails?.name}</h2>
-            
+          </Card>
 
-            <div className="flex items- justify-between">
-                <div className="text-[#F48614] flex gap-0.5 ">
-                <span className="text-[15px] ">NGN</span>
-            <h2 className="text-[16px] font-[600] ">{updateDetails?.price}</h2>
-            </div>
-
-            <Link className="bg-forest-500/10 flex p-2 items-center gap-3  h-[31px] rounded-[15px] " href='/'>
-                        <LinkIcon  color="#27BA5F" width={15} />
-                        <span className="text-forest-500 text-[12px] font-[700] ">Copy Link</span>
-                        </Link>
-            </div>
-
-            <h3 className="font-extrabold mt-9 ">PRODUCT DESCRIPTION</h3>
-
-            <p className="pt-4 text-ink-500 ">
-             {updateDetails?.description}
+          <Card padding="none" className="p-6">
+            <Eyebrow className="block">DESCRIPTION</Eyebrow>
+            <p className="mt-3 text-[15px] leading-[24px] text-foreground/80 whitespace-pre-wrap">
+              {product.description || (
+                <span className="text-muted-foreground">No description yet.</span>
+              )}
             </p>
-          </div>
+          </Card>
         </div>
-        </div>
-  )
-}
+      </div>
 
-export default ProductDetails
+      <Dialog
+        open={editOpen}
+        onOpenChange={(o) => {
+          setEditOpen(o);
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit product</DialogTitle>
+            <DialogDescription>Update the product name, price, and description.</DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4 flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="edit-name">Product name</Label>
+              <Input
+                id="edit-name"
+                placeholder="e.g. Wireless earbuds"
+                value={editForm.name}
+                onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="edit-price">Price</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-sm bg-forest-100 text-forest-700 text-[11px] font-bold tracking-[0.02em] z-10">
+                  NGN
+                </span>
+                <Input
+                  id="edit-price"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={editForm.price}
+                  onChange={(e) => setEditForm((f) => ({ ...f, price: e.target.value }))}
+                  className="pl-16 tabular-nums"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="edit-desc">Description</Label>
+              <Textarea
+                id="edit-desc"
+                placeholder="What makes this product great?"
+                value={editForm.description}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, description: e.target.value }))
+                }
+                className="min-h-[96px]"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-2">
+            <Button variant="outline" onClick={() => setEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateDetails} disabled={updating}>
+              {updating ? <Loader2 className="size-4 animate-spin" /> : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={imageOpen}
+        onOpenChange={(o) => {
+          setImageOpen(o);
+          if (!o) clearImagePreview();
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Replace image</DialogTitle>
+            <DialogDescription>
+              Pick which angle to update and upload a new image.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4 flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <Label>Image slot</Label>
+              <Select
+                value={selectedImageType}
+                onValueChange={(v: ImageSlot) => setSelectedImageType(v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select slot" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="front">Front</SelectItem>
+                  <SelectItem value="back">Back</SelectItem>
+                  <SelectItem value="left">Left</SelectItem>
+                  <SelectItem value="right">Right</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="image-upload">Upload image</Label>
+              <label
+                htmlFor="image-upload"
+                className="relative flex flex-col items-center justify-center h-44 rounded-md border-2 border-dashed border-ink-200 bg-ink-50 hover:bg-ink-100 cursor-pointer transition-colors overflow-hidden"
+              >
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                {previewImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <>
+                    <div className="size-10 rounded-full bg-forest-100 text-forest-700 flex items-center justify-center mb-2">
+                      <Upload className="size-5" />
+                    </div>
+                    <span className="text-[14px] font-semibold text-foreground">
+                      {selectedFile ? selectedFile.name : "Click to upload image"}
+                    </span>
+                    <span className="mt-1 text-[12px] text-muted-foreground">
+                      JPG, PNG, WEBP · max 5MB
+                    </span>
+                  </>
+                )}
+              </label>
+            </div>
+          </div>
+
+          <DialogFooter className="mt-2">
+            <Button variant="outline" onClick={() => setImageOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateImage}
+              disabled={!selectedFile || isUploading}
+            >
+              {isUploading ? <Loader2 className="size-4 animate-spin" /> : "Update image"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={archiveOpen} onOpenChange={setArchiveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive this product?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Buyers won&apos;t be able to see it. You can unarchive it from the marketplace later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleArchive}
+              disabled={archiving}
+            >
+              {archiving && <Loader2 className="size-4 animate-spin" />}
+              Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this product?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the product and its share stats. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {deleting && <Loader2 className="size-4 animate-spin" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default ProductDetails;
