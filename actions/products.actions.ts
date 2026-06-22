@@ -118,6 +118,21 @@ export const listDispatch = async () => {
     }
 }
 
+export const deleteDispatch = async (id: number) => {
+    const token = localStorage.getItem('buzzToken')
+    try {
+        const response = await axios.delete(`${baseUrl}/dispatch/delete/${id}`, {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        });
+
+        return response;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
+    }
+}
+
 export const createDispatch = async ({
     name, phone_number, address, next_of_kin, utility_bill, bank_name, account_number, account_name, vehicle_type, plate_number, location_area, peferred_transport_area, is_available
 }: {
