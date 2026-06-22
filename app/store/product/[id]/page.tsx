@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   OrderFormInline,
   OrderFormSheet,
@@ -35,7 +36,22 @@ const CustomerProductDetail = () => {
       .catch(() => {});
   }, [product?.store_slug]);
 
-  if (!product) return null;
+  if (!product) {
+    return (
+      <main className="max-w-7xl mx-auto pb-24 md:pb-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 px-6 md:px-10 py-8">
+          <Skeleton className="aspect-square w-full rounded-lg" />
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-9 w-2/3" />
+            <Skeleton className="h-12 w-32" />
+            <Skeleton className="h-4 w-1/2 mt-2" />
+            <Skeleton className="h-24 w-full mt-2" />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const primary = product.images?.[0]?.image_url ?? product.primary_image ?? "";
 
@@ -104,7 +120,7 @@ const CustomerProductDetail = () => {
       </div>
 
       {/* Mobile sticky CTA */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-paper/95 backdrop-blur p-4">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-paper/95 backdrop-blur pt-4 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <OrderFormSheet
           productId={product.id}
           trigger={<Button className="w-full">Place order →</Button>}
