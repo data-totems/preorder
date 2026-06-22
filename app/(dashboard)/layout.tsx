@@ -1,18 +1,14 @@
-import Sidebar from "@/components/shared/Sidebar"
-import { ReactNode } from "react"
+import Sidebar from "@/components/shared/Sidebar";
+import MobileNav from "@/components/shared/MobileNav";
 
-const DashboardLayout = ({ children }: { children: ReactNode}) => {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex  ">
-        <div className="hidden lg:block fixed">
-        <Sidebar  />
-        </div>
-
-        <main className="lg:pl-[260px]  pt-3 w-full pr-5  ">
-            {children}
-        </main>
+    <div className="min-h-screen flex bg-paper">
+      <Sidebar />
+      <main className="flex-1 min-w-0 pb-20 md:pb-0">
+        {children}
+      </main>
+      <MobileNav />
     </div>
-  )
+  );
 }
-
-export default DashboardLayout
