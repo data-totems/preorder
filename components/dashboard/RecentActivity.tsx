@@ -54,32 +54,34 @@ const RecentActivity = () => {
   }, []);
 
   return (
-    <Card>
-      <Eyebrow className="block">RECENT ACTIVITY</Eyebrow>
-      <ul className="mt-4 flex flex-col divide-y divide-border">
-        {items === null && (
-          <>
-            <li className="py-3"><Skeleton className="h-4 w-3/4" /></li>
-            <li className="py-3"><Skeleton className="h-4 w-1/2" /></li>
-            <li className="py-3"><Skeleton className="h-4 w-2/3" /></li>
-          </>
-        )}
-        {items?.length === 0 && (
-          <li className="py-6 text-center text-[14px] text-muted-foreground">No activity yet — share your store on WhatsApp to get started.</li>
-        )}
-        {items?.map((item, i) => {
-          const Icon = iconFor(item.kind);
-          return (
-            <li key={i}>
-              <Link href={item.href} className="py-3 flex items-center gap-3 hover:bg-ink-50 -mx-3 px-3 rounded-md transition-colors">
-                <div className="size-8 rounded-md bg-forest-50 text-forest-700 flex items-center justify-center"><Icon className="size-4" /></div>
-                <span className="text-[15px] text-foreground flex-1 truncate">{item.title}</span>
-                <span className="text-[12px] text-muted-foreground whitespace-nowrap">{relTime(item.at)}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+    <Card padding="none" className="p-6">
+      <div>
+        <Eyebrow className="block">RECENT ACTIVITY</Eyebrow>
+        <ul className="mt-4 flex flex-col divide-y divide-border">
+          {items === null && (
+            <>
+              <li className="py-3"><Skeleton className="h-4 w-3/4" /></li>
+              <li className="py-3"><Skeleton className="h-4 w-1/2" /></li>
+              <li className="py-3"><Skeleton className="h-4 w-2/3" /></li>
+            </>
+          )}
+          {items?.length === 0 && (
+            <li className="py-8 text-center text-[14px] text-muted-foreground">No activity yet — share your store on WhatsApp to get started.</li>
+          )}
+          {items?.map((item, i) => {
+            const Icon = iconFor(item.kind);
+            return (
+              <li key={i}>
+                <Link href={item.href} className="-mx-3 px-3 py-3 flex items-center gap-3 rounded-md hover:bg-ink-50 transition-colors">
+                  <div className="size-8 rounded-md bg-forest-50 text-forest-700 flex items-center justify-center shrink-0"><Icon className="size-4" /></div>
+                  <span className="text-[15px] text-foreground flex-1 truncate">{item.title}</span>
+                  <span className="text-[12px] text-muted-foreground whitespace-nowrap">{relTime(item.at)}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </Card>
   );
 };
