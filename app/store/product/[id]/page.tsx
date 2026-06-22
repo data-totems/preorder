@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getSingleProduct } from "@/actions/products.actions";
+import { getSingleProduct, getStoreDetails } from "@/actions/products.actions";
 import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -18,6 +18,7 @@ import type { Product } from "@/types/api";
 const CustomerProductDetail = () => {
   const productId = usePathname().split("/")[3];
   const [product, setProduct] = useState<Product>();
+  const [merchantName, setMerchantName] = useState<string | null>(null);
 
   useEffect(() => {
     getSingleProduct(Number(productId))
@@ -26,6 +27,13 @@ const CustomerProductDetail = () => {
         toast.error(errorMessage(e, "Could not load product."))
       );
   }, [productId]);
+
+  useEffect(() => {
+    if (!product?.store_slug) return;
+    getStoreDetails(product.store_slug)
+      .then((r) => setMerchantName(r.data?.merchant?.business_name ?? null))
+      .catch(() => {});
+  }, [product?.store_slug]);
 
   if (!product) return null;
 
@@ -80,7 +88,7 @@ const CustomerProductDetail = () => {
             >
               by{" "}
               <span className="text-forest-500 font-semibold">
-                {product.store_slug}
+                {merchantName ?? product.store_slug}
               </span>
             </Link>
           )}

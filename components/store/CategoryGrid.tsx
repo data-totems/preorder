@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+// TODO: counts hardcoded for v1 — wire to backend category aggregations
 const categories = [
   { slug: "phones", name: "Phones", count: "120+" },
   { slug: "tablets", name: "Tablets", count: "40+" },

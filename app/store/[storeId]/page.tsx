@@ -7,6 +7,7 @@ import { errorMessage } from "@/lib/errors";
 import MerchantHero from "@/components/store/MerchantHero";
 import ProductCard from "@/components/shared/ProductCard";
 import { Search } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Product, PublicStoreResponse } from "@/types/api";
 
 const StoreDetails = () => {
@@ -20,7 +21,20 @@ const StoreDetails = () => {
       .catch((e) => toast.error(errorMessage(e, "Could not load store.")));
   }, [slug]);
 
-  if (!store) return null;
+  if (!store) {
+    return (
+      <main className="max-w-7xl mx-auto px-6 md:px-10 py-12">
+        <Skeleton className="h-8 w-24 mb-4" />
+        <Skeleton className="h-12 w-2/3 mb-3" />
+        <Skeleton className="h-4 w-1/2 mb-8" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-square w-full" />
+          ))}
+        </div>
+      </main>
+    );
+  }
 
   const products = (store.products ?? []).filter((p: Product) =>
     query ? p.name?.toLowerCase().includes(query.toLowerCase()) : true
