@@ -11,14 +11,14 @@ const Category = ({ setCurrentTab} : {
     const [currentCategory, setCurrentCategory] = useState("Account")
   return (
     <div className="p-3 ">
-        <h2 className="font-[700] text-[#03140A80] ">Category</h2>
+        <h2 className="font-[700] text-ink-500 ">Category</h2>
 
         <div className=" flex flex-col gap-7 mt-5 ">
             {categories.map((category, index) => (
                 <div onClick={() => {
                     setCurrentCategory(category)
                     setCurrentTab(index)
-                    }} key={index} className={` cursor-pointer ${currentCategory === category ? 'bg-[#27BA5F1F] text-[#27BA5F] font-semibold ' : ' text-[#03140A4D] ' } w-[160px] h-[38px] flex flex-col justify-center pl-4 rounded-[12px]  `}>
+                    }} key={index} className={` cursor-pointer ${currentCategory === category ? 'bg-forest-100 text-forest-500 font-semibold ' : ' text-[#03140A4D] ' } w-[160px] h-[38px] flex flex-col justify-center pl-4 rounded-md  `}>
                     <h2>{category}</h2>
                 </div>
             ))}

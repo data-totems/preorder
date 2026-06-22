@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getLeads, getStoreShareStats } from "@/actions/share-links.actions";
 import LeadRow from "@/components/leads/LeadRow";
 import LeadActivityDrawer from "@/components/leads/LeadActivityDrawer";
+import PageHeader from "@/components/shared/PageHeader";
+import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
 import type { LeadListItem } from "@/types/api";
@@ -58,66 +61,67 @@ export default function LeadsPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">LEADS</h1>
-        <Input
-          aria-label="Search leads by phone number"
-          className="max-w-xs bg-gray-50 rounded-[12px]"
-          placeholder="Search 080…"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-        />
-      </div>
+    <div className="max-w-7xl mx-auto">
+      <PageHeader
+        eyebrow="LEADS"
+        title="Your leads"
+        description={`${count} lead${count === 1 ? "" : "s"} · sorted by most recent`}
+        actions={
+          <Input
+            aria-label="Search leads by phone number"
+            className="max-w-xs"
+            placeholder="Search 080…"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        }
+      />
 
-      <p className="text-sm text-gray-500 mb-4">
-        {count} leads · sorted by most recent
-      </p>
+      <section className="px-6 md:px-10 pb-12">
+        {leads.length === 0 ? (
+          <EmptyState
+            icon={<Users />}
+            title="No leads yet"
+            description="Share your store or product links on WhatsApp to start collecting leads."
+            action={<Button onClick={copyStoreLink}>Copy store link</Button>}
+          />
+        ) : (
+          <>
+            <div className="flex flex-col gap-3">
+              {leads.map((l) => (
+                <LeadRow
+                  key={l.id}
+                  lead={l}
+                  onViewActivity={setActivityLeadId}
+                />
+              ))}
+            </div>
 
-      {leads.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-gray-500">
-            No leads yet. Share your store or product links on WhatsApp to start collecting leads.
-          </p>
-          <Button
-            className="mt-4 bg-[#27BA5F] hover:bg-[#1FA34E]"
-            onClick={copyStoreLink}
-          >
-            Copy store link
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="bg-white rounded-2xl p-2 shadow-sm">
-            {leads.map((l) => (
-              <LeadRow key={l.id} lead={l} onViewActivity={setActivityLeadId} />
-            ))}
-          </div>
-
-          <div className="flex items-center justify-end gap-2 mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!hasPrev}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-gray-500">Page {page}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!hasNext}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        </>
-      )}
+            <div className="flex items-center justify-end gap-2 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasPrev}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">Page {page}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasNext}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </>
+        )}
+      </section>
 
       <LeadActivityDrawer
         leadId={activityLeadId}

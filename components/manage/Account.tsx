@@ -109,7 +109,7 @@ const Account = () => {
             <h2 className="font-bold text-md">ACCOUNT DETAILS</h2>
 
         <div className=" flex items-center justify-between">
-            <div className="w-[80px] h-[80px] bg-[#E0D33D] rounded-full justify-center flex flex-col items-center">
+            <div className="w-[80px] h-[80px] bg-warning rounded-full justify-center flex flex-col items-center">
                  <Image
                     src={'/avatar.png'}
                     alt="User"
@@ -119,14 +119,14 @@ const Account = () => {
                  />
             </div>
 
-            <div className="flex items-center bg-white p-3 h-[24px] rounded-[12px] gap-2">
+            <div className="flex items-center bg-white p-3 h-[24px] rounded-md gap-2">
                 <Image
                     src={'/gem.png'}
                     alt="gem"
                     width={16}
                     height={16}
                  />
-                 <h2 className="text-[12px] text-[#03140A80] font-[500]">Verified ID</h2>
+                 <h2 className="text-[12px] text-ink-500 font-[500]">Verified ID</h2>
             </div>
         </div>
 
@@ -135,10 +135,10 @@ const Account = () => {
             <div className="flex flex-col lg:flex-row items-center gap-[100px]">
                 {/* FULL NAME */}
                  <div className="flex flex-col gap-3">
-                    <h2 className="text-[#03140A80] font-[700]">FULL NAME</h2>
+                    <h2 className="text-ink-500 font-[700]">FULL NAME</h2>
                     <div className="flex items-center gap-5">
                         {editId === 1 ? (
-                            <div className="flex bg-white items-center p-1.5 rounded-[12px]">
+                            <div className="flex bg-white items-center p-1.5 rounded-md">
                                 <Input 
                                     className="border-none outline-none" 
                                     placeholder="Enter full name" 
@@ -167,7 +167,7 @@ const Account = () => {
                             {editId === 1 ? (
                                 <div className="flex items-center gap-3">
                                     <Check size={14} color="#27BA5F" className="text-sm" />
-                                    <span className="text-[#27BA5F] text-sm font-[500]">Save</span>
+                                    <span className="text-forest-500 text-sm font-[500]">Save</span>
                                 </div>
                             ) : (
                                 <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
@@ -178,10 +178,10 @@ const Account = () => {
 
                 {/* PHONE NUMBER */}
                  <div className="flex flex-col gap-3">
-                    <h2 className="text-[#03140A80] font-[700]">PHONE</h2>
+                    <h2 className="text-ink-500 font-[700]">PHONE</h2>
                     <div className="flex items-center gap-5">
                         {editId === 2 ? (
-                            <div className="flex bg-white items-center p-1.5 rounded-[12px]">
+                            <div className="flex bg-white items-center p-1.5 rounded-md">
                                 <Input 
                                     className="border-none outline-none" 
                                     placeholder="Enter phone number" 
@@ -210,7 +210,7 @@ const Account = () => {
                             {editId === 2 ? (
                                 <div className="flex items-center gap-3">
                                     <Check size={14} color="#27BA5F" className="text-sm" />
-                                    <span className="text-[#27BA5F] text-sm font-[500]">Save</span>
+                                    <span className="text-forest-500 text-sm font-[500]">Save</span>
                                 </div>
                             ) : (
                                 <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
@@ -223,10 +223,10 @@ const Account = () => {
             <div className="flex flex-col lg:flex-row items-center gap-[100px]">
                 {/* EMAIL */}
                  <div className="flex flex-col gap-3">
-                    <h2 className="text-[#03140A80] font-[700]">EMAIL</h2>
+                    <h2 className="text-ink-500 font-[700]">EMAIL</h2>
                     <div className="flex items-center gap-5">
                         {editId === 3 ? (
-                            <div className="flex bg-white items-center p-1.5 rounded-[12px]">
+                            <div className="flex bg-white items-center p-1.5 rounded-md">
                                 <Input 
                                     className="border-none outline-none" 
                                     placeholder="Enter email" 
@@ -256,7 +256,7 @@ const Account = () => {
                             {editId === 3 ? (
                                 <div className="flex items-center gap-3">
                                     <Check size={14} color="#27BA5F" className="text-sm" />
-                                    <span className="text-[#27BA5F] text-sm font-[500]">Save</span>
+                                    <span className="text-forest-500 text-sm font-[500]">Save</span>
                                 </div>
                             ) : (
                                 <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
@@ -267,10 +267,10 @@ const Account = () => {
 
                 {/* ADDRESS */}
                  <div className="flex flex-col gap-3">
-                    <h2 className="text-[#03140A80] font-[700]">ADDRESS</h2>
+                    <h2 className="text-ink-500 font-[700]">ADDRESS</h2>
                     <div className="flex items-center gap-5">
                         {editId === 4 ? (
-                            <div className="flex bg-white items-center p-1.5 rounded-[12px]">
+                            <div className="flex bg-white items-center p-1.5 rounded-md">
                                 <Input 
                                     className="border-none outline-none" 
                                     placeholder="Enter address" 
@@ -299,7 +299,7 @@ const Account = () => {
                             {editId === 4 ? (
                                 <div className="flex items-center gap-3">
                                     <Check size={14} color="#27BA5F" className="text-sm" />
-                                    <span className="text-[#27BA5F] text-sm font-[500]">Save</span>
+                                    <span className="text-forest-500 text-sm font-[500]">Save</span>
                                 </div>
                             ) : (
                                 <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
@@ -315,21 +315,21 @@ const Account = () => {
             <h2 className="font-bold text-md">ACCOUNT SECURITY</h2>
 
             <div className="gap-3 flex flex-col">
-                <h2 className="text-[#03140A80] font-[700]">PASSWORD</h2>
-                <div className="bg-[#27BA5F1F] w-fit h-fit cursor-pointer p-2 rounded-[12px]">
-                    <h2 className="text-[#27BA5F] font-[500] text-[12px]">Change password</h2>
+                <h2 className="text-ink-500 font-[700]">PASSWORD</h2>
+                <div className="bg-forest-100 w-fit h-fit cursor-pointer p-2 rounded-md">
+                    <h2 className="text-forest-500 font-[500] text-[12px]">Change password</h2>
                 </div>
             </div>
 
             <div className="gap-3 flex flex-col">
-                <h2 className="text-[#03140A80] font-[700]">2 FACTOR AUTHENTICATION</h2>
-                <div className="bg-[#27BA5F1F] w-fit h-fit cursor-pointer p-2 rounded-[12px]">
-                    <h2 className="text-[#27BA5F] font-[500] text-[12px]">Setup 2FA</h2>
+                <h2 className="text-ink-500 font-[700]">2 FACTOR AUTHENTICATION</h2>
+                <div className="bg-forest-100 w-fit h-fit cursor-pointer p-2 rounded-md">
+                    <h2 className="text-forest-500 font-[500] text-[12px]">Setup 2FA</h2>
                 </div>
             </div>
 
             <div className="gap-5 flex flex-col">
-                <h2 className="text-[#03140A80] font-[700]">SESSION MANAGEMENT</h2>
+                <h2 className="text-ink-500 font-[700]">SESSION MANAGEMENT</h2>
 
                 <div className="flex justify-between items-center">
                     <div className="flex gap-4">
@@ -337,14 +337,14 @@ const Account = () => {
                         <div className="flex flex-col gap-2">
                             <h2>Windows</h2>
                             <div className="flex items-center gap-3">
-                                <div className="w-[4px] h-[4px] bg-[#27BA5F] rounded-full" />
-                                <span className="text-[#27BA5F] text-[13px]">Current session</span>
+                                <div className="w-[4px] h-[4px] bg-forest-500 rounded-full" />
+                                <span className="text-forest-500 text-[13px]">Current session</span>
                             </div>
-                            <h2 className="text-[13px] text-[#03140A80]">Nigeria</h2>
-                            <h2 className="text-[13px] text-[#03140A80]">First sign-in: Sep 2</h2>
+                            <h2 className="text-[13px] text-ink-500">Nigeria</h2>
+                            <h2 className="text-[13px] text-ink-500">First sign-in: Sep 2</h2>
                         </div>
                     </div>
-                    <div className="cursor-pointer text-[#ED2525] text-12 font-[500]">
+                    <div className="cursor-pointer text-destructive text-12 font-[500]">
                         <span>Sign out</span>
                     </div>
                 </div>
@@ -354,12 +354,12 @@ const Account = () => {
                         <Tablet color="#A9AEAB" fill="#A9AEAB" />
                         <div className="flex flex-col gap-2">
                             <h2>Tablet</h2>
-                            <h2 className="text-[13px] text-[#03140A80]">2 hours ago</h2>
-                            <h2 className="text-[13px] text-[#03140A80]">Nigeria</h2>
-                            <h2 className="text-[13px] text-[#03140A80]">First sign-in: Sep 2</h2>
+                            <h2 className="text-[13px] text-ink-500">2 hours ago</h2>
+                            <h2 className="text-[13px] text-ink-500">Nigeria</h2>
+                            <h2 className="text-[13px] text-ink-500">First sign-in: Sep 2</h2>
                         </div>
                     </div>
-                    <div className="cursor-pointer text-[#ED2525] text-12 font-[500]">
+                    <div className="cursor-pointer text-destructive text-12 font-[500]">
                         <span>Sign out</span>
                     </div>
                 </div>
@@ -369,12 +369,12 @@ const Account = () => {
                         <Tablet color="#A9AEAB" fill="#A9AEAB" />
                         <div className="flex flex-col gap-2">
                             <h2>Tablet</h2>
-                            <h2 className="text-[13px] text-[#03140A80]">3 months ago</h2>
-                            <h2 className="text-[13px] text-[#03140A80]">Nigeria</h2>
-                            <h2 className="text-[13px] text-[#03140A80]">First sign-in: Sep 2</h2>
+                            <h2 className="text-[13px] text-ink-500">3 months ago</h2>
+                            <h2 className="text-[13px] text-ink-500">Nigeria</h2>
+                            <h2 className="text-[13px] text-ink-500">First sign-in: Sep 2</h2>
                         </div>
                     </div>
-                    <div className="cursor-pointer text-[#ED2525] text-12 font-[500]">
+                    <div className="cursor-pointer text-destructive text-12 font-[500]">
                         <span>Sign out</span>
                     </div>
                 </div>

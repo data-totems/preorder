@@ -49,7 +49,7 @@ export default function StoreLink() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-bold uppercase text-sm text-[#03140A80]">
+          <h2 className="font-bold uppercase text-sm text-ink-500">
             Your Store Link
           </h2>
           <code className="text-sm break-all">

@@ -45,10 +45,10 @@ const BussinessDetails = () => {
                   <div className="flex flex-col lg:flex-row  items-center gap-[100px] ">
                       {/* FULL NAME */}
                        <div className="flex flex-col gap-3 ">
-                      <h2 className="text-[#03140A80] font-[700] ">BUSSINESS NAME</h2>
+                      <h2 className="text-ink-500 font-[700] ">BUSSINESS NAME</h2>
                       <div className="flex items-center gap-5 ">
                           {editId === 1 ? (
-                              <div className="flex bg-white items-center p-1.5 rounded-[12px]  ">
+                              <div className="flex bg-white items-center p-1.5 rounded-md  ">
                                   <Input className="border-none outline-none" placeholder="Enter bussiness name" value={"Ak Tech"} />
                                   <div className="">
                                       <X size={14} color="#A9AEAB" />
@@ -69,7 +69,7 @@ const BussinessDetails = () => {
                               {editId === 1 ? (
                                   <div className=" flex items-center gap-3 ">
                                       <Check size={14} color="#27BA5F" className="text-sm" />
-                                      <span className="text-[#27BA5F] text-sm font-[500] ">Save</span>
+                                      <span className="text-forest-500 text-sm font-[500] ">Save</span>
                                   </div>
                               ) : (
                                   <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
@@ -81,10 +81,10 @@ const BussinessDetails = () => {
                   </div>
 
                      <div className="flex flex-col gap-3 ">
-                      <h2 className="text-[#03140A80] font-[700] ">ADDRESS</h2>
+                      <h2 className="text-ink-500 font-[700] ">ADDRESS</h2>
                       <div className="flex items-center gap-5 ">
                           {editId === 4 ? (
-                              <div className="flex bg-white items-center p-1.5 rounded-[12px]  ">
+                              <div className="flex bg-white items-center p-1.5 rounded-md  ">
                                   <Input className="border-none outline-none" placeholder="Enter full name" value={"30 Ogunsiji Cl, Off Adebayo Solake street, Allen Avenue, Ikeja, Lagos"} />
                                   <div className="">
                                       <X size={14} color="#A9AEAB" />
@@ -105,7 +105,7 @@ const BussinessDetails = () => {
                               {editId === 4 ? (
                                   <div className=" flex items-center gap-3 ">
                                       <Check size={14} color="#27BA5F" className="text-sm" />
-                                      <span className="text-[#27BA5F] text-sm font-[500] ">Save</span>
+                                      <span className="text-forest-500 text-sm font-[500] ">Save</span>
                                   </div>
                               ) : (
                                   <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
@@ -125,10 +125,10 @@ const BussinessDetails = () => {
       
                   {/* PHONE NUMBER  */}
                  <div className="flex flex-col gap-3 ">
-                      <h2 className="text-[#03140A80] font-[700] ">CONTACT</h2>
+                      <h2 className="text-ink-500 font-[700] ">CONTACT</h2>
                       <div className="flex items-center gap-5 ">
                           {editId === 2 ? (
-                              <div className="flex bg-white items-center p-1.5 rounded-[12px]  ">
+                              <div className="flex bg-white items-center p-1.5 rounded-md  ">
                                   <Input className="border-none outline-none" placeholder="Enter full name" value={"090235623...."} />
                                   <div className="">
                                       <X size={14} color="#A9AEAB" />
@@ -149,7 +149,7 @@ const BussinessDetails = () => {
                               {editId === 2 ? (
                                   <div className=" flex items-center gap-3 ">
                                       <Check size={14} color="#27BA5F" className="text-sm" />
-                                      <span className="text-[#27BA5F] text-sm font-[500] ">Save</span>
+                                      <span className="text-forest-500 text-sm font-[500] ">Save</span>
                                   </div>
                               ) : (
                                   <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
@@ -161,7 +161,7 @@ const BussinessDetails = () => {
                   </div>
 
                         <div className="flex flex-col gap-3 ">
-                      <h2 className="text-[#03140A80] font-[700] ">INDUSTRY</h2>
+                      <h2 className="text-ink-500 font-[700] ">INDUSTRY</h2>
                       <div className="flex items-center bg-white w-fit p-1 text-[12px] text-[#03140A] rounded-[4px] gap-5 ">
                           <span>Technology</span>
                           
@@ -173,14 +173,14 @@ const BussinessDetails = () => {
               </div>
 
                  <div className="gap-3 flex flex-col">
-                <h2 className="text-[#03140A80] font-[700] ">WHATSAPP</h2>
+                <h2 className="text-ink-500 font-[700] ">WHATSAPP</h2>
                 <div className="flex items-center gap-3">
-                  <div className="bg-[#27BA5F1F] w-fit flex items-center gap-3  h-fit cursor-pointer p-2 rounded-[12px]  ">
+                  <div className="bg-forest-100 w-fit flex items-center gap-3  h-fit cursor-pointer p-2 rounded-md  ">
                   <Check color="#27BA5F" size={14} />
-                    <h2 className="text-[#27BA5F] font-[500] text-[12px] ">Whatsapp linked</h2>
+                    <h2 className="text-forest-500 font-[500] text-[12px] ">Whatsapp linked</h2>
                 </div>
 
-                <div className="cursor-pointer text-[12px] text-[#27BA5F]  font-[500] ">Unlink</div>
+                <div className="cursor-pointer text-[12px] text-forest-500  font-[500] ">Unlink</div>
                 </div>
                 
               </div>
@@ -191,7 +191,7 @@ const BussinessDetails = () => {
         <div className="flex items-center justify-between pb-5 ">
          <h2 className="font-bold text-md">BUSSINESS ANALYTICS</h2>
          <div className="cursor-pointer">
-          <h1 className="text-[#27BA5F] font-[500] text-[12px] ">Download report</h1>
+          <h1 className="text-forest-500 font-[500] text-[12px] ">Download report</h1>
          </div>
         </div>
 
