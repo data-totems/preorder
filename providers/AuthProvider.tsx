@@ -31,7 +31,9 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       const token = localStorage.getItem('buzzToken')
 
       if (!token) {
-        setIsLoading(false)
+        // Leave isLoading true so the LoadingModal stays mounted until the
+        // /login route remounts AuthProvider — otherwise the dashboard
+        // layout commits a frame before the redirect lands.
         router.replace('/login')
         return
       }
