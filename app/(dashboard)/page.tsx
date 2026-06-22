@@ -7,6 +7,7 @@ import TopProductsList from "@/components/dashboard/TopProductsList";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/zustand";
 import Link from "next/link";
+import { Package, Users, MousePointerClick, Link2 } from "lucide-react";
 import { getIncomingOrders } from "@/actions/orders.actions";
 import { getLeads, getStoreShareStats } from "@/actions/share-links.actions";
 
@@ -37,11 +38,11 @@ const Dashboard = () => {
         }
       />
 
-      <section className="px-6 md:px-10 grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard eyebrow="ORDERS" value={orders ?? "—"} caption="incoming" loading={orders === null} />
-        <StatCard eyebrow="LEADS" value={leads ?? "—"} caption="captured" loading={leads === null} />
-        <StatCard eyebrow="CLICKS" value={clicks ?? "—"} caption="on your store" loading={clicks === null} />
-        <StatCard eyebrow="SHARE LINKS" value={1} caption="active store link" />
+      <section className="px-6 md:px-10 grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <StatCard eyebrow="ORDERS" value={orders ?? 0} caption="incoming" loading={orders === null} icon={Package} />
+        <StatCard eyebrow="LEADS" value={leads ?? 0} caption="captured" loading={leads === null} icon={Users} />
+        <StatCard eyebrow="CLICKS" value={clicks ?? 0} caption="on your store" loading={clicks === null} icon={MousePointerClick} />
+        <StatCard eyebrow="SHARE LINKS" value={1} caption="active store link" icon={Link2} />
       </section>
 
       <section className="px-6 md:px-10 grid lg:grid-cols-3 gap-6 pb-12">
