@@ -2,9 +2,9 @@
 import { Grid, House, LogOut, Package, Store, Users } from "lucide-react";
 import UserProfile from "./UserProfile";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import LeadsNavBadge from "./LeadsNavBadge";
-import { useUserStore } from "@/zustand";
+import { useLogout } from "@/lib/useLogout";
 
 const navMenu = [
   { id: 1, title: "Dashboard", href: "/", icon: House },
@@ -16,17 +16,7 @@ const navMenu = [
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const router = useRouter();
-  const setUser = useUserStore((s) => s.setUser);
-
-  const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("buzzToken");
-      localStorage.removeItem("lastSeenLeadsAt");
-    }
-    setUser(null);
-    router.replace("/login");
-  };
+  const handleLogout = useLogout();
 
   return (
     <nav aria-label="Main" className="hidden md:flex h-screen w-64 flex-col bg-forest-900 py-6 px-3">

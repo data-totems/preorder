@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Camera, Laptop } from "lucide-react";
+import { Camera, Laptop, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -8,12 +8,14 @@ import EditableField from "@/components/manage/EditableField";
 import { useUserStore } from "@/zustand";
 import { updateProfileDetails } from "@/actions/auth.actions";
 import { errorMessage } from "@/lib/errors";
+import { useLogout } from "@/lib/useLogout";
 
 type FieldKey = "fullName" | "phoneNumber" | "email" | "address";
 
 export default function Account() {
   const { user, setUser } = useUserStore((state) => state);
   const [editing, setEditing] = useState<FieldKey | null>(null);
+  const handleLogout = useLogout();
 
   const initials =
     user?.fullName
@@ -146,8 +148,13 @@ export default function Account() {
               <div className="text-[12px] text-muted-foreground">Active now · this device</div>
             </div>
           </div>
-          <Button variant="ghost" size="sm" disabled>
-            This device
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="text-destructive hover:text-destructive"
+          >
+            <LogOut className="size-4" /> Sign out
           </Button>
         </div>
       </section>
