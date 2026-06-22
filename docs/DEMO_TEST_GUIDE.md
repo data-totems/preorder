@@ -10,7 +10,7 @@ A 15-minute walk-through covering the three sides of the product.
 | --- | --- |
 | Customer + merchant frontend | https://preorder-three.vercel.app |
 | Backend API | https://buzzmart-backend-yp2r.onrender.com |
-| Backend admin | https://buzzmart-backend-yp2r.onrender.com/admin/ |
+| Backend admin | https://buzzmart-backend-yp2r.onrender.com/back-office-7K9/ |
 | API explorer (Swagger) | https://buzzmart-backend-yp2r.onrender.com/api/docs/ |
 
 > **Cold-start note:** the backend sleeps after ~15 min of no traffic. The
@@ -25,7 +25,7 @@ A 15-minute walk-through covering the three sides of the product.
 | Role | Email | Password | Where to use |
 | --- | --- | --- | --- |
 | **Merchant** (Founder Buzz Store) | `founder@buzzmart.test` | `BuzzLive2026!` | https://preorder-three.vercel.app/login |
-| **Admin** (Django staff) | `admin@buzzmart.test` | `AdminProd2026!` | https://buzzmart-backend-yp2r.onrender.com/admin/ |
+| **Admin** (Django staff) | `admin@buzzmart.test` | `AdminProd2026!` | https://buzzmart-backend-yp2r.onrender.com/back-office-7K9/ |
 | **Customer** | — | — | Browse anonymously, identify yourself by phone when prompted |
 
 ---
@@ -98,20 +98,20 @@ Switch back to your merchant window (the one logged in as `founder@buzzmart.test
 
 The admin (Django admin) is your back-office view of every merchant, every customer, every order in the system.
 
-1. Open https://buzzmart-backend-yp2r.onrender.com/admin/
+1. Open https://buzzmart-backend-yp2r.onrender.com/back-office-7K9/
 2. Sign in with `admin@buzzmart.test` / `AdminProd2026!`
-3. You'll see the full admin index. Useful sections:
-   - **Users** → every registered account on the platform (merchants + admins). Click in to see their tokens, last login, permissions.
-   - **Profiles** / **Business detailss** / **Bank details** — per-merchant info captured during setup.
-   - **Productss** — every product across all stores. Filter by owner, archive/unarchive directly.
-   - **Orders** — every order in the system, filterable by status (Incoming / Accepted / Shipped / Declined).
-   - **Leads** → every captured customer across every merchant.
-   - **Click events** → analytics of every share-link click.
-   - **Dispatchers** → all riders registered.
-   - **Share links** → every short-link the system has minted.
-4. Click into **Leads** to see "Tester One" you created in Test 2.
-5. Click into **Orders** to see the order you placed.
-6. Sign out via the top-right.
+3. You land on the **admin dashboard** — KPI cards (Merchants / Active products / Leads / Clicks-7d), order status breakdown, recent orders + recent leads panels.
+4. Sidebar groups (left nav):
+   - **Operations** — Orders, Leads, Products, Share links, Click events
+   - **Merchants** — Users, Business details, Profiles, Bank details, WhatsApp
+   - **Logistics** — Dispatchers, Notifications, Store slug history
+5. Click each list to inspect rows. Filter by status / date / type from the right-side filter panel. Search by email / name / phone / slug from the search box.
+6. Click into **Leads** to see the customer you created in Test 2.
+7. Click into **Orders** to see the order you placed — note the assigned rider in the detail page.
+8. Sign out via the top-right.
+
+> **Security note:** the admin URL is `/back-office-7K9/` (not `/admin/`).
+> Plain `/admin/` returns 404, which keeps scanners away from the login form.
 
 ---
 
@@ -126,13 +126,28 @@ The admin (Django admin) is your back-office view of every merchant, every custo
 
 ## One-time setup (for the person preparing the demo, not the CEO)
 
-The admin account needs to exist before the CEO logs in. Run this **once** on Render Shell:
+The admin account is now created automatically on every backend deploy via
+the `bootstrap_admin` management command in the build pipeline — no manual
+step needed. Default credentials:
 
-1. Render dashboard → `buzzmart-backend` service → **Shell** tab
-2. Paste:
-   ```bash
-   python manage.py shell -c "from accounts.models import User; u, c = User.objects.get_or_create(email='admin@buzzmart.test', defaults={'is_staff': True, 'is_superuser': True}); u.set_password('AdminProd2026!'); u.is_staff = True; u.is_superuser = True; u.save(); print('Admin ready:', u.email)"
-   ```
-3. Output should be `Admin ready: admin@buzzmart.test`.
+```
+ADMIN_EMAIL = admin@buzzmart.test
+ADMIN_PASSWORD = AdminProd2026!
+```
 
-This is idempotent — re-run it if you ever need to reset the admin password to `AdminProd2026!`.
+To rotate, set `ADMIN_EMAIL` and `ADMIN_PASSWORD` env vars on Render. The
+next deploy resets the admin to those credentials.
+
+### Security env vars set on Render
+
+| Key | Value | Purpose |
+| --- | --- | --- |
+| `ADMIN_URL_PATH` | `back-office-7K9/` | Hides the admin login from `/admin/` scanners |
+| `CORS_ALLOWED_ORIGINS` | `https://preorder-three.vercel.app` | API only accepts requests from the production frontend |
+| `FRONTEND_URL` | `https://preorder-three.vercel.app` | Used in share-link redirects and OG previews |
+
+Plus rate limits (no env needed — baked into the code):
+
+- `POST /api/accounts/auth/login/` — **10 attempts / minute / IP**
+- `POST /api/accounts/auth/register/` — **5 attempts / minute / IP**
+- Share-link `/resolve/` and `/identify/` — pre-existing rate limits (10/min)
