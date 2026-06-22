@@ -38,16 +38,7 @@ import type { Order } from "@/types/api";
 import { errorMessage } from "@/lib/errors";
 import ShipDialog from "@/components/orders/ShipDialog";
 
-interface OrderWithDispatcher extends Order {
-  dispatcher_details?: {
-    id: number;
-    name: string;
-    phone_number: string;
-    vehicle_type?: string;
-  } | null;
-}
-
-type Row = { order: OrderWithDispatcher; actions?: React.ReactNode };
+type Row = { order: Order; actions?: React.ReactNode };
 
 const OrderRow = ({ order, actions }: Row) => {
   const [expanded, setExpanded] = useState(false);
@@ -233,10 +224,10 @@ const TabSkeleton = () => (
 const Orders = () => {
   const [currentTab, setCurrentTab] = useState<string>("incoming");
 
-  const [orders, setOrders] = useState<OrderWithDispatcher[] | null>(null);
-  const [acceptedOrders, setAcceptedOrders] = useState<OrderWithDispatcher[] | null>(null);
-  const [shippedOrders, setShippedOrders] = useState<OrderWithDispatcher[] | null>(null);
-  const [declinedOrders, setDeclinedOrders] = useState<OrderWithDispatcher[] | null>(null);
+  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [acceptedOrders, setAcceptedOrders] = useState<Order[] | null>(null);
+  const [shippedOrders, setShippedOrders] = useState<Order[] | null>(null);
+  const [declinedOrders, setDeclinedOrders] = useState<Order[] | null>(null);
 
   const [accepting, setAccepting] = useState<number | null>(null);
   const [declining, setDeclining] = useState<number | null>(null);
@@ -321,7 +312,7 @@ const Orders = () => {
       const response = await shipOrder(orderId, dispatcherId);
       if (response.status === 200) {
         toast.success("Order shipped");
-        const updated = response.data as OrderWithDispatcher;
+        const updated = response.data;
         setAcceptedOrders((prev) => (prev ?? []).filter((o) => o.id !== orderId));
         setShippedOrders((prev) => [updated, ...(prev ?? [])]);
         return true;

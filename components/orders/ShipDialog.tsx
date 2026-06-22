@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "@/lib/errors";
+import { isValidPhone, normalizePhone } from "@/lib/phone";
 import { createDispatch, listDispatch } from "@/actions/products.actions";
 
 interface Dispatcher {
@@ -89,11 +90,15 @@ export default function ShipDialog({ orderId, shipping, onConfirm }: Props) {
       toast.error("Name, phone, and plate are required.");
       return;
     }
+    if (!isValidPhone(form.phone_number)) {
+      toast.error("Enter a valid phone number (e.g. +234 or 080…).");
+      return;
+    }
     setAdding(true);
     try {
       const r = await createDispatch({
         name: form.name.trim(),
-        phone_number: form.phone_number.trim(),
+        phone_number: normalizePhone(form.phone_number) ?? form.phone_number.trim(),
         vehicle_type: form.vehicle_type,
         plate_number: form.plate_number.trim(),
         // Quick-add stubs — merchant can fill these in later in Settings.

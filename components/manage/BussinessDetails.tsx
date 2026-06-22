@@ -46,7 +46,7 @@ export default function BussinessDetails() {
         <Eyebrow className="block mb-4">BUSINESS DETAILS</Eyebrow>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ReadField label="Business name" value={user?.username ?? ""} />
+          <ReadField label="Business name" value={user?.business_name ?? ""} />
           <ReadField label="Address" value={user?.address ?? ""} />
           <ReadField label="Contact" value={user?.phoneNumber ?? ""} />
           <div className="flex flex-col gap-2 min-w-0">

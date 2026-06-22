@@ -16,7 +16,7 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Main" className="hidden md:flex h-screen w-64 flex-col bg-forest-900 py-6 px-3">
+    <nav aria-label="Main" className="hidden md:flex h-dvh w-64 flex-col bg-forest-900 py-6 px-3">
       <div className="px-3">
         <span className="text-2xl font-extrabold tracking-tight text-forest-50">Buzzmart</span>
       </div>

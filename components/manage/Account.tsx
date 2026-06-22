@@ -27,15 +27,11 @@ export default function Account() {
 
   const save = async (field: FieldKey, value: string) => {
     try {
-      if (field === "email") {
-        toast.info("Email change may require verification — coming soon");
-        setEditing(null);
-        return;
-      }
       const payload: Record<string, string> = {};
       if (field === "fullName") payload.full_name = value;
       else if (field === "phoneNumber") payload.phone_number = value;
       else if (field === "address") payload.address = value;
+      else return;
 
       const response = await updateProfileDetails(payload);
       if (response.status === 200) {
@@ -89,10 +85,11 @@ export default function Account() {
             value={user?.email ?? ""}
             placeholder="you@example.com"
             type="email"
-            editing={editing === "email"}
-            onEdit={() => setEditing("email")}
-            onSave={(v) => save("email", v)}
-            onCancel={() => setEditing(null)}
+            disabled
+            editing={false}
+            onEdit={() => {}}
+            onSave={() => {}}
+            onCancel={() => {}}
           />
           <EditableField
             label="Address"

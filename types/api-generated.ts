@@ -1243,6 +1243,8 @@ export interface components {
             /** Format: decimal */
             readonly total_price: string;
             readonly status: components["schemas"]["OrderStatusEnum"];
+            dispatcher?: number | null;
+            readonly dispatcher_details: components["schemas"]["Dispatcher"];
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
