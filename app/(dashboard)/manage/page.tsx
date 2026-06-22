@@ -5,7 +5,6 @@ import Category from "@/components/manage/Category"
 import Dispatch from "@/components/manage/Dispatch"
 import Payment from "@/components/manage/Payment"
 import StoreLink from "@/components/manage/StoreLink"
-import Navbar from "@/components/shared/Navbar"
 import PageHeader from "@/components/shared/PageHeader"
 import { useState } from "react"
 
@@ -13,8 +12,6 @@ const Manage = () => {
   const [currentTab, setCurrentTab] = useState(0);
   return (
     <div>
-      <Navbar leftType="head" title="MANAGE" primarybtn="Create product" showIcon width="168px" height="40px" />
-
       <PageHeader
         eyebrow="MANAGE"
         title="Settings"

@@ -1,5 +1,4 @@
 'use client'
-import Navbar from "@/components/shared/Navbar"
 import PageHeader from "@/components/shared/PageHeader"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Eyebrow } from "@/components/ui/eyebrow"
@@ -164,12 +163,11 @@ const Orders = () => {
 
   return (
     <div className="flex flex-col gap-5 max-w-7xl mx-auto">
-      <Navbar leftType="head" title="ORDERS" primarybtn="Distribute" width="168px" height="40px"  onPress={() => setDistributeDialog(true)} />
-
       <PageHeader
         eyebrow="ORDERS"
         title="Your orders"
         description="Manage incoming orders and dispatch."
+        actions={<Button onClick={() => setDistributeDialog(true)}>Distribute</Button>}
       />
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="px-6 md:px-10">
