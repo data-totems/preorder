@@ -272,7 +272,12 @@ const Orders = () => {
       const response = await acceptOrder(orderId);
       if (response.status === 200) {
         toast.success("Order accepted");
+        const accepted = orders?.find((o) => o.id === orderId);
         setOrders((prev) => (prev ?? []).filter((o) => o.id !== orderId));
+        if (accepted) {
+          const stamped = { ...accepted, updated_at: new Date().toISOString() };
+          setAcceptedOrders((prev) => [stamped, ...(prev ?? [])]);
+        }
       }
     } catch (error) {
       toast.error(errorMessage(error, "Could not accept order."));
