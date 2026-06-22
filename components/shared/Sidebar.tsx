@@ -29,13 +29,13 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="hidden md:flex h-screen w-64 flex-col bg-forest-900 py-6 px-3">
+    <nav aria-label="Main" className="hidden md:flex h-screen w-64 flex-col bg-forest-900 py-6 px-3">
       <div className="px-3">
         <span className="text-2xl font-extrabold tracking-tight text-forest-50">Buzzmart</span>
       </div>
       <UserProfile />
 
-      <nav className="mt-8 flex flex-col gap-1">
+      <div className="mt-8 flex flex-col gap-1">
         {navMenu.map((item) => {
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"));
           return (
@@ -57,7 +57,7 @@ const Sidebar = () => {
             </Link>
           );
         })}
-      </nav>
+      </div>
 
       <div className="mt-auto pt-4 border-t border-white/10">
         <button
@@ -69,7 +69,7 @@ const Sidebar = () => {
           <span>Log out</span>
         </button>
       </div>
-    </aside>
+    </nav>
   );
 };
 

@@ -25,6 +25,7 @@ const MobileNav = () => {
 
   return (
     <nav
+      aria-label="Mobile"
       className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-border pb-[env(safe-area-inset-bottom)]"
     >
       <ul className="grid grid-cols-5 h-16">
