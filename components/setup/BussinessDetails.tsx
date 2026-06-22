@@ -1,7 +1,6 @@
 "use client"
 
 import { z } from "zod"
-import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
@@ -17,6 +16,9 @@ import { Input } from "@/components/ui/input"
 import { useCallback, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Textarea } from "../ui/textarea"
+import { Card } from "@/components/ui/card"
+import { Eyebrow } from "@/components/ui/eyebrow"
+import { Label } from "@/components/ui/label"
 import { useSetupStore } from "@/zustand"
 import SlugInput from "@/components/slug/SlugInput"
 
@@ -85,92 +87,83 @@ const { setStore, store } = useSetupStore((state) => state)
 
   }
   return (
-    <div className='mt-4 '>
-          <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <FormField
-                      control={form.control}
-                      name="bussinessName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#03140A80] uppercase font-bold">Business Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              className="bg-[#F0F0F0] rounded-[12px] max-w-lg"
-                              placeholder="Enter your full name"
-                              {...field}
-                              onChange={(e) =>
-                                handleBusinessNameChange(e.target.value, field.onChange)
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
+        <Card variant="flat" className="p-6 gap-6">
+          <Eyebrow className="block">STORE IDENTITY</Eyebrow>
 
-                    <div>
-                      <label className="text-[#03140A80] uppercase font-bold text-sm">
-                        Your store link
-                      </label>
-                      <div className="mt-2">
-                        <SlugInput
-                          value={slug}
-                          onChange={handleSlugChange}
-                          onAvailability={handleAvailability}
-                        />
-                      </div>
-                    </div>
+          <FormField
+            control={form.control}
+            name="bussinessName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Business Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter your business name"
+                    {...field}
+                    onChange={(e) =>
+                      handleBusinessNameChange(e.target.value, field.onChange)
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                      <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#03140A80] uppercase font-bold">business description</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className="bg-[#F0F0F0] rounded-[12px] max-w-lg"
-                              placeholder="business description"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+          <div className="flex flex-col gap-2">
+            <Label>Your store link</Label>
+            <SlugInput
+              value={slug}
+              onChange={handleSlugChange}
+              onAvailability={handleAvailability}
+            />
+          </div>
 
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Business description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Business description"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Business Email</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter your business email"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </Card>
 
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#03140A80] uppercase font-bold">Business Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              className="bg-[#F0F0F0] rounded-[12px] max-w-lg"
-                              placeholder="Create your username"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-
-                    <Button
-                      type="submit"
-                      className="w-full bg-[#27BA5F] hover:bg-green-400"
-                      disabled={isLoading || slugAvailable !== true}
-                    >
-                      Next
-                    </Button>
-                  </form>
-                </Form>
-    </div>
+        <div className="fixed left-0 right-0 bottom-0 bg-paper/95 backdrop-blur border-t border-border py-4 px-6 z-30">
+          <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+            <Button type="button" variant="ghost" onClick={() => setCurrentStep(1)}>Back</Button>
+            <Button type="submit" disabled={isLoading || slugAvailable !== true}>Continue →</Button>
+          </div>
+        </div>
+      </form>
+    </Form>
   )
 }
 
