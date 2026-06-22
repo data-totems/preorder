@@ -57,7 +57,7 @@ function TabsTrigger({
         "disabled:pointer-events-none disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         variant === "pill"
-          ? "h-9 px-4 rounded-sm text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+          ? "h-9 px-4 rounded-sm text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
           : "px-1 pb-3 -mb-px border-b-2 border-transparent text-muted-foreground hover:text-foreground data-[state=active]:border-forest-500 data-[state=active]:text-foreground data-[state=active]:font-bold",
         className
       )}
