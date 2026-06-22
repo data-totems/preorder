@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { getPublicProductByUuid } from "@/actions/products.actions";
 import { toast } from "sonner";
@@ -10,6 +9,7 @@ import { errorMessage } from "@/lib/errors";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProductImageCarousel from "@/components/shared/ProductImageCarousel";
 import {
   OrderFormInline,
   OrderFormSheet,
@@ -58,43 +58,16 @@ const CustomerProductDetail = () => {
     );
   }
 
-  const primary = product.images?.[0]?.image_url ?? product.primary_image ?? "";
   const merchantName = product.merchant?.business_name ?? storeSlug;
 
   return (
     <main className="max-w-7xl mx-auto pb-24 md:pb-12">
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 px-6 md:px-10 py-8">
-        <div>
-          <div className="relative aspect-square w-full bg-ink-100 rounded-lg overflow-hidden">
-            {primary && (
-              <Image
-                src={primary}
-                alt={product.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            )}
-          </div>
-          {product.images && product.images.length > 1 && (
-            <div className="mt-4 grid grid-cols-4 gap-3">
-              {product.images.map((img, i) => (
-                <div
-                  key={i}
-                  className="relative aspect-square rounded-md overflow-hidden bg-ink-100"
-                >
-                  <Image
-                    src={img.image_url}
-                    alt={`${product.name} ${i + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="100px"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ProductImageCarousel
+          images={product.images ?? []}
+          alt={product.name}
+          fallback={product.primary_image ?? undefined}
+        />
         <div>
           <Eyebrow className="block mb-2">PRODUCT</Eyebrow>
           <h1 className="text-[28px] leading-[36px] font-bold tracking-[-0.01em] text-foreground">

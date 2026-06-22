@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
 import {
   Archive,
   ImagePlus,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "@/components/shared/PageHeader";
+import ProductImageCarousel from "@/components/shared/ProductImageCarousel";
 import SharePanel from "@/components/share/SharePanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,7 +81,6 @@ const ProductDetails = () => {
 
   const [product, setProduct] = useState<ProductProps | null>(null);
   const [shareStats, setShareStats] = useState<ShareStats | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   const [editOpen, setEditOpen] = useState(false);
   const [imageOpen, setImageOpen] = useState(false);
@@ -252,8 +251,6 @@ const ProductDetails = () => {
   }
 
   const images = product.images ?? [];
-  const currentImage =
-    images[currentIndex]?.image_url ?? product.image_url ?? null;
 
   return (
     <div className="max-w-7xl mx-auto pb-12">
@@ -311,50 +308,11 @@ const ProductDetails = () => {
       </div>
 
       <div className="px-6 md:px-10 mt-10 grid lg:grid-cols-2 gap-8 lg:gap-12">
-        <div>
-          <div className="relative aspect-square w-full bg-ink-100 rounded-lg overflow-hidden flex items-center justify-center">
-            {currentImage ? (
-              <Image
-                src={currentImage}
-                alt={product.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-ink-300">
-                <ImagePlus className="size-8" />
-                <span className="text-[13px]">No image yet</span>
-              </div>
-            )}
-          </div>
-          {images.length > 1 && (
-            <div className="mt-4 grid grid-cols-4 gap-3">
-              {images.map((img, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setCurrentIndex(i)}
-                  className={cn(
-                    "relative aspect-square rounded-md overflow-hidden bg-ink-100 transition-colors",
-                    currentIndex === i
-                      ? "ring-2 ring-forest-500"
-                      : "border border-border hover:border-ink-300",
-                  )}
-                  aria-label={`View image ${i + 1}`}
-                >
-                  <Image
-                    src={img.image_url}
-                    alt={`${product.name} ${i + 1}`}
-                    fill
-                    sizes="80px"
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <ProductImageCarousel
+          images={images}
+          alt={product.name}
+          fallback={product.image_url ?? undefined}
+        />
 
         <div className="flex flex-col gap-6">
           <Card padding="none" className="p-6">
