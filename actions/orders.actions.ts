@@ -47,6 +47,21 @@ export const getShippedOrder = async (): Promise<AxiosResponse<OrdersGroupRespon
     }
 }
 
+export const getDeclinedOrders = async (): Promise<AxiosResponse<OrdersGroupResponse>> => {
+    const token = localStorage.getItem("buzzToken")
+    try {
+        const response = await axios.get<OrdersGroupResponse>(`${baseUrl}/orders/declined/`, {
+            headers: {
+                "Authorization": `token ${token}`
+            }
+        });
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const createOrders = async ({
  product,
   customer_name,

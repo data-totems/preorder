@@ -27,6 +27,7 @@ import {
   acceptOrder,
   declineOrder,
   getAcceptedOrders,
+  getDeclinedOrders,
   getIncomingOrders,
   getShippedOrder,
   shipOrder,
@@ -235,6 +236,7 @@ const Orders = () => {
   const [orders, setOrders] = useState<OrderWithDispatcher[] | null>(null);
   const [acceptedOrders, setAcceptedOrders] = useState<OrderWithDispatcher[] | null>(null);
   const [shippedOrders, setShippedOrders] = useState<OrderWithDispatcher[] | null>(null);
+  const [declinedOrders, setDeclinedOrders] = useState<OrderWithDispatcher[] | null>(null);
 
   const [accepting, setAccepting] = useState<number | null>(null);
   const [declining, setDeclining] = useState<number | null>(null);
@@ -244,21 +246,24 @@ const Orders = () => {
     let alive = true;
     (async () => {
       try {
-        const [inc, acc, ship] = await Promise.all([
+        const [inc, acc, ship, dec] = await Promise.all([
           getIncomingOrders(),
           getAcceptedOrders(),
           getShippedOrder(),
+          getDeclinedOrders(),
         ]);
         if (!alive) return;
         setOrders(inc.data?.orders ?? []);
         setAcceptedOrders(acc.data?.orders ?? []);
         setShippedOrders(ship.data?.orders ?? []);
+        setDeclinedOrders(dec.data?.orders ?? []);
       } catch (error) {
         if (alive) {
           toast.error(errorMessage(error, "Could not load orders."));
           setOrders([]);
           setAcceptedOrders([]);
           setShippedOrders([]);
+          setDeclinedOrders([]);
         }
       }
     })();
@@ -293,7 +298,12 @@ const Orders = () => {
       const response = await declineOrder(orderId);
       if (response.status === 200) {
         toast.success("Order declined");
+        const declined = orders?.find((o) => o.id === orderId);
         setOrders((prev) => (prev ?? []).filter((o) => o.id !== orderId));
+        if (declined) {
+          const stamped = { ...declined, updated_at: new Date().toISOString() };
+          setDeclinedOrders((prev) => [stamped, ...(prev ?? [])]);
+        }
         return true;
       }
       return false;
@@ -425,11 +435,20 @@ const Orders = () => {
         </TabsContent>
 
         <TabsContent value="declined" className="mt-6 flex flex-col gap-6">
-          <EmptyState
-            icon={<Box />}
-            title="No declined orders"
-            description="Declined orders will appear here for your records."
-          />
+          {declinedOrders === null ? (
+            <TabSkeleton />
+          ) : declinedOrders.length === 0 ? (
+            <EmptyState
+              icon={<Box />}
+              title="No declined orders"
+              description="When you decline an order, it'll appear here for your records."
+            />
+          ) : (
+            <DateGroupedOrders
+              orders={declinedOrders}
+              getDate={(o) => o.updated_at}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>
