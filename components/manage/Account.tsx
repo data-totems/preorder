@@ -1,387 +1,156 @@
-'use client'
-import { Check, Laptop, Pen, Tablet, X } from "lucide-react"
-import Image from "next/image"
-import { useState } from "react"
-import { Input } from "../ui/input"
-import { useUserStore } from "@/zustand"
-import { toast } from "sonner"
-import { updateProfileDetails } from "@/actions/auth.actions"
-import { errorMessage } from "@/lib/errors"
+"use client";
+import { useState } from "react";
+import { Camera, Laptop } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import EditableField from "@/components/manage/EditableField";
+import { useUserStore } from "@/zustand";
+import { updateProfileDetails } from "@/actions/auth.actions";
+import { errorMessage } from "@/lib/errors";
 
-const Account = () => {
-    const [editId, setEditId] = useState(0);
-    const { user, setUser } = useUserStore((state) => state)
-    
-    // Separate state for each editable field
-    const [fullName, setFullName] = useState(user?.fullName || "")
-    const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "")
-    const [email, setEmail] = useState(user?.email || "")
-    const [address, setAddress] = useState(user?.address || "")
+type FieldKey = "fullName" | "phoneNumber" | "email" | "address";
 
-    const handleUpdateDetails = async ({
-        full_name,
-        display_picture,
-        username,
-        phone_number,
-        address
-    }: {
-        full_name?: string,
-        display_picture?: string,
-        username?: string,
-        phone_number?: string,
-        address?: string
-    }) => {
-        try {
-            // Only send the field that's being edited
-            const updateData: { full_name?: string; phone_number?: string; address?: string; display_picture?: string } = {};
-            
-            if (editId === 1 && full_name !== undefined) {
-                updateData.full_name = full_name;
-            }
-            if (editId === 2 && phone_number !== undefined) {
-                updateData.phone_number = phone_number;
-            }
-            if (editId === 3) {
-                // Email might not be editable via this endpoint
-                // Add if your API supports it
-            }
-            if (editId === 4 && address !== undefined) {
-                updateData.address = address;
-            }
+export default function Account() {
+  const { user, setUser } = useUserStore((state) => state);
+  const [editing, setEditing] = useState<FieldKey | null>(null);
 
-            const response = await updateProfileDetails(updateData);
+  const initials =
+    user?.fullName
+      ?.trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((s) => s[0]?.toUpperCase())
+      .join("") || "U";
 
-            if(response.status === 200) {
-                toast.success("Profile Updated")
-                
-                // Update the user store with the new data
-                if (response.data) {
-                    const updatedUser = { ...user, ...response.data };
-                    setUser(updatedUser);
-                }
-            }
-        } catch (error) {
-            toast.error(errorMessage(error, "Could not update profile."))
+  const save = async (field: FieldKey, value: string) => {
+    try {
+      if (field === "email") {
+        toast.info("Email change may require verification — coming soon");
+        setEditing(null);
+        return;
+      }
+      const payload: Record<string, string> = {};
+      if (field === "fullName") payload.full_name = value;
+      else if (field === "phoneNumber") payload.phone_number = value;
+      else if (field === "address") payload.address = value;
+
+      const response = await updateProfileDetails(payload);
+      if (response.status === 200) {
+        toast.success("Profile updated");
+        if (response.data && user) {
+          setUser({ ...user, ...response.data });
         }
+        setEditing(null);
+      }
+    } catch (e) {
+      toast.error(errorMessage(e, "Could not update profile."));
     }
-
-    const handleFieldSave = async () => {
-        switch(editId) {
-            case 1:
-                await handleUpdateDetails({ full_name: fullName });
-                break;
-            case 2:
-                await handleUpdateDetails({ phone_number: phoneNumber });
-                break;
-            case 3:
-                // Email update might require different endpoint or verification
-                toast.info("Email update may require verification");
-                break;
-            case 4:
-                await handleUpdateDetails({ address: address });
-                break;
-        }
-        setEditId(0);
-    }
-
-    const handleCancelEdit = () => {
-        // Reset field values to original user data when canceling
-        switch(editId) {
-            case 1:
-                setFullName(user?.fullName || "");
-                break;
-            case 2:
-                setPhoneNumber(user?.phoneNumber || "");
-                break;
-            case 3:
-                setEmail(user?.email || "");
-                break;
-            case 4:
-                setAddress(user?.address || "");
-                break;
-        }
-        setEditId(0);
-    }
+  };
 
   return (
-    <div className="flex flex-col gap-8 ">
-        <div className="">
-            <h2 className="font-bold text-md">ACCOUNT DETAILS</h2>
+    <div className="flex flex-col gap-10">
+      <section>
+        <Eyebrow className="block mb-4">ACCOUNT DETAILS</Eyebrow>
 
-        <div className=" flex items-center justify-between">
-            <div className="w-[80px] h-[80px] bg-warning rounded-full justify-center flex flex-col items-center">
-                 <Image
-                    src={'/avatar.png'}
-                    alt="User"
-                    width={100}
-                    height={100}
-                    className="w-[80px] h-[80px] rounded-full"
-                 />
-            </div>
-
-            <div className="flex items-center bg-white p-3 h-[24px] rounded-md gap-2">
-                <Image
-                    src={'/gem.png'}
-                    alt="gem"
-                    width={16}
-                    height={16}
-                 />
-                 <h2 className="text-[12px] text-ink-500 font-[500]">Verified ID</h2>
-            </div>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="size-16 rounded-full bg-forest-100 text-forest-700 flex items-center justify-center font-bold text-[20px]">
+            {initials}
+          </div>
+          <Button variant="outline" size="sm" disabled>
+            <Camera className="size-4" /> Change photo
+          </Button>
         </div>
 
-        <div className="pt-6 flex flex-col gap-9">
-
-            <div className="flex flex-col lg:flex-row items-center gap-[100px]">
-                {/* FULL NAME */}
-                 <div className="flex flex-col gap-3">
-                    <h2 className="text-ink-500 font-[700]">FULL NAME</h2>
-                    <div className="flex items-center gap-5">
-                        {editId === 1 ? (
-                            <div className="flex bg-white items-center p-1.5 rounded-md">
-                                <Input 
-                                    className="border-none outline-none" 
-                                    placeholder="Enter full name" 
-                                    onChange={(e) => setFullName(e.target.value)} 
-                                    value={fullName}
-                                    autoFocus
-                                />
-                                <div 
-                                    className="cursor-pointer p-1"
-                                    onClick={handleCancelEdit}
-                                >
-                                    <X size={14} color="#A9AEAB" />
-                                </div>
-                            </div>
-                        ) : (
-                            <span className="text-[16px]">{fullName || user?.fullName || "Not set"}</span>
-                        )}
-                        
-                        <div className="cursor-pointer" onClick={()=> {
-                            if(editId === 1) {
-                                handleFieldSave();
-                            } else {
-                                setEditId(1);
-                            }
-                        }}>
-                            {editId === 1 ? (
-                                <div className="flex items-center gap-3">
-                                    <Check size={14} color="#27BA5F" className="text-sm" />
-                                    <span className="text-forest-500 text-sm font-[500]">Save</span>
-                                </div>
-                            ) : (
-                                <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* PHONE NUMBER */}
-                 <div className="flex flex-col gap-3">
-                    <h2 className="text-ink-500 font-[700]">PHONE</h2>
-                    <div className="flex items-center gap-5">
-                        {editId === 2 ? (
-                            <div className="flex bg-white items-center p-1.5 rounded-md">
-                                <Input 
-                                    className="border-none outline-none" 
-                                    placeholder="Enter phone number" 
-                                    onChange={(e) => setPhoneNumber(e.target.value)} 
-                                    value={phoneNumber}
-                                    autoFocus
-                                />
-                                <div 
-                                    className="cursor-pointer p-1"
-                                    onClick={handleCancelEdit}
-                                >
-                                    <X size={14} color="#A9AEAB" />
-                                </div>
-                            </div>
-                        ) : (
-                            <span className="text-[16px]">{phoneNumber || user?.phoneNumber || "Not set"}</span>
-                        )}
-                        
-                        <div className="cursor-pointer" onClick={()=> {
-                            if(editId === 2) {
-                                handleFieldSave();
-                            } else {
-                                setEditId(2);
-                            }
-                        }}>
-                            {editId === 2 ? (
-                                <div className="flex items-center gap-3">
-                                    <Check size={14} color="#27BA5F" className="text-sm" />
-                                    <span className="text-forest-500 text-sm font-[500]">Save</span>
-                                </div>
-                            ) : (
-                                <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex flex-col lg:flex-row items-center gap-[100px]">
-                {/* EMAIL */}
-                 <div className="flex flex-col gap-3">
-                    <h2 className="text-ink-500 font-[700]">EMAIL</h2>
-                    <div className="flex items-center gap-5">
-                        {editId === 3 ? (
-                            <div className="flex bg-white items-center p-1.5 rounded-md">
-                                <Input 
-                                    className="border-none outline-none" 
-                                    placeholder="Enter email" 
-                                    onChange={(e) => setEmail(e.target.value)} 
-                                    value={email}
-                                    type="email"
-                                    autoFocus
-                                />
-                                <div 
-                                    className="cursor-pointer p-1"
-                                    onClick={handleCancelEdit}
-                                >
-                                    <X size={14} color="#A9AEAB" />
-                                </div>
-                            </div>
-                        ) : (
-                            <span className="text-[16px]">{email || user?.email || "Not set"}</span>
-                        )}
-                        
-                        <div className="cursor-pointer" onClick={()=> {
-                            if(editId === 3) {
-                                handleFieldSave();
-                            } else {
-                                setEditId(3);
-                            }
-                        }}>
-                            {editId === 3 ? (
-                                <div className="flex items-center gap-3">
-                                    <Check size={14} color="#27BA5F" className="text-sm" />
-                                    <span className="text-forest-500 text-sm font-[500]">Save</span>
-                                </div>
-                            ) : (
-                                <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* ADDRESS */}
-                 <div className="flex flex-col gap-3">
-                    <h2 className="text-ink-500 font-[700]">ADDRESS</h2>
-                    <div className="flex items-center gap-5">
-                        {editId === 4 ? (
-                            <div className="flex bg-white items-center p-1.5 rounded-md">
-                                <Input 
-                                    className="border-none outline-none" 
-                                    placeholder="Enter address" 
-                                    onChange={(e) => setAddress(e.target.value)} 
-                                    value={address}
-                                    autoFocus
-                                />
-                                <div 
-                                    className="cursor-pointer p-1"
-                                    onClick={handleCancelEdit}
-                                >
-                                    <X size={14} color="#A9AEAB" />
-                                </div>
-                            </div>
-                        ) : (
-                            <span className="text-[16px]">{address || user?.address || "Not set"}</span>
-                        )}
-                        
-                        <div className="cursor-pointer" onClick={()=> {
-                            if(editId === 4) {
-                                handleFieldSave();
-                            } else {
-                                setEditId(4);
-                            }
-                        }}>
-                            {editId === 4 ? (
-                                <div className="flex items-center gap-3">
-                                    <Check size={14} color="#27BA5F" className="text-sm" />
-                                    <span className="text-forest-500 text-sm font-[500]">Save</span>
-                                </div>
-                            ) : (
-                                <Pen color="#27BA5F" fill="#27BA5F" size={13} className="cursor-pointer" />
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <EditableField
+            label="Full name"
+            value={user?.fullName ?? ""}
+            placeholder="Your full name"
+            editing={editing === "fullName"}
+            onEdit={() => setEditing("fullName")}
+            onSave={(v) => save("fullName", v)}
+            onCancel={() => setEditing(null)}
+          />
+          <EditableField
+            label="Phone"
+            value={user?.phoneNumber ?? ""}
+            placeholder="+234 …"
+            type="tel"
+            editing={editing === "phoneNumber"}
+            onEdit={() => setEditing("phoneNumber")}
+            onSave={(v) => save("phoneNumber", v)}
+            onCancel={() => setEditing(null)}
+          />
+          <EditableField
+            label="Email"
+            value={user?.email ?? ""}
+            placeholder="you@example.com"
+            type="email"
+            editing={editing === "email"}
+            onEdit={() => setEditing("email")}
+            onSave={(v) => save("email", v)}
+            onCancel={() => setEditing(null)}
+          />
+          <EditableField
+            label="Address"
+            value={user?.address ?? ""}
+            placeholder="Your address"
+            editing={editing === "address"}
+            onEdit={() => setEditing("address")}
+            onSave={(v) => save("address", v)}
+            onCancel={() => setEditing(null)}
+          />
         </div>
+      </section>
+
+      <section>
+        <Eyebrow className="block mb-4">ACCOUNT SECURITY</Eyebrow>
+        <div className="flex flex-col divide-y divide-border">
+          <div className="flex items-center justify-between gap-4 py-4">
+            <div>
+              <div className="text-[14px] font-semibold text-foreground">Password</div>
+              <div className="text-[13px] text-muted-foreground">
+                Update the password you use to sign in.
+              </div>
+            </div>
+            <Button variant="outline" size="sm" disabled>
+              Change
+            </Button>
+          </div>
+          <div className="flex items-center justify-between gap-4 py-4">
+            <div>
+              <div className="text-[14px] font-semibold text-foreground">
+                Two-factor authentication
+              </div>
+              <div className="text-[13px] text-muted-foreground">
+                Add an extra layer of security at sign-in.
+              </div>
+            </div>
+            <Button variant="outline" size="sm" disabled>
+              Set up
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex flex-col gap-5">
-            <h2 className="font-bold text-md">ACCOUNT SECURITY</h2>
+      </section>
 
-            <div className="gap-3 flex flex-col">
-                <h2 className="text-ink-500 font-[700]">PASSWORD</h2>
-                <div className="bg-forest-100 w-fit h-fit cursor-pointer p-2 rounded-md">
-                    <h2 className="text-forest-500 font-[500] text-[12px]">Change password</h2>
-                </div>
+      <section>
+        <Eyebrow className="block mb-4">SESSIONS</Eyebrow>
+        <div className="flex items-center justify-between gap-4 rounded-md border border-border bg-paper p-4">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-md bg-forest-50 text-forest-700 flex items-center justify-center">
+              <Laptop className="size-5" />
             </div>
-
-            <div className="gap-3 flex flex-col">
-                <h2 className="text-ink-500 font-[700]">2 FACTOR AUTHENTICATION</h2>
-                <div className="bg-forest-100 w-fit h-fit cursor-pointer p-2 rounded-md">
-                    <h2 className="text-forest-500 font-[500] text-[12px]">Setup 2FA</h2>
-                </div>
+            <div>
+              <div className="text-[14px] font-semibold text-foreground">Current session</div>
+              <div className="text-[12px] text-muted-foreground">Active now · this device</div>
             </div>
-
-            <div className="gap-5 flex flex-col">
-                <h2 className="text-ink-500 font-[700]">SESSION MANAGEMENT</h2>
-
-                <div className="flex justify-between items-center">
-                    <div className="flex gap-4">
-                        <Laptop color="#A9AEAB" fill="#A9AEAB" />
-                        <div className="flex flex-col gap-2">
-                            <h2>Windows</h2>
-                            <div className="flex items-center gap-3">
-                                <div className="w-[4px] h-[4px] bg-forest-500 rounded-full" />
-                                <span className="text-forest-500 text-[13px]">Current session</span>
-                            </div>
-                            <h2 className="text-[13px] text-ink-500">Nigeria</h2>
-                            <h2 className="text-[13px] text-ink-500">First sign-in: Sep 2</h2>
-                        </div>
-                    </div>
-                    <div className="cursor-pointer text-destructive text-12 font-[500]">
-                        <span>Sign out</span>
-                    </div>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                    <div className="flex gap-4">
-                        <Tablet color="#A9AEAB" fill="#A9AEAB" />
-                        <div className="flex flex-col gap-2">
-                            <h2>Tablet</h2>
-                            <h2 className="text-[13px] text-ink-500">2 hours ago</h2>
-                            <h2 className="text-[13px] text-ink-500">Nigeria</h2>
-                            <h2 className="text-[13px] text-ink-500">First sign-in: Sep 2</h2>
-                        </div>
-                    </div>
-                    <div className="cursor-pointer text-destructive text-12 font-[500]">
-                        <span>Sign out</span>
-                    </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                    <div className="flex gap-4">
-                        <Tablet color="#A9AEAB" fill="#A9AEAB" />
-                        <div className="flex flex-col gap-2">
-                            <h2>Tablet</h2>
-                            <h2 className="text-[13px] text-ink-500">3 months ago</h2>
-                            <h2 className="text-[13px] text-ink-500">Nigeria</h2>
-                            <h2 className="text-[13px] text-ink-500">First sign-in: Sep 2</h2>
-                        </div>
-                    </div>
-                    <div className="cursor-pointer text-destructive text-12 font-[500]">
-                        <span>Sign out</span>
-                    </div>
-                </div>
-            </div>
+          </div>
+          <Button variant="ghost" size="sm" disabled>
+            This device
+          </Button>
         </div>
+      </section>
     </div>
-  )
+  );
 }
-
-export default Account

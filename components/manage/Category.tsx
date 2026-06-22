@@ -1,30 +1,48 @@
-'use client'
-import { useState } from "react";
+"use client";
+import { Briefcase, CreditCard, Link2, Truck, User } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const Category = ({ setCurrentTab} : {
-    setCurrentTab: (value: number) => void
-}) => {
-    const categories = [
-        "Account", "Bussiness Details", "Payment", "Dispatch", "Store Link"
-    ];
+const categories = [
+  { name: "Account", icon: User },
+  { name: "Business", icon: Briefcase },
+  { name: "Payment", icon: CreditCard },
+  { name: "Dispatch", icon: Truck },
+  { name: "Store link", icon: Link2 },
+];
 
-    const [currentCategory, setCurrentCategory] = useState("Account")
-  return (
-    <div className="p-3 ">
-        <h2 className="font-[700] text-ink-500 ">Category</h2>
-
-        <div className=" flex flex-col gap-7 mt-5 ">
-            {categories.map((category, index) => (
-                <div onClick={() => {
-                    setCurrentCategory(category)
-                    setCurrentTab(index)
-                    }} key={index} className={` cursor-pointer ${currentCategory === category ? 'bg-forest-100 text-forest-500 font-semibold ' : ' text-[#03140A4D] ' } w-[160px] h-[38px] flex flex-col justify-center pl-4 rounded-md  `}>
-                    <h2>{category}</h2>
-                </div>
-            ))}
-        </div>
-    </div>
-  )
+interface Props {
+  currentTab: number;
+  setCurrentTab: (value: number) => void;
 }
 
-export default Category
+export default function Category({ currentTab, setCurrentTab }: Props) {
+  return (
+    <nav aria-label="Settings sections" className="flex flex-col gap-1">
+      <span className="text-[11px] font-bold tracking-[0.08em] uppercase text-ink-500 px-3 mb-2">
+        Sections
+      </span>
+      {categories.map((c, idx) => {
+        const Icon = c.icon;
+        const active = currentTab === idx;
+        return (
+          <button
+            key={c.name}
+            type="button"
+            onClick={() => setCurrentTab(idx)}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "flex items-center gap-3 h-10 px-3 rounded-md text-[14px] transition-colors",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              active
+                ? "bg-forest-100 text-forest-700 font-semibold"
+                : "text-ink-500 hover:bg-ink-50 hover:text-foreground font-medium",
+            )}
+          >
+            <Icon className="size-4" />
+            <span>{c.name}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
