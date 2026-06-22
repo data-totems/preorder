@@ -38,27 +38,57 @@ export async function passiveIdentify(
   }
 }
 
+const FALLBACK_IMAGE = `${SITE}/logo.png`;
+
 export function buildShareMetadata(
   resolved: ShareLinkResolve,
   shortId: string,
   kind: "p" | "s",
 ): Metadata {
   const product = resolved.product;
-  if (!product) return { title: resolved.merchant.business_name ?? "Store" };
-  const title = resolved.merchant.business_name
-    ? `${product.name} — ${resolved.merchant.business_name}`
+  const merchant = resolved.merchant;
+  const url = `${SITE}/${kind}/${shortId}`;
+
+  // STORE link: title = merchant, description = merchant blurb, image =
+  // merchant display picture if any, else site logo so the WA card still
+  // renders with a visual instead of plain text.
+  if (!product) {
+    const title = merchant.business_name ?? "Store on Buzzmart";
+    const description = `Shop ${merchant.business_name ?? "this store"} on Buzzmart — order directly via WhatsApp.`;
+    const image = merchant.display_picture || FALLBACK_IMAGE;
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        url,
+        siteName: "Buzzmart",
+        images: [{ url: image, alt: title }],
+        type: "website",
+      },
+      twitter: { card: "summary_large_image", title, description, images: [image] },
+    };
+  }
+
+  // PRODUCT link: title = product, description = product blurb, image =
+  // product primary image (already an absolute URL from the backend).
+  const title = merchant.business_name
+    ? `${product.name} — ${merchant.business_name}`
     : product.name;
   const description = product.description?.slice(0, 160) ?? "";
+  const image = product.primary_image || FALLBACK_IMAGE;
   return {
     title,
     description,
     openGraph: {
       title,
       description,
-      url: `${SITE}/${kind}/${shortId}`,
-      images: product.primary_image ? [product.primary_image] : [],
+      url,
+      siteName: "Buzzmart",
+      images: [{ url: image, alt: title }],
       type: "website",
     },
-    twitter: { card: "summary_large_image" },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
