@@ -55,7 +55,7 @@ const Store = () => {
                 name={p.name}
                 price={p.price}
                 image_url={p.images?.[0]?.image_url ?? undefined}
-                href={`/store/product/${p.id}`}
+                href={`/store/${p.store_slug}/${p.product_id}`}
               />
             ))}
           </div>
@@ -79,7 +79,7 @@ const Store = () => {
                 name={p.name}
                 price={p.price}
                 image_url={p.images?.[0]?.image_url ?? undefined}
-                href={`/store/product/${p.id}`}
+                href={`/store/${p.store_slug}/${p.product_id}`}
               />
             ))}
           </div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getPublicProduct, getStoreDetails } from "@/actions/products.actions";
+import { getPublicProductByUuid } from "@/actions/products.actions";
 import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -16,25 +16,30 @@ import {
 } from "@/components/store/OrderFormSheet";
 import type { Product } from "@/types/api";
 
+interface PublicProduct extends Product {
+  merchant?: {
+    business_name?: string;
+    business_description?: string;
+    store_slug?: string;
+    store_url?: string;
+  };
+}
+
 const CustomerProductDetail = () => {
-  const productId = usePathname().split("/")[3];
-  const [product, setProduct] = useState<Product>();
-  const [merchantName, setMerchantName] = useState<string | null>(null);
+  const path = usePathname().split("/");
+  const storeSlug = path[2];
+  const productUuid = path[3];
+
+  const [product, setProduct] = useState<PublicProduct>();
 
   useEffect(() => {
-    getPublicProduct(Number(productId))
+    if (!storeSlug || !productUuid) return;
+    getPublicProductByUuid(storeSlug, productUuid)
       .then((r) => setProduct(r.data))
       .catch((e) =>
         toast.error(errorMessage(e, "Could not load product."))
       );
-  }, [productId]);
-
-  useEffect(() => {
-    if (!product?.store_slug) return;
-    getStoreDetails(product.store_slug)
-      .then((r) => setMerchantName(r.data?.merchant?.business_name ?? null))
-      .catch(() => {});
-  }, [product?.store_slug]);
+  }, [storeSlug, productUuid]);
 
   if (!product) {
     return (
@@ -54,6 +59,7 @@ const CustomerProductDetail = () => {
   }
 
   const primary = product.images?.[0]?.image_url ?? product.primary_image ?? "";
+  const merchantName = product.merchant?.business_name ?? storeSlug;
 
   return (
     <main className="max-w-7xl mx-auto pb-24 md:pb-12">
@@ -94,21 +100,19 @@ const CustomerProductDetail = () => {
           <h1 className="text-[28px] leading-[36px] font-bold tracking-[-0.01em] text-foreground">
             {product.name}
           </h1>
-          <div className="mt-3 text-[36px] leading-[44px] font-bold text-forest-700 tracking-[-0.01em]">
+          <div className="mt-3 text-[36px] leading-[44px] font-bold text-forest-700 tracking-[-0.01em] tabular-nums">
             ₦{product.price}
           </div>
-          {product.store_slug && (
-            <Link
-              href={`/store/${product.store_slug}`}
-              className="mt-3 inline-flex items-center gap-2 text-[14px] text-muted-foreground hover:text-foreground"
-            >
-              by{" "}
-              <span className="text-forest-500 font-semibold">
-                {merchantName ?? product.store_slug}
-              </span>
-            </Link>
-          )}
-          <p className="mt-4 text-[15px] leading-[24px] text-foreground/80 max-w-prose">
+          <Link
+            href={`/store/${storeSlug}`}
+            className="mt-3 inline-flex items-center gap-2 text-[14px] text-muted-foreground hover:text-foreground"
+          >
+            by{" "}
+            <span className="text-forest-500 font-semibold">
+              {merchantName}
+            </span>
+          </Link>
+          <p className="mt-4 text-[15px] leading-[24px] text-foreground/80 max-w-prose whitespace-pre-wrap">
             {product.description}
           </p>
 
