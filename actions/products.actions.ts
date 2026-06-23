@@ -304,6 +304,24 @@ export const exportProducts = async (): Promise<Blob> => {
 };
 
 
+export const previewProductImport = async (file: File) => {
+    const token = localStorage.getItem('buzzToken');
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+        const response = await axios.post(`${baseUrl}/products/import/preview/`, formData, {
+            headers: {
+                "Authorization": `token ${token}`,
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return response;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Preview failed" };
+    }
+};
+
+
 export const importProducts = async (file: File) => {
     const token = localStorage.getItem('buzzToken');
     const formData = new FormData();
