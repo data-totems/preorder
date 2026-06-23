@@ -21,6 +21,7 @@ import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Eyebrow } from "@/components/ui/eyebrow"
+import LoginHeroAnimation from "@/components/auth/LoginHeroAnimation"
 
 
 const formSchema = z.object({
@@ -128,14 +129,19 @@ const router = useRouter();
         </div>
       </section>
 
-      <aside className="hidden lg:flex bg-forest-700 text-forest-50 p-12 flex-col justify-end min-h-[calc(100vh-4rem)]">
-        <Eyebrow tone="accent" className="block text-forest-400 mb-4">BUZZMART</Eyebrow>
-        <h2 className="text-[56px] leading-[64px] font-bold tracking-[-0.02em] text-white">
-          Sell more,<br />stress less.
-        </h2>
-        <p className="mt-6 text-[17px] leading-[26px] text-forest-50/80 max-w-md">
-          Shareable storefronts, lead capture, orders via WhatsApp. Everything your store needs in one place.
-        </p>
+      <aside className="hidden lg:flex bg-forest-700 text-forest-50 p-12 flex-col justify-between gap-8 min-h-[calc(100vh-4rem)] overflow-hidden">
+        <div className="flex-1 flex items-center justify-center">
+          <LoginHeroAnimation />
+        </div>
+        <div>
+          <Eyebrow tone="accent" className="block text-forest-400 mb-4">BUZZMART</Eyebrow>
+          <h2 className="text-[56px] leading-[64px] font-bold tracking-[-0.02em] text-white">
+            Sell more,<br />stress less.
+          </h2>
+          <p className="mt-6 text-[17px] leading-[26px] text-forest-50/80 max-w-md">
+            Shareable storefronts, lead capture, orders via WhatsApp. Everything your store needs in one place.
+          </p>
+        </div>
       </aside>
     </div>
   )
