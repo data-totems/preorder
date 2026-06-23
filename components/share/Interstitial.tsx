@@ -94,7 +94,18 @@ export default function Interstitial({ resolved, shortId }: { resolved: ShareLin
               </p>
               {merchant.business_name && (
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`Hi ${merchant.business_name}, when will "${product?.name ?? "this product"}" be back in stock?`)}`}
+                  href={(() => {
+                    const text = encodeURIComponent(
+                      `Hi ${merchant.business_name}, when will "${product?.name ?? "this product"}" be back in stock?`,
+                    );
+                    // Use the merchant's WA number when we have it so the
+                    // customer lands directly in their chat instead of a
+                    // contact picker. wa.me wants digits only, no '+'.
+                    const number = (merchant.whatsapp_number ?? "").replace(/[^\d]/g, "");
+                    return number
+                      ? `https://wa.me/${number}?text=${text}`
+                      : `https://wa.me/?text=${text}`;
+                  })()}
                   className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-foreground text-paper px-4 py-3 text-[14px] font-semibold hover:bg-foreground/90"
                 >
                   Ask the merchant on WhatsApp

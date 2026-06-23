@@ -32,7 +32,12 @@ export function matchesCategory(productName: string, slug: string): boolean {
   const keywords = KEYWORDS[slug];
   if (!keywords) return false;
   const name = productName.toLowerCase();
-  return keywords.some((k) => name.includes(k));
+  // Word-boundary match so "phones" doesn't pick up "headphones"/"earphones".
+  // Also matches plural forms by tolerating a trailing 's'.
+  return keywords.some((k) => {
+    const safe = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`\\b${safe}s?\\b`).test(name);
+  });
 }
 
 export function getCategoryName(slug: string): string {

@@ -17,6 +17,9 @@ interface DataPaginationProps {
   currentPage: number;
   onPageChange: (page: number) => void;
   className?: string;
+  /** Scroll to the top of this element instead of window. Avoids jarring
+   * full-page jumps when the pager is itself near the top of the viewport. */
+  scrollTargetRef?: React.RefObject<HTMLElement | null>;
 }
 
 /**
@@ -30,6 +33,7 @@ const DataPagination: React.FC<DataPaginationProps> = ({
   currentPage,
   onPageChange,
   className,
+  scrollTargetRef,
 }) => {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   if (totalPages <= 1) return null;
@@ -38,7 +42,12 @@ const DataPagination: React.FC<DataPaginationProps> = ({
     e.preventDefault();
     if (page < 1 || page > totalPages || page === currentPage) return;
     onPageChange(page);
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+    const target = scrollTargetRef?.current;
+    if (target) {
+      const top = target.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: "smooth" });
+    } else {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };

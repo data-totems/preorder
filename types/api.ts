@@ -88,6 +88,7 @@ export interface ShareLinkResolveMerchant {
   business_name: string | null;
   store_slug: string | null;
   display_picture: string | null;
+  whatsapp_number: string | null;
 }
 
 export interface ShareLinkResolveProduct {
