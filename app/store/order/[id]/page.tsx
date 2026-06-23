@@ -10,6 +10,8 @@ import {
   CheckCircle2,
   Copy,
   Loader2,
+  MessageCircle,
+  Send,
   Truck,
   Upload,
 } from "lucide-react";
@@ -37,11 +39,52 @@ interface OrderDetail {
   delivery_method: string;
   product_name: string;
   product_details?: { name: string; price: string };
+  merchant_email?: string;
   merchant_bank: {
     bank_name: string;
     account_number: string;
     account_name: string | null;
   } | null;
+}
+
+function waLink(toNumber: string | undefined, text: string): string {
+  // wa.me requires digits only — strip + and any separators.
+  const digits = (toNumber ?? "").replace(/[^\d]/g, "");
+  const encoded = encodeURIComponent(text);
+  return digits
+    ? `https://wa.me/${digits}?text=${encoded}`
+    : `https://wa.me/?text=${encoded}`;
+}
+
+function buildOrderMessage(args: {
+  orderId: number;
+  productName: string;
+  total: string;
+  reference: string | null;
+  bank: OrderDetail["merchant_bank"];
+  pageUrl: string;
+  isBankTransfer: boolean;
+}): string {
+  const lines: string[] = [
+    `🛍 Buzzmart order #${args.orderId} — ${args.productName}`,
+    `Amount: ${args.total}`,
+  ];
+  if (args.isBankTransfer) {
+    if (args.bank) {
+      lines.push(
+        ``,
+        `Transfer to:`,
+        `${args.bank.bank_name}`,
+        `${args.bank.account_number}`,
+      );
+      if (args.bank.account_name) lines.push(args.bank.account_name);
+    }
+    if (args.reference) {
+      lines.push(``, `Use reference: ${args.reference}`);
+    }
+  }
+  lines.push(``, `View order: ${args.pageUrl}`);
+  return lines.join("\n");
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -381,6 +424,52 @@ export default function OrderConfirmationPage() {
           )}
         </Card>
       )}
+
+      {/* Save / share via WhatsApp */}
+      {(() => {
+        const pageUrl =
+          typeof window !== "undefined" ? window.location.href : "";
+        const message = buildOrderMessage({
+          orderId: order.id,
+          productName: productName,
+          total: formatNgn(order.total_price),
+          reference: order.payment_reference,
+          bank: order.merchant_bank,
+          pageUrl,
+          isBankTransfer,
+        });
+        return (
+          <Card padding="none" className="mt-4 p-6">
+            <Eyebrow className="block mb-3">SAVE TO WHATSAPP</Eyebrow>
+            <p className="text-[13px] text-muted-foreground mb-4">
+              Send a copy of these details to your own WhatsApp so you can find
+              the bank details and order link later.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <a
+                href={waLink(order.customer_whatsapp, message)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1"
+              >
+                <Button className="w-full">
+                  <Send className="size-4" /> Send to my WhatsApp
+                </Button>
+              </a>
+              <a
+                href={waLink(undefined, message)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1"
+              >
+                <Button variant="outline" className="w-full">
+                  <MessageCircle className="size-4" /> Share with someone else
+                </Button>
+              </a>
+            </div>
+          </Card>
+        );
+      })()}
 
       {/* Next steps */}
       <Card padding="none" className="mt-4 p-6">
