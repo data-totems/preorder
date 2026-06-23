@@ -23,7 +23,12 @@ interface ImportProductsDialogProps {
 }
 
 type ImportError = { row: number; reason: string };
-type ImportResult = { created: number; skipped: number; errors: ImportError[] };
+type ImportResult = {
+  created: number;
+  skipped: number;
+  errors: ImportError[];
+  image_warnings?: ImportError[];
+};
 
 const ImportProductsDialog: React.FC<ImportProductsDialogProps> = ({
   open,
@@ -73,8 +78,11 @@ const ImportProductsDialog: React.FC<ImportProductsDialogProps> = ({
           <DialogTitle>Import products from CSV</DialogTitle>
           <DialogDescription>
             Upload a CSV with columns <code>name</code>, <code>price</code>,{" "}
-            <code>description</code>, and (optional) <code>in_stock</code>. Add images
-            to each product after import.
+            <code>description</code>, <code>in_stock</code>, and{" "}
+            <code>image_url</code>. The image URL must be an{" "}
+            <strong>https://</strong> link to a publicly-accessible image
+            (Cloudinary, Drive direct link, Imgur, etc). Leave it blank to
+            upload images per-product later.
           </DialogDescription>
         </DialogHeader>
 
@@ -100,6 +108,24 @@ const ImportProductsDialog: React.FC<ImportProductsDialogProps> = ({
             </div>
             <ul className="text-[12px] text-foreground/80 space-y-1">
               {result.errors.map((err) => (
+                <li key={err.row}>
+                  Row {err.row}: {err.reason}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {result && (result.image_warnings?.length ?? 0) > 0 && (
+          <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 p-3 max-h-40 overflow-y-auto">
+            <div className="text-[13px] font-semibold text-amber-800 mb-1">
+              {result.image_warnings!.length} image{result.image_warnings!.length === 1 ? "" : "s"} could not be downloaded
+            </div>
+            <p className="text-[11px] text-amber-900/80 mb-2">
+              The products were still created — you can upload these images directly from the product page.
+            </p>
+            <ul className="text-[12px] text-foreground/80 space-y-1">
+              {result.image_warnings!.map((err) => (
                 <li key={err.row}>
                   Row {err.row}: {err.reason}
                 </li>
