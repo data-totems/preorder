@@ -20,7 +20,11 @@ const ProductCard = ({
   const target = href ?? `/marketplace/product/${id}`;
   return (
     <Link href={target} className="group block">
-      <Card variant="flat" padding="none" className="overflow-hidden">
+      <Card
+        variant="flat"
+        padding="none"
+        className={`overflow-hidden ${!inStock ? "ring-1 ring-destructive/30" : ""}`}
+      >
         <div className="relative aspect-square w-full bg-ink-100 overflow-hidden">
           {image_url && (
             <Image
@@ -34,12 +38,22 @@ const ProductCard = ({
             />
           )}
           {!inStock && (
-            <div className="absolute top-2 left-2 px-2 py-1 rounded-pill bg-ink-900/75 text-white text-[11px] font-bold uppercase tracking-[0.04em]">
-              Out of stock
-            </div>
+            <>
+              <div className="absolute inset-0 bg-ink-900/30" />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="rotate-[-8deg] border-2 border-white bg-destructive/95 text-white px-4 py-1.5 rounded-md shadow-lg text-[14px] font-extrabold uppercase tracking-[0.08em]">
+                  Out of stock
+                </div>
+              </div>
+            </>
           )}
         </div>
         <div className="p-4">
+          {!inStock && (
+            <div className="-mt-1 mb-2 inline-flex items-center gap-1 rounded-pill bg-destructive/10 text-destructive px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.04em]">
+              Unavailable
+            </div>
+          )}
           <div className="text-[18px] leading-[26px] font-semibold text-foreground line-clamp-2 min-h-[52px]">
             {name}
           </div>

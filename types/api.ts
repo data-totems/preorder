@@ -96,6 +96,7 @@ export interface ShareLinkResolveProduct {
   price: string; // DRF DecimalField is serialized as string
   primary_image: string | null;
   description: string;
+  in_stock: boolean;
 }
 
 export interface ShareLinkResolve {

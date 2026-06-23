@@ -21,6 +21,7 @@ export default function Interstitial({ resolved, shortId }: { resolved: ShareLin
   const valid = isValidPhone(wa);
   const product = resolved.product;
   const merchant = resolved.merchant;
+  const outOfStock = product?.in_stock === false;
 
   const submit = async () => {
     if (submitting) return;
@@ -48,7 +49,20 @@ export default function Interstitial({ resolved, shortId }: { resolved: ShareLin
       <Card variant="elevated" padding="none" className="max-w-md w-full overflow-hidden rounded-xl">
         {product?.primary_image && (
           <div className="relative w-full aspect-[4/3]">
-            <Image src={product.primary_image} alt={product.name} fill className="object-cover" sizes="448px" />
+            <Image
+              src={product.primary_image}
+              alt={product.name}
+              fill
+              className={`object-cover ${outOfStock ? "opacity-40 grayscale" : ""}`}
+              sizes="448px"
+            />
+            {outOfStock && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="rotate-[-8deg] border-2 border-white bg-destructive/95 text-white px-5 py-2 rounded-md shadow-lg text-[16px] font-extrabold uppercase tracking-[0.08em]">
+                  Out of stock
+                </div>
+              </div>
+            )}
           </div>
         )}
         <div className="p-6">
@@ -70,28 +84,49 @@ export default function Interstitial({ resolved, shortId }: { resolved: ShareLin
 
           <div className="my-6 h-px bg-border" />
 
-          <Eyebrow className="block mb-2">BEFORE YOU SEE THE DETAILS</Eyebrow>
-          <p className="text-[13px] text-muted-foreground">
-            We share your number with this merchant so they can answer questions and confirm your order.
-          </p>
-
-          <div className="mt-5 flex flex-col gap-4">
-            <div>
-              <Label htmlFor="wa">WhatsApp number</Label>
-              <Input id="wa" type="tel" inputMode="tel" autoComplete="tel" placeholder="+234 _ _ _ _ _ _ _ _ _ _" value={wa} onChange={(e) => setWa(e.target.value)} className="mt-2" />
+          {outOfStock ? (
+            <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4">
+              <div className="text-[14px] font-bold text-destructive uppercase tracking-[0.04em]">
+                Currently unavailable
+              </div>
+              <p className="mt-2 text-[13px] text-foreground/80">
+                This product is out of stock right now. The merchant will restock soon — message them directly on WhatsApp to ask when, or check back later.
+              </p>
+              {merchant.business_name && (
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Hi ${merchant.business_name}, when will "${product?.name ?? "this product"}" be back in stock?`)}`}
+                  className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-foreground text-paper px-4 py-3 text-[14px] font-semibold hover:bg-foreground/90"
+                >
+                  Ask the merchant on WhatsApp
+                </a>
+              )}
             </div>
-            <div>
-              <Label htmlFor="name">Your name (optional)</Label>
-              <Input id="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-2" />
-            </div>
-            <Button onClick={submit} disabled={!valid || submitting} size="lg" className="w-full">
-              {submitting ? "Loading…" : "Continue →"}
-            </Button>
-          </div>
+          ) : (
+            <>
+              <Eyebrow className="block mb-2">BEFORE YOU SEE THE DETAILS</Eyebrow>
+              <p className="text-[13px] text-muted-foreground">
+                We share your number with this merchant so they can answer questions and confirm your order.
+              </p>
 
-          <p className="mt-4 text-[12px] text-ink-500 text-center">
-            🔒 Your number stays with this merchant only. Not shared with Buzzmart marketing.
-          </p>
+              <div className="mt-5 flex flex-col gap-4">
+                <div>
+                  <Label htmlFor="wa">WhatsApp number</Label>
+                  <Input id="wa" type="tel" inputMode="tel" autoComplete="tel" placeholder="+234 _ _ _ _ _ _ _ _ _ _" value={wa} onChange={(e) => setWa(e.target.value)} className="mt-2" />
+                </div>
+                <div>
+                  <Label htmlFor="name">Your name (optional)</Label>
+                  <Input id="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-2" />
+                </div>
+                <Button onClick={submit} disabled={!valid || submitting} size="lg" className="w-full">
+                  {submitting ? "Loading…" : "Continue →"}
+                </Button>
+              </div>
+
+              <p className="mt-4 text-[12px] text-ink-500 text-center">
+                🔒 Your number stays with this merchant only. Not shared with Buzzmart marketing.
+              </p>
+            </>
+          )}
         </div>
       </Card>
     </div>
