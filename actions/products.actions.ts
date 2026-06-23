@@ -175,12 +175,13 @@ export const createDispatch = async ({
 }
 
 export const getAllProducts = async () => {
-     const token = localStorage.getItem('buzzToken')
+    // Public storefront endpoint — only send Authorization when a real token
+    // exists, otherwise DRF's TokenAuthentication validates "token null"
+    // before falling through to AllowAny and may 401 anonymous visitors.
+    const token = typeof window !== "undefined" ? localStorage.getItem('buzzToken') : null;
     try {
         const response = await axios.get(`${baseUrl}/products/all_products/`, {
-            headers: {
-                "Authorization": `token ${token}`
-            }
+            headers: token ? { "Authorization": `token ${token}` } : {},
         });
 
         return response;

@@ -102,18 +102,21 @@ const DataPagination: React.FC<DataPaginationProps> = ({
 export default DataPagination;
 
 /**
- * Resets to page 1 whenever the input list shrinks below the current page.
- * Returns [currentPageSlice, currentPage, setCurrentPage].
+ * Slices `items` to the current page. When the list shrinks below the current
+ * page (filter change, refetch), clamps the *derived* page so the render is
+ * immediate — the stored state catches up on the next tick. Avoids a one-paint
+ * empty grid when navigating between search/category filters.
  */
 export function usePaginated<T>(items: T[], pageSize: number) {
   const [page, setPage] = React.useState(1);
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+  const safePage = Math.min(page, totalPages);
 
   React.useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [page, totalPages]);
+    if (page !== safePage) setPage(safePage);
+  }, [page, safePage]);
 
-  const start = (page - 1) * pageSize;
+  const start = (safePage - 1) * pageSize;
   const slice = items.slice(start, start + pageSize);
-  return { slice, page, setPage, totalPages, totalItems: items.length };
+  return { slice, page: safePage, setPage, totalPages, totalItems: items.length };
 }
