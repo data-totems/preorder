@@ -11,9 +11,12 @@ interface ProductCardProps {
   storeName?: string;
   storeHref?: string;
   href?: string;
+  inStock?: boolean;
 }
 
-const ProductCard = ({ id, name, price, image_url, storeName, storeHref, href }: ProductCardProps) => {
+const ProductCard = ({
+  id, name, price, image_url, storeName, storeHref, href, inStock = true,
+}: ProductCardProps) => {
   const target = href ?? `/marketplace/product/${id}`;
   return (
     <Link href={target} className="group block">
@@ -25,8 +28,15 @@ const ProductCard = ({ id, name, price, image_url, storeName, storeHref, href }:
               alt={name}
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              className={`object-cover transition-transform duration-300 group-hover:scale-[1.02] ${
+                inStock ? "" : "opacity-40 grayscale"
+              }`}
             />
+          )}
+          {!inStock && (
+            <div className="absolute top-2 left-2 px-2 py-1 rounded-pill bg-ink-900/75 text-white text-[11px] font-bold uppercase tracking-[0.04em]">
+              Out of stock
+            </div>
           )}
         </div>
         <div className="p-4">

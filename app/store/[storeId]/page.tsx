@@ -66,6 +66,7 @@ const StoreDetails = () => {
               price={p.price}
               image_url={p.images?.[0]?.image_url ?? undefined}
               href={`/store/${slug}/${p.product_id}`}
+              inStock={p.in_stock !== false}
             />
           ))}
         </div>

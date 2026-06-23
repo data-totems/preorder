@@ -87,6 +87,18 @@ export const deleteProduct = async (id: number) => {
 }
 
 
+export const toggleInStock = async (id: number) => {
+    const token = localStorage.getItem('buzzToken');
+    try {
+        const response = await axios.patch(`${baseUrl}/products/${id}/toggle-stock/`, {}, {
+            headers: { "Authorization": `token ${token}` },
+        });
+        return response;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
+    }
+};
+
 export const togglearchiveProduct = async (id: number) => {
       const token = localStorage.getItem('buzzToken');
      try {

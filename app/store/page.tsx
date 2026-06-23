@@ -56,6 +56,7 @@ const Store = () => {
                 price={p.price}
                 image_url={p.images?.[0]?.image_url ?? undefined}
                 href={`/store/${p.store_slug}/${p.product_id}`}
+                inStock={p.in_stock !== false}
               />
             ))}
           </div>
@@ -80,6 +81,7 @@ const Store = () => {
                 price={p.price}
                 image_url={p.images?.[0]?.image_url ?? undefined}
                 href={`/store/${p.store_slug}/${p.product_id}`}
+                inStock={p.in_stock !== false}
               />
             ))}
           </div>

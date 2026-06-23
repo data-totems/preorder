@@ -7,7 +7,8 @@ interface ProductProps {
     }[];
     type?: "market" | 'display';
     description?: string,
-    is_archived?: boolean
+    is_archived?: boolean,
+    in_stock?: boolean,
     onPress?: () => void,
     id: number,
     image_url?: string

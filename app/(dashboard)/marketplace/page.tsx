@@ -81,6 +81,7 @@ const Marketplace = () => {
                 name={p.name}
                 price={p.price}
                 image_url={p.images?.[0]?.image_url}
+                inStock={p.in_stock !== false}
               />
             ))}
           </div>

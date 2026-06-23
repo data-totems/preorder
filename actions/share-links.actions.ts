@@ -81,3 +81,19 @@ export async function getStoreShareStats(): Promise<ShareStats> {
   });
   return res.data;
 }
+
+export async function rateLead(
+  leadId: number,
+  rating: number | null,
+  ratingNote?: string,
+) {
+  const token = typeof window !== "undefined" ? localStorage.getItem("buzzToken") : null;
+  const body: Record<string, unknown> = { rating };
+  if (ratingNote !== undefined) body.rating_note = ratingNote;
+  const res = await axios.patch(
+    `${baseUrl}/share-links/leads/${leadId}/rate/`,
+    body,
+    { headers: token ? { Authorization: `token ${token}` } : {} },
+  );
+  return res.data;
+}

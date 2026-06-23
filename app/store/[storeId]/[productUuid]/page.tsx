@@ -89,19 +89,34 @@ const CustomerProductDetail = () => {
             {product.description}
           </p>
 
-          {/* Desktop inline form */}
+          {/* Desktop inline form (or out-of-stock banner) */}
           <div className="hidden lg:block mt-10">
-            <OrderFormInline productId={product.id} />
+            {product.in_stock === false ? (
+              <div className="rounded-md border border-border bg-ink-100 p-4 text-center">
+                <div className="text-[14px] font-semibold text-foreground">Out of stock</div>
+                <div className="text-[13px] text-muted-foreground mt-1">
+                  The merchant has marked this product unavailable. Check back later.
+                </div>
+              </div>
+            ) : (
+              <OrderFormInline productId={product.id} />
+            )}
           </div>
         </div>
       </div>
 
       {/* Mobile sticky CTA */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-paper/95 backdrop-blur pt-4 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <OrderFormSheet
-          productId={product.id}
-          trigger={<Button className="w-full">Place order →</Button>}
-        />
+        {product.in_stock === false ? (
+          <Button className="w-full" disabled>
+            Out of stock
+          </Button>
+        ) : (
+          <OrderFormSheet
+            productId={product.id}
+            trigger={<Button className="w-full">Place order →</Button>}
+          />
+        )}
       </div>
     </main>
   );

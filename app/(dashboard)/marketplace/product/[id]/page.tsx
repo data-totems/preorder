@@ -6,6 +6,8 @@ import {
   ImagePlus,
   Loader2,
   MoreHorizontal,
+  PackageCheck,
+  PackageX,
   Pen,
   Trash2,
   Upload,
@@ -58,6 +60,7 @@ import { cn } from "@/lib/utils";
 import {
   deleteProduct,
   getProductbyId,
+  toggleInStock,
   togglearchiveProduct,
   updateProductDetails,
   updateProductImage,
@@ -90,6 +93,7 @@ const ProductDetails = () => {
   const [updating, setUpdating] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [togglingStock, setTogglingStock] = useState(false);
 
   const [editForm, setEditForm] = useState({ name: "", description: "", price: "" });
 
@@ -199,6 +203,23 @@ const ProductDetails = () => {
     }
   };
 
+  const handleToggleStock = async () => {
+    if (!product) return;
+    setTogglingStock(true);
+    try {
+      const response = await toggleInStock(Number(productId));
+      if (response.status === 200) {
+        const newInStock = response.data?.in_stock ?? !product.in_stock;
+        toast.success(newInStock ? "Marked back in stock" : "Marked out of stock");
+        setProduct((p) => (p ? { ...p, in_stock: newInStock } : p));
+      }
+    } catch (e) {
+      toast.error(errorMessage(e, "Could not update stock."));
+    } finally {
+      setTogglingStock(false);
+    }
+  };
+
   const handleArchive = async () => {
     setArchiving(true);
     try {
@@ -255,7 +276,7 @@ const ProductDetails = () => {
   return (
     <div className="max-w-7xl mx-auto pb-12">
       <PageHeader
-        eyebrow="PRODUCT"
+        eyebrow={product.in_stock ? "PRODUCT" : "PRODUCT · OUT OF STOCK"}
         title={product.name}
         description={formatNgn(product.price)}
         actions={
@@ -269,7 +290,23 @@ const ProductDetails = () => {
                   <MoreHorizontal className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem
+                  onClick={handleToggleStock}
+                  disabled={togglingStock}
+                  className="cursor-pointer"
+                >
+                  {product.in_stock ? (
+                    <>
+                      <PackageX className="size-4" /> Mark out of stock
+                    </>
+                  ) : (
+                    <>
+                      <PackageCheck className="size-4" /> Mark back in stock
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => setImageOpen(true)}
                   className="cursor-pointer"
