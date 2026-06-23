@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Box, ChevronDown, Loader2, Truck } from "lucide-react";
@@ -224,6 +224,7 @@ const DateGroupedOrders = ({
   pageSize?: number;
 }) => {
   const { slice, page, setPage, totalItems } = usePaginated(orders, pageSize);
+  const topRef = useRef<HTMLDivElement>(null);
 
   const grouped = slice.reduce<Record<string, Order[]>>((acc, order) => {
     const date = new Date(getDate(order)).toISOString().split("T")[0];
@@ -236,6 +237,7 @@ const DateGroupedOrders = ({
 
   return (
     <>
+      <div ref={topRef} />
       {sortedDates.map((date) => (
         <section key={date}>
           <Eyebrow className="block mb-3">
@@ -253,6 +255,7 @@ const DateGroupedOrders = ({
         pageSize={pageSize}
         currentPage={page}
         onPageChange={setPage}
+        scrollTargetRef={topRef}
         className="pt-2"
       />
     </>

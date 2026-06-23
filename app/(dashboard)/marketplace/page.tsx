@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Plus, Store, Download, Upload, ChevronDown } from "lucide-react"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import type { Product } from "@/types/api"
 import { errorMessage } from "@/lib/errors"
@@ -47,6 +47,7 @@ const Marketplace = () => {
   }, [loadProducts])
 
   const { slice: pageProducts, page, setPage, totalItems } = usePaginated(products, PAGE_SIZE)
+  const gridRef = useRef<HTMLDivElement>(null)
 
   const handleExport = async () => {
     setExporting(true)
@@ -137,7 +138,7 @@ const Marketplace = () => {
           />
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {pageProducts.map((p) => (
                 <ProductCard
                   key={p.id}
@@ -155,6 +156,7 @@ const Marketplace = () => {
                 pageSize={PAGE_SIZE}
                 currentPage={page}
                 onPageChange={setPage}
+                scrollTargetRef={gridRef}
               />
             </div>
           </>
