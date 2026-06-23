@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Banknote, Bike } from "lucide-react";
+import { readBuyerProfile, saveBuyerProfile } from "@/lib/buyerProfile";
 import {
   Sheet,
   SheetContent,
@@ -58,6 +59,7 @@ export const OrderFormInline = ({
 }) => {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [prefilledFromProfile, setPrefilledFromProfile] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -69,6 +71,23 @@ export const OrderFormInline = ({
       paymentMethod: "bank_transfer",
     },
   });
+
+  // Hydrate name + WhatsApp from the buyer profile captured at the share-link
+  // interstitial so customers don't retype values they already gave us.
+  useEffect(() => {
+    const profile = readBuyerProfile();
+    if (!profile) return;
+    let didPrefill = false;
+    if (profile.name && !form.getValues("customerName")) {
+      form.setValue("customerName", profile.name);
+      didPrefill = true;
+    }
+    if (profile.wa_number && !form.getValues("customerWhatsapp")) {
+      form.setValue("customerWhatsapp", profile.wa_number);
+      didPrefill = true;
+    }
+    if (didPrefill) setPrefilledFromProfile(true);
+  }, [form]);
 
   const paymentMethod = form.watch("paymentMethod");
 
@@ -85,6 +104,8 @@ export const OrderFormInline = ({
         payment_method: values.paymentMethod,
       });
       const orderId = response.data?.id;
+      // Save what they just typed so subsequent orders are prefilled too.
+      saveBuyerProfile({ name: values.customerName, wa_number: values.customerWhatsapp });
       onSuccess?.();
       form.reset();
 
@@ -110,6 +131,11 @@ export const OrderFormInline = ({
         className="flex flex-col gap-6"
       >
         <Eyebrow className="block">PLACE YOUR ORDER</Eyebrow>
+        {prefilledFromProfile && (
+          <div className="text-[12px] text-muted-foreground -mt-2">
+            We&apos;ve filled in your name and number from earlier — edit if you need to.
+          </div>
+        )}
         <FormField
           control={form.control}
           name="customerName"

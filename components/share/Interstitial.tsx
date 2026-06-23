@@ -10,6 +10,7 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { toast } from "sonner";
 import { normalizePhone, isValidPhone } from "@/lib/phone";
 import { errorMessage } from "@/lib/errors";
+import { saveBuyerProfile } from "@/lib/buyerProfile";
 import type { ShareLinkResolve } from "@/types/api";
 
 export default function Interstitial({ resolved, shortId }: { resolved: ShareLinkResolve; shortId: string }) {
@@ -32,6 +33,8 @@ export default function Interstitial({ resolved, shortId }: { resolved: ShareLin
       });
       const data = await res.json();
       if (!res.ok) { toast.error(errorMessage(data, "Could not submit your details.")); return; }
+      // Persist so the customer doesn't retype name/WA on the order form.
+      saveBuyerProfile({ name: name.trim(), wa_number: normalizePhone(wa) ?? wa.trim() });
       router.replace(data.redirect_to);
     } catch (e) {
       toast.error(errorMessage(e, "Network error. Try again."));
