@@ -200,3 +200,18 @@ export const getAwaitingPaymentOrders = async () => {
         throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
     }
 }
+
+
+export const exportOrders = async (statusFilter?: string): Promise<Blob> => {
+    const token = localStorage.getItem("buzzToken");
+    const params = statusFilter ? `?status=${encodeURIComponent(statusFilter)}` : "";
+    try {
+        const response = await axios.get(`${baseUrl}/orders/export/${params}`, {
+            headers: { "Authorization": `token ${token}` },
+            responseType: "blob",
+        });
+        return response.data as Blob;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Export failed" };
+    }
+};

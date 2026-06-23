@@ -72,8 +72,9 @@ export const OrderFormInline = ({
     },
   });
 
-  // Hydrate name + WhatsApp from the buyer profile captured at the share-link
-  // interstitial so customers don't retype values they already gave us.
+  // Hydrate from the buyer profile so returning customers don't retype values
+  // they've already given on this device (interstitial captures name + WA;
+  // a prior completed order captures address too).
   useEffect(() => {
     const profile = readBuyerProfile();
     if (!profile) return;
@@ -84,6 +85,10 @@ export const OrderFormInline = ({
     }
     if (profile.wa_number && !form.getValues("customerWhatsapp")) {
       form.setValue("customerWhatsapp", profile.wa_number);
+      didPrefill = true;
+    }
+    if (profile.address && !form.getValues("customerAddress")) {
+      form.setValue("customerAddress", profile.address);
       didPrefill = true;
     }
     if (didPrefill) setPrefilledFromProfile(true);
@@ -105,7 +110,11 @@ export const OrderFormInline = ({
       });
       const orderId = response.data?.id;
       // Save what they just typed so subsequent orders are prefilled too.
-      saveBuyerProfile({ name: values.customerName, wa_number: values.customerWhatsapp });
+      saveBuyerProfile({
+        name: values.customerName,
+        wa_number: values.customerWhatsapp,
+        address: values.customerAddress,
+      });
       onSuccess?.();
       form.reset();
 
@@ -133,7 +142,7 @@ export const OrderFormInline = ({
         <Eyebrow className="block">PLACE YOUR ORDER</Eyebrow>
         {prefilledFromProfile && (
           <div className="text-[12px] text-muted-foreground -mt-2">
-            We&apos;ve filled in your name and number from earlier — edit if you need to.
+            Welcome back — we&apos;ve filled in your details from a previous order. Edit anything that&apos;s changed.
           </div>
         )}
         <FormField

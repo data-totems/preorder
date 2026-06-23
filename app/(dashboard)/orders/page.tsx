@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Box, ChevronDown, Loader2, Truck } from "lucide-react";
+import { Box, ChevronDown, Download, Loader2, Truck } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import DataPagination, { usePaginated } from "@/components/shared/DataPagination";
@@ -25,8 +25,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   acceptOrder,
   declineOrder,
+  exportOrders,
   getAcceptedOrders,
   getAwaitingPaymentOrders,
   getDeclinedOrders,
@@ -272,6 +279,37 @@ const TabSkeleton = () => (
 
 const Orders = () => {
   const [currentTab, setCurrentTab] = useState<string>("awaiting_payment");
+  const [exporting, setExporting] = useState<"all" | "tab" | null>(null);
+
+  const TAB_TO_STATUS: Record<string, string> = {
+    awaiting_payment: "awaiting_payment",
+    incoming: "pending",
+    accepted: "accepted",
+    shipped: "shipped",
+    declined: "declined",
+  };
+
+  const handleExport = async (scope: "all" | "tab") => {
+    setExporting(scope);
+    try {
+      const statusFilter = scope === "tab" ? TAB_TO_STATUS[currentTab] : undefined;
+      const blob = await exportOrders(statusFilter);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const tag = scope === "tab" ? `-${currentTab}` : "";
+      a.download = `buzzmart-orders${tag}-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Orders CSV downloaded");
+    } catch (error) {
+      toast.error(errorMessage(error, "Export failed."));
+    } finally {
+      setExporting(null);
+    }
+  };
 
   const [awaitingPayment, setAwaitingPayment] = useState<Order[] | null>(null);
   const [orders, setOrders] = useState<Order[] | null>(null);
@@ -403,6 +441,35 @@ const Orders = () => {
         eyebrow="ORDERS"
         title="Your orders"
         description="Accept, ship, and track every customer order."
+        actions={
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label="Download orders CSV"
+              className="inline-flex items-center justify-center h-11 px-4 gap-2 rounded-md border border-border bg-transparent text-foreground hover:bg-ink-50 text-[15px] font-semibold transition-colors duration-150 disabled:opacity-50"
+              disabled={exporting !== null}
+            >
+              <Download className="size-4" />
+              {exporting !== null ? "Exporting…" : "Download CSV"}
+              <ChevronDown className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem
+                onClick={() => handleExport("tab")}
+                disabled={exporting !== null}
+                className="cursor-pointer"
+              >
+                <Download className="size-4" /> Current tab only
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleExport("all")}
+                disabled={exporting !== null}
+                className="cursor-pointer"
+              >
+                <Download className="size-4" /> All orders
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
       />
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="px-6 md:px-10 pb-12">
