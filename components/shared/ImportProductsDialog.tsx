@@ -206,7 +206,7 @@ const ImportProductsDialog: React.FC<ImportProductsDialogProps> = ({
                                 ))}
                               </ul>
                             )}
-                            {r.image_warning && !hasError && (
+                            {r.image_warning && (
                               <div className="mt-1 text-[11px] text-amber-800 flex items-center gap-1">
                                 <AlertTriangle className="size-3 shrink-0" />
                                 {r.image_warning}
@@ -221,8 +221,11 @@ const ImportProductsDialog: React.FC<ImportProductsDialogProps> = ({
                           </td>
                           <td className="px-3 py-2 align-top">
                             {r.image_url ? (
-                              <span className={r.image_warning ? "text-amber-700" : "text-forest-700"}>
-                                {r.image_warning ? "Skip" : "Yes"}
+                              <span
+                                className={r.image_warning ? "text-amber-700" : "text-forest-700"}
+                                title={r.image_warning ? "Image will be skipped" : "Image URL will be fetched on import"}
+                              >
+                                {r.image_warning ? "Skip" : "On import"}
                               </span>
                             ) : (
                               <span className="text-muted-foreground">—</span>
