@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Banknote, Bike } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Eyebrow } from "@/components/ui/eyebrow";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { createOrders } from "@/actions/orders.actions";
 import { errorMessage } from "@/lib/errors";
@@ -41,6 +44,7 @@ const schema = z.object({
   customerWhatsapp: z.string().min(10, "Enter your WhatsApp number"),
   deliveryMethod: z.enum(["pickup", "delivery"]),
   quantity: z.string().min(1),
+  paymentMethod: z.enum(["bank_transfer", "pay_on_delivery"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -52,6 +56,7 @@ export const OrderFormInline = ({
   productId: number;
   onSuccess?: () => void;
 }) => {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -61,23 +66,36 @@ export const OrderFormInline = ({
       customerWhatsapp: "",
       deliveryMethod: "delivery",
       quantity: "1",
+      paymentMethod: "bank_transfer",
     },
   });
+
+  const paymentMethod = form.watch("paymentMethod");
 
   const onSubmit = async (values: FormValues) => {
     setSubmitting(true);
     try {
-      await createOrders({
+      const response = await createOrders({
         product: productId,
         customer_name: values.customerName,
         customer_address: values.customerAddress,
         customer_whatsapp: values.customerWhatsapp,
         delivery_method: values.deliveryMethod,
         quantity: Number(values.quantity),
+        payment_method: values.paymentMethod,
       });
-      toast.success("Order placed! The merchant will contact you on WhatsApp.");
+      const orderId = response.data?.id;
       onSuccess?.();
       form.reset();
+
+      if (values.paymentMethod === "bank_transfer" && orderId) {
+        // Send the customer to the payment-confirmation page where they see
+        // the bank details + reference + can upload proof.
+        router.push(`/store/order/${orderId}`);
+      } else {
+        toast.success("Order placed! The merchant will contact you on WhatsApp.");
+        if (orderId) router.push(`/store/order/${orderId}`);
+      }
     } catch (e: unknown) {
       toast.error(errorMessage(e, "Could not place order. Please try again."));
     } finally {
@@ -170,8 +188,82 @@ export const OrderFormInline = ({
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="paymentMethod"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>How would you like to pay?</FormLabel>
+              <div className="grid grid-cols-1 gap-2">
+                {(
+                  [
+                    {
+                      value: "bank_transfer",
+                      title: "Bank transfer",
+                      desc: "Pay now via your banking app. We'll show you the merchant's account details next.",
+                      icon: Banknote,
+                    },
+                    {
+                      value: "pay_on_delivery",
+                      title: "Pay on delivery",
+                      desc: "Pay with cash or transfer when the rider arrives.",
+                      icon: Bike,
+                    },
+                  ] as const
+                ).map((opt) => {
+                  const Icon = opt.icon;
+                  const active = field.value === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => field.onChange(opt.value)}
+                      className={cn(
+                        "text-left rounded-md border p-3 flex items-start gap-3 transition-colors",
+                        active
+                          ? "border-forest-500 bg-forest-50"
+                          : "border-border bg-paper hover:bg-ink-50",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "size-9 rounded-md flex items-center justify-center shrink-0",
+                          active
+                            ? "bg-forest-100 text-forest-700"
+                            : "bg-ink-100 text-ink-500",
+                        )}
+                      >
+                        <Icon className="size-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className={cn(
+                            "text-[14px] font-semibold",
+                            active ? "text-forest-700" : "text-foreground",
+                          )}
+                        >
+                          {opt.title}
+                        </div>
+                        <div className="text-[12px] text-muted-foreground mt-0.5">
+                          {opt.desc}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button type="submit" disabled={submitting} className="w-full">
-          {submitting ? "Placing order…" : "Place order →"}
+          {submitting
+            ? "Placing order…"
+            : paymentMethod === "bank_transfer"
+              ? "Continue to payment →"
+              : "Place order →"}
         </Button>
       </form>
     </Form>

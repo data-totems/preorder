@@ -27,9 +27,11 @@ import {
   acceptOrder,
   declineOrder,
   getAcceptedOrders,
+  getAwaitingPaymentOrders,
   getDeclinedOrders,
   getIncomingOrders,
   getShippedOrder,
+  markOrderPaid,
   shipOrder,
 } from "@/actions/orders.actions";
 import { formatDateWithOrdinal, formatTimestamp } from "@/lib/reuseable";
@@ -102,6 +104,38 @@ const OrderRow = ({ order, actions }: Row) => {
                 {order.customer_address}
               </span>
             </div>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-muted-foreground">Payment</span>
+              <span className="text-foreground capitalize">
+                {order.payment_method?.replace("_", " ") ?? "—"}
+              </span>
+            </div>
+            {order.payment_reference && (
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-muted-foreground">Reference</span>
+                <span className="text-foreground tabular-nums font-semibold">
+                  {order.payment_reference}
+                </span>
+              </div>
+            )}
+            {order.payment_proof_url && (
+              <div className="flex items-start justify-between gap-4">
+                <span className="text-muted-foreground shrink-0">Proof</span>
+                <a
+                  href={order.payment_proof_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={order.payment_proof_url}
+                    alt="Payment proof"
+                    className="rounded-md border border-border max-h-32 object-contain"
+                  />
+                </a>
+              </div>
+            )}
             {order.dispatcher_details && (
               <div className="flex items-center justify-between gap-4">
                 <span className="text-muted-foreground">Rider</span>
@@ -222,12 +256,14 @@ const TabSkeleton = () => (
 );
 
 const Orders = () => {
-  const [currentTab, setCurrentTab] = useState<string>("incoming");
+  const [currentTab, setCurrentTab] = useState<string>("awaiting_payment");
 
+  const [awaitingPayment, setAwaitingPayment] = useState<Order[] | null>(null);
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [acceptedOrders, setAcceptedOrders] = useState<Order[] | null>(null);
   const [shippedOrders, setShippedOrders] = useState<Order[] | null>(null);
   const [declinedOrders, setDeclinedOrders] = useState<Order[] | null>(null);
+  const [markingPaid, setMarkingPaid] = useState<number | null>(null);
 
   const [accepting, setAccepting] = useState<number | null>(null);
   const [declining, setDeclining] = useState<number | null>(null);
@@ -237,13 +273,15 @@ const Orders = () => {
     let alive = true;
     (async () => {
       try {
-        const [inc, acc, ship, dec] = await Promise.all([
+        const [awp, inc, acc, ship, dec] = await Promise.all([
+          getAwaitingPaymentOrders(),
           getIncomingOrders(),
           getAcceptedOrders(),
           getShippedOrder(),
           getDeclinedOrders(),
         ]);
         if (!alive) return;
+        setAwaitingPayment(awp.data?.orders ?? []);
         setOrders(inc.data?.orders ?? []);
         setAcceptedOrders(acc.data?.orders ?? []);
         setShippedOrders(ship.data?.orders ?? []);
@@ -251,6 +289,7 @@ const Orders = () => {
       } catch (error) {
         if (alive) {
           toast.error(errorMessage(error, "Could not load orders."));
+          setAwaitingPayment([]);
           setOrders([]);
           setAcceptedOrders([]);
           setShippedOrders([]);
@@ -306,6 +345,23 @@ const Orders = () => {
     }
   };
 
+  const handleMarkPaid = async (orderId: number) => {
+    setMarkingPaid(orderId);
+    try {
+      const response = await markOrderPaid(orderId);
+      if (response.status === 200) {
+        toast.success("Marked as paid");
+        const updated = response.data;
+        setAwaitingPayment((prev) => (prev ?? []).filter((o) => o.id !== orderId));
+        setOrders((prev) => [updated, ...(prev ?? [])]);
+      }
+    } catch (error) {
+      toast.error(errorMessage(error, "Could not mark as paid."));
+    } finally {
+      setMarkingPaid(null);
+    }
+  };
+
   const handleShip = async (orderId: number, dispatcherId: number): Promise<boolean> => {
     setShipping(orderId);
     try {
@@ -336,6 +392,14 @@ const Orders = () => {
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="px-6 md:px-10 pb-12">
         <TabsList variant="underline">
+          <TabsTrigger value="awaiting_payment" variant="underline">
+            Awaiting payment
+            {awaitingPayment && awaitingPayment.length > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-pill bg-warning/15 text-warning text-[11px] font-bold tabular-nums">
+                {awaitingPayment.length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="incoming" variant="underline">
             Incoming
           </TabsTrigger>
@@ -349,6 +413,36 @@ const Orders = () => {
             Declined
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="awaiting_payment" className="mt-6 flex flex-col gap-6">
+          {awaitingPayment === null ? (
+            <TabSkeleton />
+          ) : awaitingPayment.length === 0 ? (
+            <EmptyState
+              icon={<Box />}
+              title="No awaiting payments"
+              description="Bank-transfer orders waiting for your verification will appear here."
+            />
+          ) : (
+            <DateGroupedOrders
+              orders={awaitingPayment}
+              getDate={(o) => o.created_at}
+              renderActions={(order) => (
+                <Button
+                  size="sm"
+                  disabled={markingPaid === order.id}
+                  onClick={() => handleMarkPaid(order.id)}
+                >
+                  {markingPaid === order.id ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    "Mark paid"
+                  )}
+                </Button>
+              )}
+            />
+          )}
+        </TabsContent>
 
         <TabsContent value="incoming" className="mt-6 flex flex-col gap-6">
           {orders === null ? (

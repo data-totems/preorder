@@ -76,6 +76,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/accounts/dashboard/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["api_accounts_dashboard_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/accounts/profile/": {
         parameters: {
             query?: never;
@@ -455,6 +471,26 @@ export interface paths {
         patch: operations["api_orders_decline_partial_update"];
         trace?: never;
     };
+    "/api/orders/{order_id}/mark-paid/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Mark order as paid (Merchant)
+         * @description Merchant confirms they've received the bank transfer (verified manually in their own bank app). Moves the order from awaiting_payment to pending so the normal accept/ship flow can continue.
+         */
+        patch: operations["api_orders_mark_paid_partial_update"];
+        trace?: never;
+    };
     "/api/orders/{order_id}/ship/": {
         parameters: {
             query?: never;
@@ -515,6 +551,26 @@ export interface paths {
         patch: operations["api_orders_update_status_partial_update"];
         trace?: never;
     };
+    "/api/orders/{order_id}/upload-proof/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload payment proof (Customer - no auth)
+         * @description Customer uploads a screenshot of their bank transfer for the merchant to verify. Allowed only when status is awaiting_payment.
+         */
+        post: operations["api_orders_upload_proof_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/orders/accepted/": {
         parameters: {
             query?: never;
@@ -547,6 +603,26 @@ export interface paths {
          * @description Get monthly analytics: total sales, orders, and shipped orders
          */
         get: operations["api_orders_analytics_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/awaiting-payment/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List awaiting-payment orders (Merchant)
+         * @description Orders where customer claims to have paid via bank transfer but the merchant hasn't verified yet.
+         */
+        get: operations["api_orders_awaiting_payment_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1245,6 +1321,14 @@ export interface components {
             readonly status: components["schemas"]["OrderStatusEnum"];
             dispatcher?: number | null;
             readonly dispatcher_details: components["schemas"]["Dispatcher"];
+            payment_method?: components["schemas"]["PaymentMethodEnum"];
+            readonly payment_reference: string | null;
+            /** Format: uri */
+            payment_proof?: string | null;
+            readonly payment_proof_url: string;
+            /** Format: date-time */
+            readonly paid_at: string | null;
+            readonly merchant_bank: string;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -1265,9 +1349,11 @@ export interface components {
             delivery_method: components["schemas"]["DeliveryMethodEnum"];
             /** Format: int64 */
             quantity?: number;
+            payment_method?: components["schemas"]["PaymentMethodEnum"];
         };
         /**
-         * @description * `pending` - Pending
+         * @description * `awaiting_payment` - Awaiting Payment
+         *     * `pending` - Pending
          *     * `accepted` - Accepted
          *     * `assigned` - Assigned to Dispatcher
          *     * `picked_up` - Picked Up by Dispatcher
@@ -1279,7 +1365,7 @@ export interface components {
          *     * `cancelled` - Cancelled
          * @enum {string}
          */
-        OrderStatusEnum: "pending" | "accepted" | "assigned" | "picked_up" | "in_transit" | "delivered" | "shipped" | "declined" | "completed" | "cancelled";
+        OrderStatusEnum: "awaiting_payment" | "pending" | "accepted" | "assigned" | "picked_up" | "in_transit" | "delivered" | "shipped" | "declined" | "completed" | "cancelled";
         /**
          * @description * `accepted` - accepted
          *     * `shipped` - shipped
@@ -1349,6 +1435,12 @@ export interface components {
         PatchedWhatsAppUpdate: {
             whatsapp_number?: string;
         };
+        /**
+         * @description * `bank_transfer` - Bank Transfer
+         *     * `pay_on_delivery` - Pay on Delivery
+         * @enum {string}
+         */
+        PaymentMethodEnum: "bank_transfer" | "pay_on_delivery";
         /**
          * @description * `local` - Within located are only
          *     * `outside` - Outside located area only
@@ -1540,6 +1632,24 @@ export interface operations {
         };
     };
     api_accounts_business_slug_check_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    api_accounts_dashboard_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -2079,6 +2189,26 @@ export interface operations {
             };
         };
     };
+    api_orders_mark_paid_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     api_orders_ship_partial_update: {
         parameters: {
             query?: never;
@@ -2145,6 +2275,26 @@ export interface operations {
             };
         };
     };
+    api_orders_upload_proof_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     api_orders_accepted_retrieve: {
         parameters: {
             query?: never;
@@ -2164,6 +2314,24 @@ export interface operations {
         };
     };
     api_orders_analytics_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    api_orders_awaiting_payment_retrieve: {
         parameters: {
             query?: never;
             header?: never;

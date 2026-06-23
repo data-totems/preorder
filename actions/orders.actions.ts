@@ -68,14 +68,16 @@ export const createOrders = async ({
   customer_address,
   customer_whatsapp,
   delivery_method,
-  quantity
+  quantity,
+  payment_method,
 }: {
     product: number,
     customer_name: string,
     customer_address: string,
     customer_whatsapp: string,
     delivery_method: string,
-    quantity: number
+    quantity: number,
+    payment_method?: "bank_transfer" | "pay_on_delivery",
 }) => {
     try {
         const response = await axios.post(`${baseUrl}/orders/create/`, {
@@ -84,7 +86,8 @@ export const createOrders = async ({
   customer_address,
   customer_whatsapp,
   delivery_method,
-  quantity
+  quantity,
+  payment_method,
         });
 
         return response;
@@ -139,5 +142,61 @@ export const shipOrder = async (
         return response;
     } catch (error) {
         throw error;
+    }
+}
+// ---------------------------------------------------------------------------
+// Payment-flow actions — manual bank-transfer + proof verification.
+// ---------------------------------------------------------------------------
+
+export const trackOrder = async (orderId: number) => {
+    // Public — no auth needed. Customer hits this on the confirmation page
+    // to render bank details + reference + status updates.
+    try {
+        const response = await axios.get(`${baseUrl}/orders/track/${orderId}/`);
+        return response;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
+    }
+}
+
+export const uploadPaymentProof = async (orderId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("payment_proof", file);
+    try {
+        const response = await axios.post(
+            `${baseUrl}/orders/${orderId}/upload-proof/`,
+            formData,
+            { headers: { "Content-Type": "multipart/form-data" } },
+        );
+        return response;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
+    }
+}
+
+export const markOrderPaid = async (orderId: number) => {
+    const token = localStorage.getItem("buzzToken")
+    try {
+        const response = await axios.patch(
+            `${baseUrl}/orders/${orderId}/mark-paid/`,
+            {},
+            { headers: { "Authorization": `token ${token}` } },
+        );
+        return response;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
+    }
+}
+
+export const getAwaitingPaymentOrders = async () => {
+    const token = localStorage.getItem("buzzToken")
+    try {
+        const response = await axios.get(
+            `${baseUrl}/orders/awaiting-payment/`,
+            { headers: { "Authorization": `token ${token}` } },
+        );
+        return response;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Request failed" };
     }
 }
