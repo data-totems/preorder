@@ -4,9 +4,12 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { getAllProducts } from "@/actions/products.actions";
 import ProductCard from "@/components/shared/ProductCard";
+import DataPagination, { usePaginated } from "@/components/shared/DataPagination";
 import CategoryGrid from "@/components/store/CategoryGrid";
 import StoreSearchBox from "@/components/store/StoreSearchBox";
 import EmptyState from "@/components/shared/EmptyState";
+
+const PAGE_SIZE = 12;
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 import { SearchX } from "lucide-react";
@@ -38,6 +41,7 @@ const Store = () => {
 
   const trending = products.slice(0, 8);
   const newest = [...products].reverse().slice(0, 8);
+  const { slice: filteredPage, page, setPage, totalItems } = usePaginated(filtered, PAGE_SIZE);
 
   if (filtering) {
     const label = query
@@ -78,19 +82,29 @@ const Store = () => {
               }
             />
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {filtered.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  id={p.id}
-                  name={p.name}
-                  price={p.price}
-                  image_url={p.images?.[0]?.image_url ?? undefined}
-                  href={`/store/${p.store_slug}/${p.product_id}`}
-                  inStock={p.in_stock !== false}
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {filteredPage.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    id={p.id}
+                    name={p.name}
+                    price={p.price}
+                    image_url={p.images?.[0]?.image_url ?? undefined}
+                    href={`/store/${p.store_slug}/${p.product_id}`}
+                    inStock={p.in_stock !== false}
+                  />
+                ))}
+              </div>
+              <div className="mt-10">
+                <DataPagination
+                  totalItems={totalItems}
+                  pageSize={PAGE_SIZE}
+                  currentPage={page}
+                  onPageChange={setPage}
                 />
-              ))}
-            </div>
+              </div>
+            </>
           )}
         </section>
       </main>

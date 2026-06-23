@@ -287,3 +287,35 @@ export const updateProductDetails = async ({ id,description, price, name }: {
         throw error?.response?.data ?? { message: error?.message ?? "Request failed" }
     }
 }
+
+
+export const exportProducts = async (): Promise<Blob> => {
+    const token = localStorage.getItem('buzzToken');
+    try {
+        const response = await axios.get(`${baseUrl}/products/export/`, {
+            headers: { "Authorization": `token ${token}` },
+            responseType: "blob",
+        });
+        return response.data as Blob;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Export failed" };
+    }
+};
+
+
+export const importProducts = async (file: File) => {
+    const token = localStorage.getItem('buzzToken');
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+        const response = await axios.post(`${baseUrl}/products/import/`, formData, {
+            headers: {
+                "Authorization": `token ${token}`,
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return response;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Import failed" };
+    }
+};

@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAllProducts } from "@/actions/products.actions";
 import ProductCard from "@/components/shared/ProductCard";
+import DataPagination, { usePaginated } from "@/components/shared/DataPagination";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Product } from "@/types/api";
+
+const PAGE_SIZE = 12;
 
 const TopSellers = () => {
   const [products, setProducts] = useState<Product[] | null>(null);
@@ -15,6 +18,8 @@ const TopSellers = () => {
       .then((r) => setProducts(Array.isArray(r.data) ? r.data : []))
       .catch(() => setProducts([]));
   }, []);
+
+  const { slice, page, setPage, totalItems } = usePaginated(products ?? [], PAGE_SIZE);
 
   return (
     <main className="max-w-7xl mx-auto">
@@ -41,19 +46,29 @@ const TopSellers = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {products.map((p) => (
-              <ProductCard
-                key={p.id}
-                id={p.id}
-                name={p.name}
-                price={p.price}
-                image_url={p.images?.[0]?.image_url ?? undefined}
-                href={`/store/${p.store_slug}/${p.product_id}`}
-                inStock={p.in_stock !== false}
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {slice.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  id={p.id}
+                  name={p.name}
+                  price={p.price}
+                  image_url={p.images?.[0]?.image_url ?? undefined}
+                  href={`/store/${p.store_slug}/${p.product_id}`}
+                  inStock={p.in_stock !== false}
+                />
+              ))}
+            </div>
+            <div className="mt-10">
+              <DataPagination
+                totalItems={totalItems}
+                pageSize={PAGE_SIZE}
+                currentPage={page}
+                onPageChange={setPage}
               />
-            ))}
-          </div>
+            </div>
+          </>
         )}
       </section>
     </main>

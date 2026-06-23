@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Box, ChevronDown, Loader2, Truck } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
+import DataPagination, { usePaginated } from "@/components/shared/DataPagination";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Card } from "@/components/ui/card";
@@ -215,12 +216,16 @@ const DateGroupedOrders = ({
   orders,
   getDate,
   renderActions,
+  pageSize = 12,
 }: {
   orders: Order[];
   getDate: (order: Order) => string;
   renderActions?: (order: Order) => React.ReactNode;
+  pageSize?: number;
 }) => {
-  const grouped = orders.reduce<Record<string, Order[]>>((acc, order) => {
+  const { slice, page, setPage, totalItems } = usePaginated(orders, pageSize);
+
+  const grouped = slice.reduce<Record<string, Order[]>>((acc, order) => {
     const date = new Date(getDate(order)).toISOString().split("T")[0];
     (acc[date] ??= []).push(order);
     return acc;
@@ -243,6 +248,13 @@ const DateGroupedOrders = ({
           </div>
         </section>
       ))}
+      <DataPagination
+        totalItems={totalItems}
+        pageSize={pageSize}
+        currentPage={page}
+        onPageChange={setPage}
+        className="pt-2"
+      />
     </>
   );
 };

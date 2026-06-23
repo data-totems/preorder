@@ -6,9 +6,12 @@ import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
 import MerchantHero from "@/components/store/MerchantHero";
 import ProductCard from "@/components/shared/ProductCard";
+import DataPagination, { usePaginated } from "@/components/shared/DataPagination";
 import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Product, PublicStoreResponse } from "@/types/api";
+
+const PAGE_SIZE = 12;
 
 const StoreDetails = () => {
   const slug = usePathname().split("/")[2];
@@ -39,6 +42,7 @@ const StoreDetails = () => {
   const products = (store.products ?? []).filter((p: Product) =>
     query ? p.name?.toLowerCase().includes(query.toLowerCase()) : true
   );
+  const { slice: pageProducts, page, setPage, totalItems } = usePaginated(products, PAGE_SIZE);
 
   return (
     <>
@@ -58,7 +62,7 @@ const StoreDetails = () => {
       </div>
       <section className="max-w-7xl mx-auto px-6 md:px-10 py-8 pb-16">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {products.map((p: Product) => (
+          {pageProducts.map((p: Product) => (
             <ProductCard
               key={p.id}
               id={p.id}
@@ -69,6 +73,14 @@ const StoreDetails = () => {
               inStock={p.in_stock !== false}
             />
           ))}
+        </div>
+        <div className="mt-10">
+          <DataPagination
+            totalItems={totalItems}
+            pageSize={PAGE_SIZE}
+            currentPage={page}
+            onPageChange={setPage}
+          />
         </div>
       </section>
     </>
