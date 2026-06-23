@@ -36,9 +36,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = React.useState<Cart | null>(null);
   const [open, setOpen] = React.useState(false);
 
-  // Hydrate from localStorage after mount so SSR/CSR markup matches.
+  // Hydrate from localStorage after mount so SSR/CSR markup matches. Also
+  // listen for cross-tab writes — without this, two tabs would each hold their
+  // own in-memory cart and silently disagree on totals at checkout.
   React.useEffect(() => {
     setCart(readCart());
+    if (typeof window === "undefined") return;
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "bz_cart" || e.key === null) setCart(readCart());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   const add: CartContextValue["add"] = (line, merchant) => {

@@ -44,7 +44,13 @@ const schema = z.object({
   customerAddress: z.string().min(4, "Enter your address"),
   customerWhatsapp: z.string().min(10, "Enter your WhatsApp number"),
   deliveryMethod: z.enum(["pickup", "delivery"]),
-  quantity: z.string().min(1),
+  // Validate that the input parses to an integer ≥ 1 instead of relying on
+  // string-length min(1) (which would accept "0"). Only the legacy
+  // single-product path sends this field; cart mode ignores it.
+  quantity: z.string().refine((v) => {
+    const n = Number(v);
+    return Number.isInteger(n) && n >= 1;
+  }, "Quantity must be a whole number, 1 or more"),
   paymentMethod: z.enum(["bank_transfer", "pay_on_delivery"]),
 });
 
@@ -143,17 +149,22 @@ export const OrderFormInline = ({
         wa_number: values.customerWhatsapp,
         address: values.customerAddress,
       });
+
+      // Navigate FIRST, then clear cart + reset form. If router.push throws or
+      // stalls (slow network, middleware), the cart stays intact so the
+      // customer can recover.
+      if (orderId) {
+        if (values.paymentMethod === "bank_transfer") {
+          router.push(`/store/order/${orderId}`);
+        } else {
+          toast.success("Order placed! The merchant will contact you on WhatsApp.");
+          router.push(`/store/order/${orderId}`);
+        }
+      } else if (values.paymentMethod !== "bank_transfer") {
+        toast.success("Order placed! The merchant will contact you on WhatsApp.");
+      }
       onSuccess?.();
       form.reset();
-
-      if (values.paymentMethod === "bank_transfer" && orderId) {
-        // Send the customer to the payment-confirmation page where they see
-        // the bank details + reference + can upload proof.
-        router.push(`/store/order/${orderId}`);
-      } else {
-        toast.success("Order placed! The merchant will contact you on WhatsApp.");
-        if (orderId) router.push(`/store/order/${orderId}`);
-      }
     } catch (e: unknown) {
       toast.error(errorMessage(e, "Could not place order. Please try again."));
     } finally {
