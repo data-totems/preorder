@@ -62,34 +62,25 @@ export const getDeclinedOrders = async (): Promise<AxiosResponse<OrdersGroupResp
     }
 }
 
-export const createOrders = async ({
- product,
-  customer_name,
-  customer_address,
-  customer_whatsapp,
-  delivery_method,
-  quantity,
-  payment_method,
-}: {
-    product: number,
+/**
+ * Customer order create. Accepts either:
+ *  - { items: [...], ... }  — multi-product cart (preferred)
+ *  - { product, quantity, ... } — legacy single-product (kept for Buy now)
+ */
+export type CreateOrderArgs = {
     customer_name: string,
     customer_address: string,
     customer_whatsapp: string,
     delivery_method: string,
-    quantity: number,
     payment_method?: "bank_transfer" | "pay_on_delivery",
-}) => {
-    try {
-        const response = await axios.post(`${baseUrl}/orders/create/`, {
-             product,
-  customer_name,
-  customer_address,
-  customer_whatsapp,
-  delivery_method,
-  quantity,
-  payment_method,
-        });
+} & (
+    | { items: Array<{ product: number; quantity: number }>; product?: undefined; quantity?: undefined }
+    | { product: number; quantity: number; items?: undefined }
+);
 
+export const createOrders = async (args: CreateOrderArgs) => {
+    try {
+        const response = await axios.post(`${baseUrl}/orders/create/`, args);
         return response;
     } catch (error: any) {
         throw error?.response?.data ?? { message: error?.message ?? "Failed to create order" };

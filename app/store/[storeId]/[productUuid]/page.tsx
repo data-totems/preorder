@@ -10,10 +10,7 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductImageCarousel from "@/components/shared/ProductImageCarousel";
-import {
-  OrderFormInline,
-  OrderFormSheet,
-} from "@/components/store/OrderFormSheet";
+import AddToCartButtons from "@/components/store/AddToCartButtons";
 import type { Product } from "@/types/api";
 
 interface PublicProduct extends Product {
@@ -89,7 +86,7 @@ const CustomerProductDetail = () => {
             {product.description}
           </p>
 
-          {/* Desktop inline form (or out-of-stock banner) */}
+          {/* Desktop CTA buttons (or out-of-stock banner) */}
           <div className="hidden lg:block mt-10">
             {product.in_stock === false ? (
               <div className="rounded-md border border-border bg-ink-100 p-4 text-center">
@@ -99,7 +96,17 @@ const CustomerProductDetail = () => {
                 </div>
               </div>
             ) : (
-              <OrderFormInline productId={product.id} />
+              <AddToCartButtons
+                product={{
+                  id: product.id,
+                  product_id: product.product_id,
+                  name: product.name,
+                  price: product.price,
+                  primary_image: product.images?.[0]?.image_url ?? product.primary_image,
+                }}
+                merchant={{ slug: storeSlug, name: merchantName }}
+                layout="inline"
+              />
             )}
           </div>
         </div>
@@ -112,9 +119,16 @@ const CustomerProductDetail = () => {
             Out of stock
           </Button>
         ) : (
-          <OrderFormSheet
-            productId={product.id}
-            trigger={<Button className="w-full">Place order →</Button>}
+          <AddToCartButtons
+            product={{
+              id: product.id,
+              product_id: product.product_id,
+              name: product.name,
+              price: product.price,
+              primary_image: product.images?.[0]?.image_url ?? product.primary_image,
+            }}
+            merchant={{ slug: storeSlug, name: merchantName }}
+            layout="inline"
           />
         )}
       </div>

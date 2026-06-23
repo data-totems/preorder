@@ -50,11 +50,22 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+interface OrderFormCartItem {
+  product_id: number;
+  name: string;
+  price: string;
+  quantity: number;
+}
+
 export const OrderFormInline = ({
   productId,
+  cartItems,
   onSuccess,
 }: {
-  productId: number;
+  /** Single-product flow (legacy/Buy now). Provide either productId or cartItems. */
+  productId?: number;
+  /** Multi-product cart flow. Takes precedence over productId when present. */
+  cartItems?: OrderFormCartItem[];
   onSuccess?: () => void;
 }) => {
   const router = useRouter();
@@ -99,15 +110,32 @@ export const OrderFormInline = ({
   const onSubmit = async (values: FormValues) => {
     setSubmitting(true);
     try {
-      const response = await createOrders({
-        product: productId,
-        customer_name: values.customerName,
-        customer_address: values.customerAddress,
-        customer_whatsapp: values.customerWhatsapp,
-        delivery_method: values.deliveryMethod,
-        quantity: Number(values.quantity),
-        payment_method: values.paymentMethod,
-      });
+      // Multi-item cart path takes precedence; falls back to legacy single-product
+      // when only productId was supplied.
+      let payload: Parameters<typeof createOrders>[0];
+      if (cartItems && cartItems.length > 0) {
+        payload = {
+          items: cartItems.map((it) => ({ product: it.product_id, quantity: it.quantity })),
+          customer_name: values.customerName,
+          customer_address: values.customerAddress,
+          customer_whatsapp: values.customerWhatsapp,
+          delivery_method: values.deliveryMethod,
+          payment_method: values.paymentMethod,
+        };
+      } else if (typeof productId === "number") {
+        payload = {
+          product: productId,
+          customer_name: values.customerName,
+          customer_address: values.customerAddress,
+          customer_whatsapp: values.customerWhatsapp,
+          delivery_method: values.deliveryMethod,
+          quantity: Number(values.quantity),
+          payment_method: values.paymentMethod,
+        };
+      } else {
+        throw new Error("OrderFormInline needs either productId or cartItems.");
+      }
+      const response = await createOrders(payload);
       const orderId = response.data?.id;
       // Save what they just typed so subsequent orders are prefilled too.
       saveBuyerProfile({
@@ -143,6 +171,21 @@ export const OrderFormInline = ({
         {prefilledFromProfile && (
           <div className="text-[12px] text-muted-foreground -mt-2">
             Welcome back — we&apos;ve filled in your details from a previous order. Edit anything that&apos;s changed.
+          </div>
+        )}
+        {cartItems && cartItems.length > 0 && (
+          <div className="rounded-md border border-border bg-ink-50 p-3 -mt-2">
+            <div className="text-[11px] font-bold uppercase tracking-[0.04em] text-muted-foreground mb-2">
+              Cart ({cartItems.reduce((s, i) => s + i.quantity, 0)} items)
+            </div>
+            <ul className="text-[13px] text-foreground space-y-1">
+              {cartItems.map((it) => (
+                <li key={it.product_id} className="flex justify-between gap-2">
+                  <span className="line-clamp-1">{it.quantity} × {it.name}</span>
+                  <span className="tabular-nums shrink-0">₦{(Number(it.price) * it.quantity).toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
         <FormField
@@ -210,19 +253,23 @@ export const OrderFormInline = ({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="quantity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Quantity</FormLabel>
-              <FormControl>
-                <Input type="number" min={1} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Quantity field is hidden when ordering from a cart (each cart item
+            has its own quantity). Still shown for the legacy single-product flow. */}
+        {!cartItems && (
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantity</FormLabel>
+                <FormControl>
+                  <Input type="number" min={1} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}
