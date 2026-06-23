@@ -304,6 +304,27 @@ export const getProductStatusImage = async (productId: number): Promise<Blob> =>
 };
 
 
+export const getStoreStatusImage = async (
+    opts: { headline?: string; subhead?: string; eyebrow?: string } = {},
+): Promise<Blob> => {
+    const token = localStorage.getItem('buzzToken');
+    const params = new URLSearchParams();
+    if (opts.headline) params.set("headline", opts.headline);
+    if (opts.subhead) params.set("subhead", opts.subhead);
+    if (opts.eyebrow) params.set("eyebrow", opts.eyebrow);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    try {
+        const response = await axios.get(`${baseUrl}/products/store-status-image/${qs}`, {
+            headers: { "Authorization": `token ${token}` },
+            responseType: "blob",
+        });
+        return response.data as Blob;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Store status image generation failed" };
+    }
+};
+
+
 export const exportProducts = async (): Promise<Blob> => {
     const token = localStorage.getItem('buzzToken');
     try {

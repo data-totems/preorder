@@ -6,6 +6,7 @@ import PageHeader from "@/components/shared/PageHeader"
 import ProductCard from "@/components/shared/ProductCard"
 import DataPagination, { usePaginated } from "@/components/shared/DataPagination"
 import ImportProductsDialog from "@/components/shared/ImportProductsDialog"
+import PromoteStoreDialog from "@/components/shared/PromoteStoreDialog"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Plus, Store, Download, Upload, ChevronDown } from "lucide-react"
+import { Plus, Store, Download, Upload, ChevronDown, Megaphone } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import type { Product } from "@/types/api"
@@ -27,6 +28,7 @@ const Marketplace = () => {
   const [loading, setLoading] = useState(true)
   const [openDialog, setOpenDialog] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
+  const [promoteOpen, setPromoteOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
 
   const loadProducts = useCallback(async () => {
@@ -81,6 +83,14 @@ const Marketplace = () => {
         }
         actions={
           <>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setPromoteOpen(true)}
+              title="Generate a branded image you can post to WhatsApp Status"
+            >
+              <Megaphone className="size-4" /> Promote
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger
                 aria-label="Import or export"
@@ -172,6 +182,7 @@ const Marketplace = () => {
           loadProducts()
         }}
       />
+      <PromoteStoreDialog open={promoteOpen} onOpenChange={setPromoteOpen} />
     </div>
   )
 }
