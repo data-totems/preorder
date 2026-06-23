@@ -304,6 +304,23 @@ export const getProductStatusImage = async (productId: number): Promise<Blob> =>
 };
 
 
+export const getStoreQrPoster = async (tagline?: string): Promise<Blob> => {
+    const token = localStorage.getItem('buzzToken');
+    const params = new URLSearchParams();
+    if (tagline) params.set("tagline", tagline);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    try {
+        const response = await axios.get(`${baseUrl}/products/store-qr-poster/${qs}`, {
+            headers: { "Authorization": `token ${token}` },
+            responseType: "blob",
+        });
+        return response.data as Blob;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "QR poster generation failed" };
+    }
+};
+
+
 export const getStoreStatusImage = async (
     opts: { headline?: string; subhead?: string; eyebrow?: string } = {},
 ): Promise<Blob> => {
