@@ -281,12 +281,12 @@ const ProductDetails = () => {
         description={formatNgn(product.price)}
         actions={
           <>
-            <Button variant="outline" onClick={openEdit}>
+            <Button type="button" variant="outline" onClick={openEdit}>
               <Pen className="size-4" /> Edit
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" aria-label="More actions">
+                <Button type="button" variant="outline" size="icon" aria-label="More actions">
                   <MoreHorizontal className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
