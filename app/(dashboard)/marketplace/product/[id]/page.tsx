@@ -285,10 +285,11 @@ const ProductDetails = () => {
               <Pen className="size-4" /> Edit
             </Button>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button type="button" variant="outline" size="icon" aria-label="More actions">
-                  <MoreHorizontal className="size-4" />
-                </Button>
+              <DropdownMenuTrigger
+                aria-label="More actions"
+                className="inline-flex items-center justify-center h-11 w-11 rounded-md border border-border bg-transparent text-foreground hover:bg-ink-50 transition-colors duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <MoreHorizontal className="size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuItem
