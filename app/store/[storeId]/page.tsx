@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getStoreDetails } from "@/actions/products.actions";
 import { toast } from "sonner";
@@ -43,6 +43,7 @@ const StoreDetails = () => {
     query ? p.name?.toLowerCase().includes(query.toLowerCase()) : true
   );
   const { slice: pageProducts, page, setPage, totalItems } = usePaginated(products, PAGE_SIZE);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
@@ -61,7 +62,7 @@ const StoreDetails = () => {
         </div>
       </div>
       <section className="max-w-7xl mx-auto px-6 md:px-10 py-8 pb-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {pageProducts.map((p: Product) => (
             <ProductCard
               key={p.id}
@@ -80,6 +81,7 @@ const StoreDetails = () => {
             pageSize={PAGE_SIZE}
             currentPage={page}
             onPageChange={setPage}
+            scrollTargetRef={gridRef}
           />
         </div>
       </section>

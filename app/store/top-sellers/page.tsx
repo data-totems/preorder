@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getAllProducts } from "@/actions/products.actions";
 import ProductCard from "@/components/shared/ProductCard";
@@ -20,6 +20,7 @@ const TopSellers = () => {
   }, []);
 
   const { slice, page, setPage, totalItems } = usePaginated(products ?? [], PAGE_SIZE);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   return (
     <main className="max-w-7xl mx-auto">
@@ -47,7 +48,7 @@ const TopSellers = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {slice.map((p) => (
                 <ProductCard
                   key={p.id}
@@ -66,6 +67,7 @@ const TopSellers = () => {
                 pageSize={PAGE_SIZE}
                 currentPage={page}
                 onPageChange={setPage}
+                scrollTargetRef={gridRef}
               />
             </div>
           </>

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { getAllProducts } from "@/actions/products.actions";
@@ -42,6 +42,7 @@ const Store = () => {
   const trending = products.slice(0, 8);
   const newest = [...products].reverse().slice(0, 8);
   const { slice: filteredPage, page, setPage, totalItems } = usePaginated(filtered, PAGE_SIZE);
+  const resultsGridRef = useRef<HTMLDivElement>(null);
 
   if (filtering) {
     const label = query
@@ -83,7 +84,7 @@ const Store = () => {
             />
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              <div ref={resultsGridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {filteredPage.map((p) => (
                   <ProductCard
                     key={p.id}
@@ -102,6 +103,7 @@ const Store = () => {
                   pageSize={PAGE_SIZE}
                   currentPage={page}
                   onPageChange={setPage}
+                  scrollTargetRef={resultsGridRef}
                 />
               </div>
             </>
