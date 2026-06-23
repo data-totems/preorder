@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import PageHeader from "@/components/shared/PageHeader";
 import ProductImageCarousel from "@/components/shared/ProductImageCarousel";
 import SharePanel from "@/components/share/SharePanel";
+import ShareToStatusButton from "@/components/shared/ShareToStatusButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -281,6 +282,7 @@ const ProductDetails = () => {
         description={formatNgn(product.price)}
         actions={
           <>
+            <ShareToStatusButton productId={product.id} productName={product.name} />
             <Button type="button" variant="outline" onClick={openEdit}>
               <Pen className="size-4" /> Edit
             </Button>

@@ -290,6 +290,20 @@ export const updateProductDetails = async ({ id,description, price, name }: {
 }
 
 
+export const getProductStatusImage = async (productId: number): Promise<Blob> => {
+    const token = localStorage.getItem('buzzToken');
+    try {
+        const response = await axios.get(`${baseUrl}/products/${productId}/status-image/`, {
+            headers: { "Authorization": `token ${token}` },
+            responseType: "blob",
+        });
+        return response.data as Blob;
+    } catch (error: any) {
+        throw error?.response?.data ?? { message: error?.message ?? "Status image generation failed" };
+    }
+};
+
+
 export const exportProducts = async (): Promise<Blob> => {
     const token = localStorage.getItem('buzzToken');
     try {
