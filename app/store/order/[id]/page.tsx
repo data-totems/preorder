@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "@/lib/errors";
 import { trackOrder, uploadPaymentProof } from "@/actions/orders.actions";
+import { baseUrl } from "@/actions/auth.actions";
 
 interface OrderDetail {
   id: number;
@@ -103,7 +104,11 @@ const formatNgn = (price?: string) => {
   return `₦${n.toLocaleString("en-NG", { maximumFractionDigits: 0 })}`;
 };
 
-const POLL_MS = 15_000;
+// Polling cadences (fallback when SSE is unavailable / between SSE
+// reconnects). Backend is the primary live-update path via EventSource.
+const POLL_MS_NORMAL = 30_000;
+const POLL_MS_HOT = 5_000;          // after the customer uploads proof — merchant is likely seconds away
+const POLL_HOT_WINDOW_MS = 120_000; // 2 min of hot polling, then back to normal
 
 export default function OrderConfirmationPage() {
   const path = usePathname();
@@ -114,6 +119,10 @@ export default function OrderConfirmationPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Hot-polling window starts when the customer uploads proof — drops the
+  // fallback poll interval to 5s for 2 minutes so the merchant's "mark paid"
+  // click is reflected almost instantly even if SSE is wedged.
+  const hotUntilRef = useRef<number>(0);
 
   const load = useCallback(async () => {
     if (!Number.isFinite(orderId)) return;
@@ -129,14 +138,87 @@ export default function OrderConfirmationPage() {
     load();
   }, [load]);
 
-  // Poll while still awaiting payment — so the customer's status flips to
-  // "Accepted" the moment the merchant marks paid + accepts.
+  // ── Primary live channel: Server-Sent Events ─────────────────────
+  // Backend stream sits at /api/orders/track/<id>/events/. Each connection
+  // lives ~25s, polls the DB every 3s, emits a JSON event on status change.
+  // EventSource auto-reconnects on close, so this loops indefinitely with
+  // no client-side timer.
+  useEffect(() => {
+    if (!Number.isFinite(orderId)) return;
+    // Don't bother subscribing once the order is in a terminal state.
+    if (order && ["shipped", "completed", "declined", "cancelled"].includes(order.status)) {
+      return;
+    }
+    let es: EventSource | null = null;
+    try {
+      es = new EventSource(`${baseUrl}/orders/track/${orderId}/events/`);
+    } catch {
+      return;
+    }
+    es.onmessage = (e) => {
+      try {
+        const patch = JSON.parse(e.data) as Partial<OrderDetail>;
+        setOrder((prev) => (prev ? { ...prev, ...patch } : prev));
+      } catch {
+        // Ignore malformed payloads.
+      }
+    };
+    // On any error (network drop, server close), let the browser reconnect
+    // by closing — EventSource itself handles retry timing.
+    es.onerror = () => {
+      es?.close();
+    };
+    return () => es?.close();
+  }, [orderId, order?.status]);
+
+  // ── Fallback polling — backstops SSE in case it's blocked by a proxy
+  // or the connection is severed mid-window. Stops as soon as the order
+  // reaches a terminal status. Hot mode kicks in after proof upload.
   useEffect(() => {
     if (!order) return;
     if (order.status !== "awaiting_payment" && order.status !== "pending") return;
-    const id = setInterval(load, POLL_MS);
-    return () => clearInterval(id);
+
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const schedule = () => {
+      if (cancelled) return;
+      // Don't poll while the tab is hidden — saves Render quota + battery.
+      if (typeof document !== "undefined" && document.hidden) {
+        timer = setTimeout(schedule, 1_000);
+        return;
+      }
+      const interval = Date.now() < hotUntilRef.current ? POLL_MS_HOT : POLL_MS_NORMAL;
+      timer = setTimeout(async () => {
+        await load();
+        schedule();
+      }, interval);
+    };
+    schedule();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [order, load]);
+
+  // ── Page Visibility — refresh immediately when the customer returns
+  // to the tab so they see the latest status without waiting on the
+  // next poll/SSE tick.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const onVisibility = () => {
+      if (!document.hidden) {
+        load();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", load);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", load);
+    };
+  }, [load]);
 
   useEffect(() => {
     return () => {
@@ -161,6 +243,10 @@ export default function OrderConfirmationPage() {
       setSelectedFile(null);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
+      // The merchant is now likely seconds away from clicking "mark paid".
+      // Switch fallback polling into hot mode for the next 2 minutes so the
+      // status flip lands fast even if the SSE channel hiccups.
+      hotUntilRef.current = Date.now() + POLL_HOT_WINDOW_MS;
       toast.success("Proof uploaded — the merchant has been notified.");
     } catch (e) {
       toast.error(errorMessage(e, "Could not upload proof."));
