@@ -85,6 +85,12 @@ const AddToCartButtons: React.FC<AddToCartButtonsProps> = ({
         </Button>
         <OrderFormSheet
           productId={product.id}
+          productPreview={{
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image_url: product.primary_image ?? undefined,
+          }}
           trigger={
             <Button type="button" size="lg">
               <Zap className="size-4" /> Buy now
